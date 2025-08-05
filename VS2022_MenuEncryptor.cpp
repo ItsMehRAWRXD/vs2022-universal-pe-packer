@@ -26,6 +26,58 @@ class VS2022MenuEncryptor {
 private:
     std::mt19937_64 rng;
     
+    // Enhanced auto-compilation helper function (supports C++ and MASM)
+    void autoCompile(const std::string& sourceFile) {
+        std::cout << "[COMPILE] Auto-compiling to executable..." << std::endl;
+
+        // Determine file type by extension
+        std::string extension = sourceFile.substr(sourceFile.find_last_of('.'));
+        std::string baseName = sourceFile.substr(0, sourceFile.find_last_of('.'));
+        std::string exeName = baseName + ".exe";
+        std::string compileCmd;
+        int result = -1;
+
+        if (extension == ".cpp" || extension == ".c") {
+            // C++ compilation
+            std::cout << "[INFO] Detected C++ source file" << std::endl;
+#ifdef _WIN32
+            // Try g++ first (MinGW/TDM-GCC)
+            compileCmd = "g++ -std=c++17 -O2 -static \"" + sourceFile + "\" -o \"" + exeName + "\" -lwininet -ladvapi32 2>nul";
+            result = system(compileCmd.c_str());
+
+            if (result != 0) {
+                // Fallback to cl.exe (Visual Studio)
+                compileCmd = "cl /std:c++17 /O2 \"" + sourceFile + "\" /Fe:\"" + exeName + "\" wininet.lib advapi32.lib 2>nul";
+                result = system(compileCmd.c_str());
+            }
+#else
+            compileCmd = "g++ -std=c++17 -O2 \"" + sourceFile + "\" -o \"" + exeName + "\"";
+            result = system(compileCmd.c_str());
+#endif
+        }
+        else if (extension == ".asm") {
+            // MASM assembly compilation
+            std::cout << "[INFO] Detected MASM assembly source file" << std::endl;
+#ifdef _WIN32
+            // Use MASM32 or Visual Studio MASM
+            compileCmd = "ml /c /coff \"" + sourceFile + "\" && link /subsystem:windows \"" + baseName + ".obj\" /out:\"" + exeName + "\" 2>nul";
+            result = system(compileCmd.c_str());
+            
+            // Clean up .obj file
+            std::string cleanupCmd = "del \"" + baseName + ".obj\" 2>nul";
+            system(cleanupCmd.c_str());
+#endif
+        }
+
+        if (result == 0) {
+            std::cout << "✅ [SUCCESS] Executable created: " << exeName << std::endl;
+            std::cout << "📋 [INFO] Compile command used: " << compileCmd << std::endl;
+        } else {
+            std::cout << "❌ [ERROR] Compilation failed. Manual compilation required." << std::endl;
+            std::cout << "📋 [INFO] Attempted command: " << compileCmd << std::endl;
+        }
+    }
+    
     struct TripleKey {
         std::vector<uint8_t> chacha_key;
         std::vector<uint8_t> chacha_nonce;
@@ -626,6 +678,9 @@ int main() {
         std::cout << "💾 Original size: " << fileData.size() << " bytes" << std::endl;
         std::cout << "🔐 Encrypted size: " << encryptedData.size() << " bytes" << std::endl;
         std::cout << "📋 Compile with: g++ -O2 " << outputFile << " -o " << inputPath.stem().string() << "_packed.exe" << std::endl;
+        
+        // Auto-compile the generated source file
+        autoCompile(outputFile);
     }
     // ChaCha20 Packer (option 2) - Works like UPX
     void generateChaCha20Packer() {
@@ -817,6 +872,9 @@ int main() {
         std::cout << "💾 Original size: " << fileData.size() << " bytes" << std::endl;
         std::cout << "🔐 Encrypted size: " << encryptedData.size() << " bytes" << std::endl;
         std::cout << "📋 Compile with: g++ -O2 " << outputFile << " -o " << inputPath.stem().string() << "_chacha20_packed.exe" << std::endl;
+        
+        // Auto-compile the generated source file
+        autoCompile(outputFile);
     }
 
     // Triple Encryption Packer (option 3) - Maximum Security
@@ -1125,6 +1183,9 @@ int main() {
         std::cout << "🔐 Encrypted size: " << encryptedData.size() << " bytes" << std::endl;
         std::cout << "🔢 Encryption order: " << keys.encryption_order << std::endl;
         std::cout << "📋 Compile with: g++ -O2 " << outputFile << " -o " << inputPath.stem().string() << "_triple_packed.exe" << std::endl;
+        
+        // Auto-compile the generated source file
+        autoCompile(outputFile);
     }
     // Advanced MASM Stub Generator (option 5)
     void generateMASMStub() {
@@ -1314,6 +1375,9 @@ end )" + mainLabel + R"(
         std::cout << "📋 Assemble with: ml /c /coff " << outputFile << std::endl;
         std::cout << "📋 Link with: link /subsystem:windows " << outputFile.substr(0, outputFile.find('.')) << ".obj" << std::endl;
         std::cout << "⚠️  Note: This is a lightweight stub. Full decryption algorithms need manual implementation." << std::endl;
+        
+        // Auto-compile the generated MASM file
+        autoCompile(outputFile);
     }
 
     // URL Crypto Service - AES (option 6)
@@ -1702,6 +1766,9 @@ int main() {
         std::cout << "🔐 Encrypted size: " << encryptedData.size() << " bytes" << std::endl;
         std::cout << "🌐 Source URL: " << url << std::endl;
         std::cout << "📋 Compile with: g++ -O2 " << outputFile << " -o url_packed_aes.exe" << std::endl;
+        
+        // Auto-compile the generated source file
+        autoCompile(outputFile);
     }
 
     // URL Pack File - ChaCha20 (option 11)
@@ -2366,6 +2433,9 @@ int main() {
         std::cout << "🔐 Encrypted size: " << encryptedData.size() << " bytes" << std::endl;
         std::cout << "📂 Source file: " << inputFile << std::endl;
         std::cout << "📋 Compile with: g++ -O2 " << outputFile << " -o local_packed_aes_" << inputPath.stem().string() << ".exe" << std::endl;
+        
+        // Auto-compile the generated source file
+        autoCompile(outputFile);
     }
 
     // Local Crypto Service - ChaCha20 (option 14)
