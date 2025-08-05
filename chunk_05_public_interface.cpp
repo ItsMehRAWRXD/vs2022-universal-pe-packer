@@ -24,7 +24,7 @@ public:
         std::cout << "  0. Exit" << std::endl;
         std::cout << "\nEnter your choice: ";
     }
-
+    
     void run() {
         int choice;
         std::cin >> choice;

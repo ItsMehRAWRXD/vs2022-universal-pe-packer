@@ -1,3 +1,11 @@
+#pragma warning(disable: 4267)  // size_t conversion warnings
+#pragma warning(disable: 26444) // uninitialized local variable
+#pragma warning(disable: 26495) // uninitialized member variable
+#pragma warning(disable: 4244)  // conversion warnings
+#pragma warning(disable: 26812) // enum class preference warnings
+#pragma warning(disable: 6001)  // using uninitialized memory
+#pragma warning(disable: 4566)  // character cannot be represented in code page
+
 #include <iostream>
 #include <fstream>
 #include <vector>
