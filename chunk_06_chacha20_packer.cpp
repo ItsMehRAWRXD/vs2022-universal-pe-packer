@@ -1,191 +1,152 @@
-    // ChaCha20 Packer (option 2) - Works like UPX
     void generateChaCha20Packer() {
-        std::string inputFile;
-        std::cout << "Enter input file path: ";
-        std::getline(std::cin, inputFile);
-
+        std::cout << "\n🔐 ChaCha20 Packer\n";
+        std::cout << "==================\n";
+        
+        std::string inputFile, outputFile;
+        std::cout << "📁 Input file: ";
+        std::cin >> inputFile;
+        std::cout << "💾 Output C++ file: ";
+        std::cin >> outputFile;
+        
         std::ifstream file(inputFile, std::ios::binary);
         if (!file) {
-            std::cout << "❌ Error: Cannot open file " << inputFile << std::endl;
+            std::cout << "❌ Cannot open input file!\n";
             return;
         }
-
-        std::vector<uint8_t> fileData((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        
+        std::vector<uint8_t> data((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
         file.close();
-
-        // Generate ChaCha20 key and nonce
-        auto keys = generateKeys();
-        std::vector<uint8_t> encryptedData = fileData;
-        chacha20Crypt(encryptedData, keys.chacha_key.data(), keys.chacha_nonce.data());
-
-        // Convert key and nonce to decimal for obfuscation
-        std::string keyDecimal = bytesToBigDecimal(keys.chacha_key);
-        std::string nonceDecimal = bytesToBigDecimal(keys.chacha_nonce);
-
-        // Generate unique variable names
-        std::string payloadVar = generateUniqueVarName();
+        
+        // Generate keys
+        TripleKey keys = generateKeys();
+        
+        // Encrypt data with ChaCha20
+        chacha20Crypt(data, keys.chacha_key.data(), keys.chacha_nonce.data());
+        
+        // Generate polymorphic variable names
+        std::string dataVar = generateUniqueVarName();
         std::string keyVar = generateUniqueVarName();
         std::string nonceVar = generateUniqueVarName();
         std::string sizeVar = generateUniqueVarName();
-        std::string bufferVar = generateUniqueVarName();
-        std::string funcName = generateUniqueVarName();
-
-        // Create the packed executable source
-        std::string sourceCode = R"(#include <iostream>
-#include <vector>
-#include <fstream>
-#include <cstring>
-#ifdef _WIN32
-#include <windows.h>
-#else
-#include <unistd.h>
-#include <sys/stat.h>
-#include <cstdlib>
-#endif
-
-void quarterRound(unsigned int& a, unsigned int& b, unsigned int& c, unsigned int& d) {
-    a += b; d ^= a; d = (d << 16) | (d >> 16);
-    c += d; b ^= c; b = (b << 12) | (b >> 20);
-    a += b; d ^= a; d = (d << 8) | (d >> 24);
-    c += d; b ^= c; b = (b << 7) | (b >> 25);
-}
-
-void chachaBlock(unsigned int out[16], const unsigned int in[16]) {
-    for (int i = 0; i < 16; i++) out[i] = in[i];
-    
-    for (int i = 0; i < 10; i++) {
-        quarterRound(out[0], out[4], out[8], out[12]);
-        quarterRound(out[1], out[5], out[9], out[13]);
-        quarterRound(out[2], out[6], out[10], out[14]);
-        quarterRound(out[3], out[7], out[11], out[15]);
+        std::string outputVar = generateUniqueVarName();
+        std::string fileVar = generateUniqueVarName();
         
-        quarterRound(out[0], out[5], out[10], out[15]);
-        quarterRound(out[1], out[6], out[11], out[12]);
-        quarterRound(out[2], out[7], out[8], out[13]);
-        quarterRound(out[3], out[4], out[9], out[14]);
-    }
-    
-    for (int i = 0; i < 16; i++) out[i] += in[i];
-}
-
-void initChachaState(unsigned int state[16], const unsigned char key[32], const unsigned char nonce[12]) {
-    const char* constants = "expand 32-byte k";
-    memcpy(state, constants, 16);
-    memcpy(state + 4, key, 32);
-    state[12] = 0;
-    memcpy(state + 13, nonce, 12);
-}
-
-void )" + funcName + R"((std::vector<unsigned char>& data, const unsigned char key[32], const unsigned char nonce[12]) {
-    unsigned int state[16];
-    initChachaState(state, key, nonce);
-    
-    for (size_t i = 0; i < data.size(); i += 64) {
-        unsigned int keystream[16];
-        chachaBlock(keystream, state);
+        // Convert data to hex strings
+        std::string dataStr = bytesToBigDecimal(data);
+        std::string keyStr = bytesToBigDecimal(keys.chacha_key);
+        std::string nonceStr = bytesToBigDecimal(keys.chacha_nonce);
         
-        unsigned char* ks_bytes = (unsigned char*)keystream;
-        for (size_t j = 0; j < 64 && i + j < data.size(); j++) {
-            data[i + j] ^= ks_bytes[j];
-        }
-        
-        state[12]++;
-    }
-}
-
-std::vector<unsigned char> )" + keyVar + R"(FromDecimal(const std::string& decimal) {
-    std::vector<unsigned char> result;
-    std::vector<int> bigNum;
-    
-    for (char c : decimal) bigNum.push_back(c - '0');
-    
-    while (!bigNum.empty() && !(bigNum.size() == 1 && bigNum[0] == 0)) {
-        int remainder = 0;
-        for (size_t i = 0; i < bigNum.size(); i++) {
-            int current = remainder * 10 + bigNum[i];
-            bigNum[i] = current / 256;
-            remainder = current % 256;
-        }
-        result.insert(result.begin(), remainder);
-        while (!bigNum.empty() && bigNum[0] == 0) bigNum.erase(bigNum.begin());
-    }
-    
-    return result;
-}
-
-int main() {
-    const std::string )" + keyVar + R"( = ")" + keyDecimal + R"(";
-    const std::string )" + nonceVar + R"( = ")" + nonceDecimal + R"(";
-    const unsigned int )" + sizeVar + R"( = )" + std::to_string(encryptedData.size()) + R"(;
-    
-    unsigned char )" + payloadVar + R"([)" + std::to_string(encryptedData.size()) + R"(] = {)";
-
-        // Embed the encrypted payload
-        for (size_t i = 0; i < encryptedData.size(); i++) {
-            if (i % 16 == 0) sourceCode += "\n        ";
-            sourceCode += "0x" + 
-                std::string(1, "0123456789ABCDEF"[(encryptedData[i] >> 4) & 0xF]) + 
-                std::string(1, "0123456789ABCDEF"[encryptedData[i] & 0xF]);
-            if (i < encryptedData.size() - 1) sourceCode += ",";
-        }
-
-        sourceCode += R"(
-    };
-    
-    std::vector<unsigned char> )" + bufferVar + R"(()" + payloadVar + R"(, )" + payloadVar + R"( + )" + sizeVar + R"();
-    std::vector<unsigned char> keyBytes = )" + keyVar + R"(FromDecimal()" + keyVar + R"();
-    std::vector<unsigned char> nonceBytes = )" + keyVar + R"(FromDecimal()" + nonceVar + R"();
-    
-    )" + funcName + R"(()" + bufferVar + R"(, keyBytes.data(), nonceBytes.data());
-    
-#ifdef _WIN32
-    char tempPath[MAX_PATH];
-    GetTempPathA(MAX_PATH, tempPath);
-    std::string tempFile = std::string(tempPath) + "\\upx_temp_" + std::to_string(GetCurrentProcessId()) + ".exe";
-#else
-    std::string tempFile = "/tmp/upx_temp_" + std::to_string(getpid());
-#endif
-    
-    std::ofstream outFile(tempFile, std::ios::binary);
-    if (!outFile) return 1;
-    
-    outFile.write(reinterpret_cast<const char*>()" + bufferVar + R"(.data()), )" + bufferVar + R"(.size());
-    outFile.close();
-    
-#ifdef _WIN32
-    STARTUPINFOA si = {sizeof(si)};
-    PROCESS_INFORMATION pi;
-    if (CreateProcessA(tempFile.c_str(), NULL, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
-        WaitForSingleObject(pi.hProcess, INFINITE);
-        CloseHandle(pi.hProcess);
-        CloseHandle(pi.hThread);
-    }
-    DeleteFileA(tempFile.c_str());
-#else
-    chmod(tempFile.c_str(), 0755);
-    system(tempFile.c_str());
-    unlink(tempFile.c_str());
-#endif
-    
-    return 0;
-})";
-
-        // Save the packed executable source
+        // Generate C++ source
         std::filesystem::path inputPath(inputFile);
-        std::string outputFile = inputPath.stem().string() + "_chacha20_packed.cpp";
+        std::string fileName = inputPath.filename().string();
         
         std::ofstream outFile(outputFile);
-        if (!outFile) {
-            std::cout << "❌ Error: Cannot create output file " << outputFile << std::endl;
-            return;
-        }
-
-        outFile << sourceCode;
+        outFile << "#include <iostream>\n";
+        outFile << "#include <fstream>\n";
+        outFile << "#include <vector>\n";
+        outFile << "#include <string>\n";
+        outFile << "#include <sstream>\n";
+        outFile << "#include <iomanip>\n";
+        outFile << "#include <cstring>\n\n";
+        
+        outFile << "// ChaCha20 implementation\n";
+        outFile << "void quarterRound(uint32_t& a, uint32_t& b, uint32_t& c, uint32_t& d) {\n";
+        outFile << "    a += b; d ^= a; d = (d << 16) | (d >> 16);\n";
+        outFile << "    c += d; b ^= c; b = (b << 12) | (b >> 20);\n";
+        outFile << "    a += b; d ^= a; d = (d << 8) | (d >> 24);\n";
+        outFile << "    c += d; b ^= c; b = (b << 7) | (b >> 25);\n";
+        outFile << "}\n\n";
+        
+        outFile << "void chachaBlock(uint32_t out[16], const uint32_t in[16]) {\n";
+        outFile << "    for (int i = 0; i < 16; i++) out[i] = in[i];\n";
+        outFile << "    \n";
+        outFile << "    for (int i = 0; i < 10; i++) {\n";
+        outFile << "        quarterRound(out[0], out[4], out[8], out[12]);\n";
+        outFile << "        quarterRound(out[1], out[5], out[9], out[13]);\n";
+        outFile << "        quarterRound(out[2], out[6], out[10], out[14]);\n";
+        outFile << "        quarterRound(out[3], out[7], out[11], out[15]);\n";
+        outFile << "        \n";
+        outFile << "        quarterRound(out[0], out[5], out[10], out[15]);\n";
+        outFile << "        quarterRound(out[1], out[6], out[11], out[12]);\n";
+        outFile << "        quarterRound(out[2], out[7], out[8], out[13]);\n";
+        outFile << "        quarterRound(out[3], out[4], out[9], out[14]);\n";
+        outFile << "    }\n";
+        outFile << "    \n";
+        outFile << "    for (int i = 0; i < 16; i++) out[i] += in[i];\n";
+        outFile << "}\n\n";
+        
+        outFile << "void initChachaState(uint32_t state[16], const uint8_t key[32], const uint8_t nonce[12]) {\n";
+        outFile << "    const char* constants = \"expand 32-byte k\";\n";
+        outFile << "    memcpy(state, constants, 16);\n";
+        outFile << "    memcpy(state + 4, key, 32);\n";
+        outFile << "    state[12] = 0;\n";
+        outFile << "    memcpy(state + 13, nonce, 12);\n";
+        outFile << "}\n\n";
+        
+        outFile << "void chacha20Decrypt(std::vector<uint8_t>& data, const uint8_t key[32], const uint8_t nonce[12]) {\n";
+        outFile << "    uint32_t state[16];\n";
+        outFile << "    initChachaState(state, key, nonce);\n";
+        outFile << "    \n";
+        outFile << "    for (size_t i = 0; i < data.size(); i += 64) {\n";
+        outFile << "        uint32_t keystream[16];\n";
+        outFile << "        chachaBlock(keystream, state);\n";
+        outFile << "        \n";
+        outFile << "        uint8_t* ks_bytes = (uint8_t*)keystream;\n";
+        outFile << "        for (size_t j = 0; j < 64 && i + j < data.size(); j++) {\n";
+        outFile << "            data[i + j] ^= ks_bytes[j];\n";
+        outFile << "        }\n";
+        outFile << "        \n";
+        outFile << "        state[12]++;\n";
+        outFile << "    }\n";
+        outFile << "}\n\n";
+        
+        outFile << "// Convert hex string to bytes\n";
+        outFile << "std::vector<uint8_t> hexToBytes(const std::string& hex) {\n";
+        outFile << "    std::vector<uint8_t> bytes;\n";
+        outFile << "    for (size_t i = 2; i < hex.length(); i += 2) {\n";
+        outFile << "        std::string byteString = hex.substr(i, 2);\n";
+        outFile << "        uint8_t byte = static_cast<uint8_t>(std::stoi(byteString, nullptr, 16));\n";
+        outFile << "        bytes.push_back(byte);\n";
+        outFile << "    }\n";
+        outFile << "    return bytes;\n";
+        outFile << "}\n\n";
+        
+        outFile << "// Encrypted payload data\n";
+        outFile << "const std::string " << dataVar << " = \"" << dataStr << "\";\n";
+        outFile << "const std::string " << keyVar << " = \"" << keyStr << "\";\n";
+        outFile << "const std::string " << nonceVar << " = \"" << nonceStr << "\";\n";
+        outFile << "const size_t " << sizeVar << " = " << data.size() << ";\n\n";
+        
+        outFile << "int main() {\n";
+        outFile << "    std::cout << \"🔓 Decrypting and extracting: " << fileName << "\" << std::endl;\n\n";
+        
+        outFile << "    // Extract encrypted data\n";
+        outFile << "    std::vector<uint8_t> " << outputVar << " = hexToBytes(" << dataVar << ");\n";
+        outFile << "    std::vector<uint8_t> " << keyVar << "_bytes = hexToBytes(" << keyVar << ");\n";
+        outFile << "    std::vector<uint8_t> " << nonceVar << "_bytes = hexToBytes(" << nonceVar << ");\n\n";
+        
+        outFile << "    // Decrypt data\n";
+        outFile << "    chacha20Decrypt(" << outputVar << ", " << keyVar << "_bytes.data(), " << nonceVar << "_bytes.data());\n\n";
+        
+        outFile << "    // Write decrypted file\n";
+        outFile << "    std::ofstream " << fileVar << "(\"" << fileName << "\", std::ios::binary);\n";
+        outFile << "    if (" << fileVar << ".is_open()) {\n";
+        outFile << "        " << fileVar << ".write(reinterpret_cast<const char*>(" << outputVar << ".data()), " << outputVar << ".size());\n";
+        outFile << "        " << fileVar << ".close();\n";
+        outFile << "        std::cout << \"✅ File extracted successfully: " << fileName << "\" << std::endl;\n";
+        outFile << "    } else {\n";
+        outFile << "        std::cout << \"❌ Failed to create output file\" << std::endl;\n";
+        outFile << "        return 1;\n";
+        outFile << "    }\n\n";
+        
+        outFile << "    return 0;\n";
+        outFile << "}\n";
         outFile.close();
-
-        std::cout << "✅ ChaCha20 Packer generated successfully!" << std::endl;
-        std::cout << "📁 Output: " << outputFile << std::endl;
-        std::cout << "💾 Original size: " << fileData.size() << " bytes" << std::endl;
-        std::cout << "🔐 Encrypted size: " << encryptedData.size() << " bytes" << std::endl;
-        std::cout << "📋 Compile with: g++ -O2 " << outputFile << " -o " << inputPath.stem().string() << "_chacha20_packed.exe" << std::endl;
+        
+        std::cout << "✅ ChaCha20 Packer generated: " << outputFile << std::endl;
+        std::cout << "📦 Payload size: " << data.size() << " bytes\n";
+        std::cout << "🔐 Encryption: ChaCha20\n";
+        
+        // Auto-compile the generated source
+        autoCompile(outputFile);
     }
