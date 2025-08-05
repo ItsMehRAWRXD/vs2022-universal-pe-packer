@@ -48,7 +48,7 @@
             state[12]++;
         }
     }
-
+    
     // AES S-box
     void aesStreamCrypt(std::vector<uint8_t>& data, const std::vector<uint8_t>& key) {
         static const uint8_t sbox[256] = {
