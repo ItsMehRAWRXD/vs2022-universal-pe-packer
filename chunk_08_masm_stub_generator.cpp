@@ -1,10 +1,7 @@
+    // Advanced MASM Stub Generator (option 5)
     void generateMASMStub() {
-        std::cout << "\n🔧 MASM Runtime Stub Generator\n";
-        std::cout << "============================\n";
-        
         std::string targetFile;
-        std::cout << "📁 Target file path (file to decrypt at runtime): ";
-        std::cin.ignore();
+        std::cout << "Enter target file path (file to decrypt at runtime): ";
         std::getline(std::cin, targetFile);
 
         // Check if target file exists
@@ -16,13 +13,13 @@
         }
 
         // Generate keys for the stub
-        TripleKey keys = generateKeys();
+        auto keys = generateKeys();
 
-        // Convert keys to hex strings for obfuscation
-        std::string chachaKeyStr = bytesToBigDecimal(keys.chacha_key);
-        std::string chachaNonceStr = bytesToBigDecimal(keys.chacha_nonce);
-        std::string aesKeyStr = bytesToBigDecimal(keys.aes_key);
-        std::string xorKeyStr = bytesToBigDecimal(keys.xor_key);
+        // Convert keys to decimal for obfuscation
+        std::string chachaKeyDecimal = bytesToBigDecimal(keys.chacha_key);
+        std::string chachaNonceDecimal = bytesToBigDecimal(keys.chacha_nonce);
+        std::string aesKeyDecimal = bytesToBigDecimal(keys.aes_key);
+        std::string xorKeyDecimal = bytesToBigDecimal(keys.xor_key);
 
         // Generate unique labels and variable names for polymorphism
         std::string mainLabel = "main_" + std::to_string(rng() % 10000);
@@ -56,10 +53,10 @@ includelib \masm32\lib\user32.lib
 includelib \masm32\lib\msvcrt.lib
 
 .data
-    )" + keyLabel + R"(_chacha db ")" + chachaKeyStr + R"(", 0
-    )" + keyLabel + R"(_nonce db ")" + chachaNonceStr + R"(", 0
-    )" + keyLabel + R"(_aes db ")" + aesKeyStr + R"(", 0
-    )" + keyLabel + R"(_xor db ")" + xorKeyStr + R"(", 0
+    )" + keyLabel + R"(_chacha db ")" + chachaKeyDecimal + R"(", 0
+    )" + keyLabel + R"(_nonce db ")" + chachaNonceDecimal + R"(", 0
+    )" + keyLabel + R"(_aes db ")" + aesKeyDecimal + R"(", 0
+    )" + keyLabel + R"(_xor db ")" + xorKeyDecimal + R"(", 0
     target_file db ")" + targetFile + R"(", 0
     temp_file db "upx_temp.exe", 0
     error_msg db "Failed to process target file", 0

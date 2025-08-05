@@ -161,17 +161,20 @@ int main() {
         autoCompile(outputFile);
     }
 
-    // URL Pack File - ChaCha20 (option 11)
-    void urlPackFileChaCha20() {
-        std::string url;
-        std::cout << "Enter URL to download and pack: ";
-        std::getline(std::cin, url);
+    // ChaCha20 Packer (option 2) - Works like UPX
+    void generateChaCha20Packer() {
+        std::string inputFile;
+        std::cout << "Enter input file path: ";
+        std::getline(std::cin, inputFile);
 
-        std::vector<uint8_t> fileData;
-        if (!downloadFile(url, fileData)) {
-            std::cout << "❌ Failed to download file from URL" << std::endl;
+        std::ifstream file(inputFile, std::ios::binary);
+        if (!file) {
+            std::cout << "❌ Error: Cannot open file " << inputFile << std::endl;
             return;
         }
+
+        std::vector<uint8_t> fileData((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        file.close();
 
         // Generate ChaCha20 key and nonce
         auto keys = generateKeys();
@@ -301,9 +304,9 @@ int main() {
 #ifdef _WIN32
     char tempPath[MAX_PATH];
     GetTempPathA(MAX_PATH, tempPath);
-    std::string tempFile = std::string(tempPath) + "\\upx_url_temp_" + std::to_string(GetCurrentProcessId()) + ".exe";
+    std::string tempFile = std::string(tempPath) + "\\upx_temp_" + std::to_string(GetCurrentProcessId()) + ".exe";
 #else
-    std::string tempFile = "/tmp/upx_url_temp_" + std::to_string(getpid());
+    std::string tempFile = "/tmp/upx_temp_" + std::to_string(getpid());
 #endif
     
     std::ofstream outFile(tempFile, std::ios::binary);
@@ -319,4 +322,36 @@ int main() {
         WaitForSingleObject(pi.hProcess, INFINITE);
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
+    }
+    DeleteFileA(tempFile.c_str());
+#else
+    chmod(tempFile.c_str(), 0755);
+    system(tempFile.c_str());
+    unlink(tempFile.c_str());
+#endif
+    
+    return 0;
+})";
+
+        // Save the packed executable source
+        std::filesystem::path inputPath(inputFile);
+        std::string outputFile = inputPath.stem().string() + "_chacha20_packed.cpp";
+        
+        std::ofstream outFile(outputFile);
+        if (!outFile) {
+            std::cout << "❌ Error: Cannot create output file " << outputFile << std::endl;
+            return;
+        }
+
+        outFile << sourceCode;
+        outFile.close();
+
+        std::cout << "✅ ChaCha20 Packer generated successfully!" << std::endl;
+        std::cout << "📁 Output: " << outputFile << std::endl;
+        std::cout << "💾 Original size: " << fileData.size() << " bytes" << std::endl;
+        std::cout << "🔐 Encrypted size: " << encryptedData.size() << " bytes" << std::endl;
+        std::cout << "📋 Compile with: g++ -O2 " << outputFile << " -o " << inputPath.stem().string() << "_chacha20_packed.exe" << std::endl;
+        
+        // Auto-compile the generated source file
+        autoCompile(outputFile);
     }
