@@ -31,6 +31,7 @@
 #include <iomanip>
 #include <ctime>
 #include <cstring>
+#include <cstdint>
 #include "tiny_loader.h"
 
 #pragma comment(lib, "ole32.lib")
