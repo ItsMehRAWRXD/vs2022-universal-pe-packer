@@ -768,5 +768,16 @@
     "vt_link": "https://www.virustotal.com/gui/file-analysis/MTdjMzEzOWU1YjdlZmQyOWIwYTMxZGE4NDMzN2VkZWI6MTc1NDQ1Njg2NQ==",
     "hash": "analysis_MTdjMzEzOWU1YjdlZmQyOWIwYTMxZGE4NDMzN2VkZWI6MTc1NDQ1Njg2NQ==",
     "notes": "Manual test #35 - Apple Root CA + Adobe + x64 FUD! (Another escape window success during detection phase!)"
+  },
+  {
+    "timestamp": "2025-08-06T05:09:24.386557",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Apple Root CA",
+    "architecture": "x64",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file-analysis/ZTM3N2QxY2ZmYWEzNjdjNTE3MTMyODViYjg4MGE1OTA6MTc1NDQ1NjkyMQ==",
+    "hash": "analysis_ZTM3N2QxY2ZmYWEzNjdjNTE3MTMyODViYjg4MGE1OTA6MTc1NDQ1NjkyMQ==",
+    "notes": "Manual test #36 - Apple Root CA + Adobe + x64 FUD! (2nd consecutive escape window - pattern evolving!)"
   }
 ]

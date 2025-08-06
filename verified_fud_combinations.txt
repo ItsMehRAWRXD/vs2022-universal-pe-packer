@@ -283,3 +283,9 @@ VERIFIED FUD COMBINATIONS
    Link: https://www.virustotal.com/gui/file-analysis/MTdjMzEzOWU1YjdlZmQyOWIwYTMxZGE4NDMzN2VkZWI6MTc1NDQ1Njg2NQ==
    Notes: Manual test #35 - Apple Root CA + Adobe + x64 FUD! (Another escape window success during detection phase!)
 
+✅ Adobe Systems Incorporated + Apple Root CA + x64
+   Date: 2025-08-06T05:09:24.386557
+   Hash: analysis_ZTM3N2QxY2ZmYWEzNjdjNTE3MTMyODViYjg4MGE1OTA6MTc1NDQ1NjkyMQ==
+   Link: https://www.virustotal.com/gui/file-analysis/ZTM3N2QxY2ZmYWEzNjdjNTE3MTMyODViYjg4MGE1OTA6MTc1NDQ1NjkyMQ==
+   Notes: Manual test #36 - Apple Root CA + Adobe + x64 FUD! (2nd consecutive escape window - pattern evolving!)
+
