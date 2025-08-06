@@ -55,3 +55,9 @@ VERIFIED FUD COMBINATIONS
    Link: https://websec.nl/scanner/result/aef3cc12-5ebb-4aa8-ad89-0a3592efb7d7
    Notes: Confirmed FUD - alternative scanner
 
+✅ Adobe Systems Incorporated + Sony Root CA + AnyCPU
+   Date: 2025-08-06T04:12:33.961688
+   Hash: 654fc8b5643a15467312f13d82eaecf4e23d813e61c13b9e0f662e6517862b2c
+   Link: https://www.virustotal.com/gui/file/654fc8b5643a15467312f13d82eaecf4e23d813e61c13b9e0f662e6517862b2c?nocache=1
+   Notes: Manual test - 0/72 detections confirmed
+

@@ -141,5 +141,16 @@
     "vt_link": "https://www.virustotal.com/gui/file-analysis/ZGVkNWUxYmY5MTliNjRkZmZmNTgzYjE0Yjc1MjE0ZTY6MTc1NDQ1MjQ3Mg==",
     "hash": "analysis_ZGVkNWUxYmY5MTliNjRkZmZmNTgzYjE0Yjc1MjE0ZTY6MTc1NDQ1MjQ3Mg==",
     "notes": "Microsoft combinations consistently detected"
+  },
+  {
+    "timestamp": "2025-08-06T04:12:33.961688",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Sony Root CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/654fc8b5643a15467312f13d82eaecf4e23d813e61c13b9e0f662e6517862b2c?nocache=1",
+    "hash": "654fc8b5643a15467312f13d82eaecf4e23d813e61c13b9e0f662e6517862b2c",
+    "notes": "Manual test - 0/72 detections confirmed"
   }
 ]
