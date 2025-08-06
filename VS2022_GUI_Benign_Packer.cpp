@@ -1734,18 +1734,15 @@ public:
                 return false;
             }
             
-            // Build compiler command with full paths and environment setup
+            // Build simplified compiler command to prevent hanging
             if (!compilerInfo.vcvarsPath.empty()) {
-                // Use vcvars to set up environment - this is the key fix!
-                compileCmd = "cmd /c \"\"" + compilerInfo.vcvarsPath + "\" && \"" + compilerInfo.path + 
-                           "\" /nologo /std:c++17 /O2 /MT /EHsc \"" + tempSource + 
-                           "\" /Fe:\"" + outputPath + "\" /link " + archFlags + 
-                           " user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib\" >nul 2>&1";
+                // Use vcvars with simplified command structure
+                compileCmd = "cmd /c \"\"" + compilerInfo.vcvarsPath + "\" && cl.exe /nologo /O2 /MT /EHsc \"" + tempSource + 
+                           "\" /Fe:\"" + outputPath + "\" user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib\"";
             } else {
                 // Direct compiler call (fallback)
-                compileCmd = "\"" + compilerInfo.path + "\" /nologo /std:c++17 /O2 /MT /EHsc \"" + tempSource + 
-                           "\" /Fe:\"" + outputPath + "\" /link " + archFlags + 
-                           " user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib >nul 2>&1";
+                compileCmd = "cl.exe /nologo /O2 /MT /EHsc \"" + tempSource + 
+                           "\" /Fe:\"" + outputPath + "\" user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib";
             }
             
             // DEBUG: Log compilation details
@@ -1888,19 +1885,10 @@ public:
                 }
             }
             
-            if (!foundVS) {
-                // Fallback: try VS 2019 developer command prompt environment
-                compileCmd += "echo Setting up VS 2019 environment... && ";
-                compileCmd += "set INCLUDE=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\include;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\um;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\ucrt;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\shared && ";
-                compileCmd += "set LIB=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\lib\\x64;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.19041.0\\um\\x64;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.19041.0\\ucrt\\x64 && ";
-                compileCmd += "set PATH=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\Hostx64\\x64;%PATH% && ";
-            }
-            
-            // Use simple single-step compilation (more reliable)
+            // Use simple compilation without complex environment setup
             compileCmd += "cl.exe /nologo /O2 /EHsc /DNDEBUG /MD ";
             compileCmd += "\\\"" + sourceFilename + "\\\" ";
             compileCmd += "/Fe:\\\"" + outputPath + "\\\" ";
-            compileCmd += "/link " + archFlags + " /OPT:REF /OPT:ICF ";
             compileCmd += "user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib";
             compileCmd += "\"";
             
