@@ -695,8 +695,23 @@ public:
             compileCmd += "/link " + archFlags + " /OPT:REF /OPT:ICF ";
             compileCmd += "user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib";
             
+            // DEBUG: Write compilation command to file for inspection
+            std::ofstream debugFile("debug_compile_cmd.txt");
+            if (debugFile.is_open()) {
+                debugFile << "Compilation command:\n" << compileCmd << std::endl;
+                debugFile.close();
+            }
+            
             // Execute compilation
             int result = system(compileCmd.c_str());
+            
+            // DEBUG: Write result to file
+            std::ofstream resultFile("debug_compile_result.txt");
+            if (resultFile.is_open()) {
+                resultFile << "Compilation result: " << result << std::endl;
+                resultFile << "Command was: " << compileCmd << std::endl;
+                resultFile.close();
+            }
             
             // Clean up temporary file
             DeleteFileA(tempSource.c_str());
