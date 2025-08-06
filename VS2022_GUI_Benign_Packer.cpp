@@ -1996,18 +1996,16 @@ public:
             
             // Build robust compilation command with error capture
             if (!compilerInfo.vcvarsPath.empty()) {
-                // Prepare wrapped vcvars call
-                std::string vcvarsWrapped = "\"" + compilerInfo.vcvarsPath + "\""; // "C:\path\vcvars64.bat"
-                compileCmd = "cmd /c \"call " + vcvarsWrapped + " >nul 2>&1 && cl.exe /nologo /EHsc \"" + tempSource + "\" /Fe:\"" + outputPath + "\" user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib\"";
+                // Use vcvars that is already detected
+                compileCmd = "cmd /c \"\"" + compilerInfo.vcvarsPath + "\" && cl.exe /nologo /EHsc \"" + tempSource + "\" /Fe\"" + outputPath + "\" user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib\"";
             } else {
-                // Fallback 1: explicit VS Enterprise path
                 std::string fallbackVcvars = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat";
                 DWORD attrs = GetFileAttributesA(fallbackVcvars.c_str());
                 if (attrs != INVALID_FILE_ATTRIBUTES && !(attrs & FILE_ATTRIBUTE_DIRECTORY)) {
-                    compileCmd = "cmd /c \"call \"" + fallbackVcvars + "\" >nul 2>&1 && cl.exe /nologo /EHsc \"" + tempSource + "\" /Fe:\"" + outputPath + "\" user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib\"";
+                    compileCmd = "cmd /c \"\"" + fallbackVcvars + "\" && cl.exe /nologo /EHsc \"" + tempSource + "\" /Fe\"" + outputPath + "\" user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib\"";
                 } else {
-                    // Fallback 2: assume Developer Cmd Prompt already initialised
-                    compileCmd = "cl.exe /nologo /EHsc \"" + tempSource + "\" /Fe:\"" + outputPath + "\" user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib"; // no surrounding cmd wrapper needed
+                    // Assume Developer Command Prompt already
+                    compileCmd = "cl.exe /nologo /EHsc \"" + tempSource + "\" /Fe\"" + outputPath + "\" user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib";
                 }
             }
             
