@@ -1727,38 +1727,93 @@ public:
                 sourceFile.close();
             }
             
-            // Auto-compile the polymorphic source
+            // Auto-compile the polymorphic source with improved environment setup
             auto compilerInfo = CompilerDetector::detectVisualStudio();
-            compilerInfo.path = "cl.exe";
-            compilerInfo.found = true;
             
             // Build compilation command with architecture support
             std::string archFlags = multiArch.getCompilerFlags(architecture);
             
             std::string compileCmd;
             
-            // Try to use vcvars64.bat if available
-            if (!compilerInfo.vcvarsPath.empty()) {
-                compileCmd = "call \"" + compilerInfo.vcvarsPath + "\" >nul 2>&1 && ";
-            } else {
-                // Use Enterprise vcvars64.bat
-                compileCmd = "call \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat\" >nul 2>&1 && ";
+            // Create a proper batch command that sets up VS environment and compiles
+            compileCmd = "cmd /c \"";
+            
+            // Try different VS paths in order of preference
+            std::vector<std::string> vsPaths = {
+                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat",
+                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\VC\\Auxiliary\\Build\\vcvars64.bat",
+                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\vcvars64.bat",
+                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat",
+                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build\\vcvars64.bat"
+            };
+            
+            bool foundVS = false;
+            for (const auto& vsPath : vsPaths) {
+                DWORD attrs = GetFileAttributesA(vsPath.c_str());
+                if (attrs != INVALID_FILE_ATTRIBUTES && !(attrs & FILE_ATTRIBUTE_DIRECTORY)) {
+                    compileCmd += "call \\\"" + vsPath + "\\\" >nul 2>&1 && ";
+                    foundVS = true;
+                    break;
+                }
             }
             
-            // Build the compilation command
-            if (compilerInfo.path == "cl.exe") {
-                compileCmd += "cl /nologo /O2 /EHsc /DNDEBUG /MD ";
-            } else {
-                compileCmd += "\"" + compilerInfo.path + "\" /nologo /O2 /EHsc /DNDEBUG /MD ";
+            if (!foundVS) {
+                // Fallback: try to use cl.exe directly from PATH
+                compileCmd += "echo Setting up VS environment... && ";
             }
             
-            compileCmd += "/Fe\"" + outputPath + "\" ";
-            compileCmd += "\"" + sourceFilename + "\" ";
+            // Add the actual compilation command
+            compileCmd += "cl.exe /nologo /O2 /EHsc /DNDEBUG /MD ";
+            compileCmd += "/Fe\\\"" + outputPath + "\\\" ";
+            compileCmd += "\\\"" + sourceFilename + "\\\" ";
             compileCmd += "/link " + archFlags + " /OPT:REF /OPT:ICF ";
             compileCmd += "user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib";
+            compileCmd += "\"";
+            
+            // DEBUG: Log compilation details
+            std::ofstream debugLog("debug_pe_embedding.txt", std::ios::app);
+            debugLog << "=== PE EMBEDDING COMPILATION DEBUG ===\n";
+            debugLog << "Input file: " << inputPath << "\n";
+            debugLog << "Output file: " << outputPath << "\n";
+            debugLog << "Source file: " << sourceFilename << "\n";
+            debugLog << "PE data size: " << originalPEData.size() << " bytes\n";
+            debugLog << "Compilation command: " << compileCmd << "\n";
+            debugLog << "Command length: " << compileCmd.length() << "\n";
+            debugLog.close();
+            
+            // Write compilation command to separate file for inspection
+            std::ofstream cmdFile("debug_pe_compile_command.txt");
+            cmdFile << compileCmd;
+            cmdFile.close();
             
             // Execute compilation
+            debugLog.open("debug_pe_embedding.txt", std::ios::app);
+            debugLog << "Starting compilation...\n";
+            debugLog.close();
+            
             int result = system(compileCmd.c_str());
+            
+            // DEBUG: Log compilation result
+            debugLog.open("debug_pe_embedding.txt", std::ios::app);
+            debugLog << "Compilation result: " << result << "\n";
+            
+            if (result == 0) {
+                debugLog << "SUCCESS: Compilation completed\n";
+                // Check if output file exists
+                DWORD attrs = GetFileAttributesA(outputPath.c_str());
+                if (attrs != INVALID_FILE_ATTRIBUTES) {
+                    debugLog << "SUCCESS: Output file created: " << outputPath << "\n";
+                } else {
+                    debugLog << "WARNING: Compilation succeeded but no output file found\n";
+                }
+            } else {
+                debugLog << "ERROR: Compilation failed with code " << result << "\n";
+                debugLog << "Check temp file: " << sourceFilename << "\n";
+                debugLog << "Command file: debug_pe_compile_command.txt\n";
+            }
+            
+            debugLog << "=== END DEBUG ===\n\n";
+            debugLog.close();
             
             // Don't clean up temporary source file for debugging
             // std::remove(sourceFilename.c_str());
