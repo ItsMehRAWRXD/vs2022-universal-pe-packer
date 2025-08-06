@@ -295,5 +295,16 @@
     "vt_link": "manual_test_sony_detected",
     "hash": "unknown",
     "notes": "Manual test - 3/72 detections! Sony pattern changed from previous FUD status"
+  },
+  {
+    "timestamp": "2025-08-06T04:26:31.205063",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "HP Enterprise Root CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file-analysis/ZWY3NGVmZjI0YzU1Yjk4ZGY1YjY1ZmE1OTZhNGNkNDk6MTc1NDQ1NDM0NA==",
+    "hash": "analysis_ZWY3NGVmZjI0YzU1Yjk4ZGY1YjY1ZmE1OTZhNGNkNDk6MTc1NDQ1NDM0NA==",
+    "notes": "Manual test #6 - 0/72 detections confirmed (HP Enterprise continues perfect AnyCPU streak!)"
   }
 ]

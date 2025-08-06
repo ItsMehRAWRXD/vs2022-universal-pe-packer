@@ -121,3 +121,9 @@ VERIFIED FUD COMBINATIONS
    Link: https://www.virustotal.com/gui/file-analysis/NmExMDUyMzU3MmEwZTUzMTUxMGVmZDYyMDM2ZjAzNTk6MTc1NDQ1NDI2MA==
    Notes: Manual test - 0/72 detections confirmed (Samsung Knox AnyCPU validation)
 
+✅ Adobe Systems Incorporated + HP Enterprise Root CA + AnyCPU
+   Date: 2025-08-06T04:26:31.205063
+   Hash: analysis_ZWY3NGVmZjI0YzU1Yjk4ZGY1YjY1ZmE1OTZhNGNkNDk6MTc1NDQ1NDM0NA==
+   Link: https://www.virustotal.com/gui/file-analysis/ZWY3NGVmZjI0YzU1Yjk4ZGY1YjY1ZmE1OTZhNGNkNDk6MTc1NDQ1NDM0NA==
+   Notes: Manual test #6 - 0/72 detections confirmed (HP Enterprise continues perfect AnyCPU streak!)
+
