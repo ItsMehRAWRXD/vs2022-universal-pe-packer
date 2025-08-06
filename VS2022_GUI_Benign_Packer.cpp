@@ -1138,7 +1138,8 @@ public:
             if (cert.issuer == "VeriSign Class 3 Public Primary CA" || 
                 cert.issuer == "Thawte Timestamping CA" ||
                 cert.issuer == "Apple Root CA" ||
-                cert.issuer == "HP Enterprise Root CA") {
+                cert.issuer == "HP Enterprise Root CA" ||
+                cert.issuer == "Qualcomm Root Authority") {
                 return false; // These combinations cause detections
             }
         }
@@ -1182,13 +1183,12 @@ public:
     
     std::vector<FUDCombination> getVerifiedFUDCombinations() {
         return {
-            // Adobe Systems - VERIFIED FUD COMBINATIONS (6 confirmed)
+            // Adobe Systems - VERIFIED FUD COMBINATIONS (5 confirmed reliable)
             {"Adobe Systems Incorporated", "DigiCert Assured ID Root CA", "Adobe + DigiCert"},
             {"Adobe Systems Incorporated", "GlobalSign Root CA", "Adobe + GlobalSign"},
             {"Adobe Systems Incorporated", "GoDaddy Root Certificate Authority", "Adobe + GoDaddy"},
             {"Adobe Systems Incorporated", "Lenovo Certificate Authority", "Adobe + Lenovo"},
             {"Adobe Systems Incorporated", "Baltimore CyberTrust Root", "Adobe + Baltimore"},
-            {"Adobe Systems Incorporated", "Qualcomm Root Authority", "Adobe + Qualcomm"},
             
             // Google LLC - VERIFIED FUD COMBINATIONS
             {"Google LLC", "GlobalSign Root CA", "Google + GlobalSign"},
