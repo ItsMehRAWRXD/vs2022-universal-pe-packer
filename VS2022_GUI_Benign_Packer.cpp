@@ -51,6 +51,14 @@
 #define ID_ABOUT_BUTTON 1009
 #define ID_ARCHITECTURE_COMBO 1010
 #define ID_CERTIFICATE_COMBO 1011
+// Add new control IDs
+#define ID_MASS_GENERATE_BUTTON 1012
+#define ID_MASS_COUNT_EDIT 1013
+#define ID_STOP_GENERATION_BUTTON 1014
+
+// Global variables for mass generation
+bool g_massGenerationActive = false;
+HANDLE g_massGenerationThread = NULL;
 
 class AdvancedRandomEngine {
 public:
