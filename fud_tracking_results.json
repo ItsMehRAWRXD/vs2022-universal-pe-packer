@@ -438,5 +438,27 @@
     "vt_link": "https://www.virustotal.com/gui/file-analysis/Yzk1YWI4ZDYxYjIwYzFlZWQxYjg2ZGEwZDllMjhjMWM6MTc1NDQ1NTE1MQ==",
     "hash": "analysis_Yzk1YWI4ZDYxYjIwYzFlZWQxYjg2ZGEwZDllMjhjMWM6MTc1NDQ1NTE1MQ==",
     "notes": "Manual test #5/5 - Apple Root CA + Adobe + AnyCPU systematic validation (5 CONSECUTIVE SUCCESSES!)"
+  },
+  {
+    "timestamp": "2025-08-06T04:43:32.070387",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Apple Root CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/338526d9acd0c7aba371093601eb446dd1e54c578fba7c6d75612af3c9371584?nocache=1",
+    "hash": "338526d9acd0c7aba371093601eb446dd1e54c578fba7c6d75612af3c9371584",
+    "notes": "Manual test #6 - Apple Root CA + Adobe + AnyCPU (6th consecutive success!)"
+  },
+  {
+    "timestamp": "2025-08-06T04:43:32.070818",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Apple Root CA",
+    "architecture": "AnyCPU",
+    "is_fud": false,
+    "detection_count": 1,
+    "vt_link": "https://www.virustotal.com/gui/file/831c0a4fc941c72f4bdbe88a330952dde9af605f585d540c4bc116f770c2a28c/detection",
+    "hash": "831c0a4fc941c72f4bdbe88a330952dde9af605f585d540c4bc116f770c2a28c",
+    "notes": "Manual test #7 - Apple Root CA + Adobe + AnyCPU DETECTED (pattern breaks after 6 consecutive successes)"
   }
 ]

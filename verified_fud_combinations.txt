@@ -175,3 +175,9 @@ VERIFIED FUD COMBINATIONS
    Link: https://www.virustotal.com/gui/file-analysis/Yzk1YWI4ZDYxYjIwYzFlZWQxYjg2ZGEwZDllMjhjMWM6MTc1NDQ1NTE1MQ==
    Notes: Manual test #5/5 - Apple Root CA + Adobe + AnyCPU systematic validation (5 CONSECUTIVE SUCCESSES!)
 
+✅ Adobe Systems Incorporated + Apple Root CA + AnyCPU
+   Date: 2025-08-06T04:43:32.070387
+   Hash: 338526d9acd0c7aba371093601eb446dd1e54c578fba7c6d75612af3c9371584
+   Link: https://www.virustotal.com/gui/file/338526d9acd0c7aba371093601eb446dd1e54c578fba7c6d75612af3c9371584?nocache=1
+   Notes: Manual test #6 - Apple Root CA + Adobe + AnyCPU (6th consecutive success!)
+
