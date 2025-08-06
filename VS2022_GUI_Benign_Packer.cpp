@@ -1871,9 +1871,8 @@ public:
             }
             
             if (!foundVS) {
-                // Fallback: Force VS 2022 Enterprise with explicit paths
-                compileCmd += "echo Setting up VS 2022 Enterprise environment... && ";
-                compileCmd += "call \\\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\Tools\\VsDevCmd.bat\\\" -arch=x64 -host_arch=x64 >nul 2>&1 && ";
+                // Fallback: assume developer command prompt environment is already set
+                compileCmd += "echo Using current VS environment... && ";
             }
             
             // Add the actual compilation command
