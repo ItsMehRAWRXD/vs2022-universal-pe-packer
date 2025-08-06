@@ -1606,18 +1606,8 @@ public:
             compileCmd += "/link " + archFlags + " /OPT:REF /OPT:ICF ";
             compileCmd += "user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib";
             
-            // DEBUG: Show what we're compiling
-            SetWindowTextA(g_hStatusText, ("Compiling stub: " + tempSource).c_str());
-            
             // Execute compilation
             int result = system(compileCmd.c_str());
-            
-            // DEBUG: Show result
-            if (result == 0) {
-                SetWindowTextA(g_hStatusText, "Stub compilation successful!");
-            } else {
-                SetWindowTextA(g_hStatusText, ("Stub compilation failed: " + std::to_string(result)).c_str());
-            }
             
             // Don't clean up temporary file for debugging
             // DeleteFileA(tempSource.c_str());
@@ -1711,18 +1701,8 @@ public:
             compileCmd += "/link " + archFlags + " /OPT:REF /OPT:ICF ";
             compileCmd += "user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib";
             
-            // DEBUG: Show compilation command
-            SetWindowTextA(g_hStatusText, ("Compiling with: " + compileCmd.substr(0, 100) + "...").c_str());
-            
             // Execute compilation
             int result = system(compileCmd.c_str());
-            
-            // DEBUG: Show compilation result
-            if (result == 0) {
-                SetWindowTextA(g_hStatusText, "Compilation successful!");
-            } else {
-                SetWindowTextA(g_hStatusText, ("Compilation failed with code: " + std::to_string(result)).c_str());
-            }
             
             // Don't clean up temporary source file for debugging
             // std::remove(sourceFilename.c_str());
