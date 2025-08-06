@@ -92,3 +92,10 @@ BLOCKED COMBINATIONS
    Link: crowdstrike_falcon_detection
    Notes: Manual test #13 - CROWDSTRIKE FALCON detected (Win/malicious_confidence_60%) - behavioral detection, not signature
 
+❌ Adobe Systems Incorporated + Apple Root CA + AnyCPU
+   Detections: 2/72
+   Date: 2025-08-06T04:50:37.032615
+   Hash: unknown
+   Link: mcafee_scanner_detection
+   Notes: Manual test #14 - MCAFEE SCANNER detected (Ti!66F82B6328A9) + CrowdStrike Falcon - DUAL ENTERPRISE DETECTION
+

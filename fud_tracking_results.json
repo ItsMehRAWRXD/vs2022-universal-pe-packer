@@ -526,5 +526,16 @@
     "vt_link": "crowdstrike_falcon_detection",
     "hash": "unknown",
     "notes": "Manual test #13 - CROWDSTRIKE FALCON detected (Win/malicious_confidence_60%) - behavioral detection, not signature"
+  },
+  {
+    "timestamp": "2025-08-06T04:50:37.032615",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Apple Root CA",
+    "architecture": "AnyCPU",
+    "is_fud": false,
+    "detection_count": 2,
+    "vt_link": "mcafee_scanner_detection",
+    "hash": "unknown",
+    "notes": "Manual test #14 - MCAFEE SCANNER detected (Ti!66F82B6328A9) + CrowdStrike Falcon - DUAL ENTERPRISE DETECTION"
   }
 ]
