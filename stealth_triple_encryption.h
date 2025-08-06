@@ -19,7 +19,10 @@
 #ifdef _WIN32
 #include <windows.h>
 #include <wincrypt.h>
-#else
+#endif
+
+// OpenSSL is optional - fallback to simple XOR if not available
+#ifdef HAVE_OPENSSL
 #include <openssl/aes.h>
 #include <openssl/evp.h>
 #include <openssl/rand.h>
@@ -238,7 +241,7 @@ public:
             CryptReleaseContext(hProv, 0);
         }
         return result;
-#else
+#elif defined(HAVE_OPENSSL)
         // OpenSSL implementation for non-Windows
         std::vector<uint8_t> result;
         EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
@@ -257,6 +260,9 @@ public:
             EVP_CIPHER_CTX_free(ctx);
         }
         return result.empty() ? xorEncrypt(data, key) : result;
+#else
+        // Fallback to XOR encryption when neither Windows CryptoAPI nor OpenSSL is available
+        return xorEncrypt(data, key);
 #endif
     }
 
