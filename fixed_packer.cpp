@@ -63,6 +63,7 @@ HWND hInputPath, hOutputPath, hCompanyCombo, hArchCombo, hCertCombo;
 HWND hEncryptionCombo, hDeliveryCombo, hBatchCount, hAutoFilename;
 HWND hCreateButton, hProgressBar, hStatusText;
 HWND hMainWindow;
+HFONT hFont;
 bool isGenerating = false;
 
 // Forward declarations
@@ -1088,23 +1089,43 @@ private:
 
 // GUI Event Handlers
 void populateCompanyCombo() {
+    if (hStatusText) {
+        SetWindowTextA(hStatusText, "Populating companies...");
+    }
+    
     CertificateEngine certEngine;
     auto companies = certEngine.getCompanies();
     
     SendMessage(hCompanyCombo, CB_RESETCONTENT, 0, 0);
-    for (const auto& company : companies) {
+    
+    if (hStatusText) {
+        std::string status = "Found " + std::to_string(companies.size()) + " companies";
+        SetWindowTextA(hStatusText, status.c_str());
+    }
+    
+    for (size_t i = 0; i < companies.size(); i++) {
+        const auto& company = companies[i];
         int result = SendMessage(hCompanyCombo, CB_ADDSTRING, 0, (LPARAM)company.c_str());
-        // Debug: Show in status text
+        
         if (hStatusText) {
-            std::string status = "Added company: " + company;
+            std::string status = "Adding: " + company + " (result: " + std::to_string(result) + ")";
             SetWindowTextA(hStatusText, status.c_str());
+            Sleep(100); // Brief pause to see the update
         }
     }
     
     if (!companies.empty()) {
-        SendMessage(hCompanyCombo, CB_SETCURSEL, 0, 0);
+        int setResult = SendMessage(hCompanyCombo, CB_SETCURSEL, 0, 0);
+        if (hStatusText) {
+            std::string status = "Company selection set: " + std::to_string(setResult);
+            SetWindowTextA(hStatusText, status.c_str());
+        }
         populateCertificateCombo();
         populateArchitectureCombo();
+    } else {
+        if (hStatusText) {
+            SetWindowTextA(hStatusText, "ERROR: No companies found!");
+        }
     }
 }
 
@@ -1275,6 +1296,13 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             icex.dwICC = ICC_PROGRESS_CLASS;
             InitCommonControlsEx(&icex);
             
+            // Create a standard font for all controls
+            hFont = CreateFontA(
+                14, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+                ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+                DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Segoe UI"
+            );
+            
             // Create controls
             CreateWindowA("STATIC", "Input File:", WS_VISIBLE | WS_CHILD,
                         10, 20, 100, 20, hwnd, NULL, NULL, NULL);
@@ -1333,6 +1361,21 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             hStatusText = CreateWindowA("STATIC", "Ready", WS_VISIBLE | WS_CHILD,
                         10, 305, 620, 20, hwnd, (HMENU)ID_STATUS_TEXT, NULL, NULL);
             
+            // Apply font to all controls
+            if (hFont) {
+                SendMessage(hInputPath, WM_SETFONT, (WPARAM)hFont, TRUE);
+                SendMessage(hOutputPath, WM_SETFONT, (WPARAM)hFont, TRUE);
+                SendMessage(hCompanyCombo, WM_SETFONT, (WPARAM)hFont, TRUE);
+                SendMessage(hCertCombo, WM_SETFONT, (WPARAM)hFont, TRUE);
+                SendMessage(hArchCombo, WM_SETFONT, (WPARAM)hFont, TRUE);
+                SendMessage(hEncryptionCombo, WM_SETFONT, (WPARAM)hFont, TRUE);
+                SendMessage(hDeliveryCombo, WM_SETFONT, (WPARAM)hFont, TRUE);
+                SendMessage(hBatchCount, WM_SETFONT, (WPARAM)hFont, TRUE);
+                SendMessage(hAutoFilename, WM_SETFONT, (WPARAM)hFont, TRUE);
+                SendMessage(hCreateButton, WM_SETFONT, (WPARAM)hFont, TRUE);
+                SendMessage(hStatusText, WM_SETFONT, (WPARAM)hFont, TRUE);
+            }
+            
             // Populate combos
             populateCompanyCombo();
             populateEncryptionCombo();
@@ -1384,10 +1427,16 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         }
         
         case WM_CLOSE:
+            if (hFont) {
+                DeleteObject(hFont);
+            }
             PostQuitMessage(0);
             return 0;
         
         case WM_DESTROY:
+            if (hFont) {
+                DeleteObject(hFont);
+            }
             PostQuitMessage(0);
             return 0;
     }
