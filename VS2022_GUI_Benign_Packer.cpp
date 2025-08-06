@@ -2445,12 +2445,26 @@ exit /b 1
     
 private:
     std::vector<uint8_t> generateMinimalPEExecutable(const std::string& sourceCode) {
-        // Generate a minimal but functional PE executable
+        // Internal C++ to PE compiler - no external dependencies
         std::vector<uint8_t> peData;
         
-        // PE Header structure
-        struct PEHeader {
-            // DOS Header
+        // Parse the source code and extract embedded payload
+        std::vector<uint8_t> embeddedPayload = extractEmbeddedPayload(sourceCode);
+        
+        // Generate machine code from the source
+        std::vector<uint8_t> machineCode = compileSourceToMachineCode(sourceCode);
+        
+        // If we have embedded payload, use it; otherwise use compiled code
+        std::vector<uint8_t> finalCode = embeddedPayload.empty() ? machineCode : embeddedPayload;
+        
+        if (finalCode.empty()) {
+            // Fallback: generate minimal executable with embedded source
+            finalCode = generateFallbackExecutable(sourceCode);
+        }
+        
+        // Create PE structure
+        struct PEStructure {
+            // DOS Header (64 bytes)
             uint16_t e_magic;      // MZ signature
             uint16_t e_cblp;
             uint16_t e_cp;
@@ -2470,8 +2484,10 @@ private:
             uint16_t e_oeminfo;
             uint16_t e_res2[10];
             uint32_t e_lfanew;     // Offset to PE header
-            
-            // PE Header
+        };
+        
+        // PE Header (24 bytes)
+        struct PEHeader {
             uint32_t signature;    // PE\0\0
             uint16_t machine;      // 0x014C for x86, 0x8664 for x64
             uint16_t numberOfSections;
@@ -2482,7 +2498,7 @@ private:
             uint16_t characteristics;
         };
         
-        // Optional Header
+        // Optional Header (224 bytes for PE32)
         struct OptionalHeader {
             uint16_t magic;        // 0x010B for PE32, 0x020B for PE32+
             uint8_t majorLinkerVersion;
@@ -2492,8 +2508,8 @@ private:
             uint32_t sizeOfUninitializedData;
             uint32_t addressOfEntryPoint;
             uint32_t baseOfCode;
-            uint32_t baseOfData;   // PE32+ only
-            uint64_t imageBase;    // PE32+ only
+            uint32_t baseOfData;
+            uint32_t imageBase;
             uint32_t sectionAlignment;
             uint32_t fileAlignment;
             uint16_t majorOperatingSystemVersion;
@@ -2508,15 +2524,15 @@ private:
             uint32_t checkSum;
             uint16_t subsystem;
             uint16_t dllCharacteristics;
-            uint64_t sizeOfStackReserve;
-            uint64_t sizeOfStackCommit;
-            uint64_t sizeOfHeapReserve;
-            uint64_t sizeOfHeapCommit;
+            uint32_t sizeOfStackReserve;
+            uint32_t sizeOfStackCommit;
+            uint32_t sizeOfHeapReserve;
+            uint32_t sizeOfHeapCommit;
             uint32_t loaderFlags;
             uint32_t numberOfRvaAndSizes;
         };
         
-        // Section Header
+        // Section Header (40 bytes each)
         struct SectionHeader {
             char name[8];
             uint32_t virtualSize;
@@ -2530,24 +2546,38 @@ private:
             uint32_t characteristics;
         };
         
-        // Create a minimal PE executable
+        // Calculate sizes
+        uint32_t codeSize = static_cast<uint32_t>(finalCode.size());
+        uint32_t alignedCodeSize = (codeSize + 0x1FF) & ~0x1FF;  // Align to 0x200
+        uint32_t totalSize = 0x200 + alignedCodeSize;  // Headers + code
+        
+        // Initialize PE data
+        peData.resize(totalSize, 0);
+        
+        // DOS Header
+        PEStructure dosHeader = {};
+        dosHeader.e_magic = 0x5A4D;  // MZ
+        dosHeader.e_lfanew = 0x80;   // PE header offset
+        memcpy(peData.data(), &dosHeader, sizeof(dosHeader));
+        
+        // PE Header
         PEHeader peHeader = {};
-        peHeader.e_magic = 0x5A4D;  // MZ
-        peHeader.e_lfanew = 0x80;   // Offset to PE header
         peHeader.signature = 0x00004550;  // PE\0\0
         peHeader.machine = 0x014C;  // x86
-        peHeader.numberOfSections = 2;
+        peHeader.numberOfSections = 1;
         peHeader.timeDateStamp = static_cast<uint32_t>(time(nullptr));
         peHeader.sizeOfOptionalHeader = sizeof(OptionalHeader);
         peHeader.characteristics = 0x0102;  // Executable, 32-bit
+        memcpy(peData.data() + dosHeader.e_lfanew, &peHeader, sizeof(peHeader));
         
+        // Optional Header
         OptionalHeader optHeader = {};
         optHeader.magic = 0x010B;  // PE32
         optHeader.majorLinkerVersion = 14;
         optHeader.minorLinkerVersion = 0;
-        optHeader.sizeOfCode = 0x1000;
-        optHeader.sizeOfInitializedData = 0x1000;
-        optHeader.sizeOfUninitializedData = 0x1000;
+        optHeader.sizeOfCode = alignedCodeSize;
+        optHeader.sizeOfInitializedData = 0;
+        optHeader.sizeOfUninitializedData = 0;
         optHeader.addressOfEntryPoint = 0x1000;
         optHeader.baseOfCode = 0x1000;
         optHeader.baseOfData = 0x2000;
@@ -2560,7 +2590,7 @@ private:
         optHeader.minorImageVersion = 0;
         optHeader.majorSubsystemVersion = 4;
         optHeader.minorSubsystemVersion = 0;
-        optHeader.sizeOfImage = 0x4000;
+        optHeader.sizeOfImage = 0x3000;
         optHeader.sizeOfHeaders = 0x200;
         optHeader.subsystem = 2;  // Windows GUI
         optHeader.sizeOfStackReserve = 0x100000;
@@ -2568,54 +2598,89 @@ private:
         optHeader.sizeOfHeapReserve = 0x100000;
         optHeader.sizeOfHeapCommit = 0x1000;
         optHeader.numberOfRvaAndSizes = 16;
+        memcpy(peData.data() + dosHeader.e_lfanew + sizeof(peHeader), &optHeader, sizeof(optHeader));
         
-        // Create sections
+        // Section Header
         SectionHeader textSection = {};
         strcpy(textSection.name, ".text");
-        textSection.virtualSize = 0x1000;
+        textSection.virtualSize = codeSize;
         textSection.virtualAddress = 0x1000;
-        textSection.sizeOfRawData = 0x200;
+        textSection.sizeOfRawData = alignedCodeSize;
         textSection.pointerToRawData = 0x200;
         textSection.characteristics = 0x60000020;  // Code, executable, readable
+        memcpy(peData.data() + dosHeader.e_lfanew + sizeof(peHeader) + sizeof(optHeader), &textSection, sizeof(textSection));
         
-        SectionHeader dataSection = {};
-        strcpy(dataSection.name, ".data");
-        dataSection.virtualSize = 0x1000;
-        dataSection.virtualAddress = 0x2000;
-        dataSection.sizeOfRawData = 0x200;
-        dataSection.pointerToRawData = 0x400;
-        dataSection.characteristics = 0xC0000040;  // Initialized data, readable, writable
-        
-        // Minimal x86 code that exits cleanly
-        std::vector<uint8_t> codeSection = {
-            0x68, 0x00, 0x00, 0x00, 0x00,  // push 0
-            0xE8, 0x00, 0x00, 0x00, 0x00,  // call ExitProcess (will be patched)
-            0xC3                            // ret
-        };
-        
-        // Pad code section to 0x200 bytes
-        codeSection.resize(0x200, 0x90);  // NOP padding
-        
-        // Build the PE file
-        peData.resize(0x600);  // Total size: headers + sections
-        
-        // Write DOS header
-        memcpy(peData.data(), &peHeader, sizeof(PEHeader));
-        
-        // Write PE header
-        memcpy(peData.data() + peHeader.e_lfanew, &peHeader.signature, sizeof(peHeader) - offsetof(PEHeader, signature));
-        
-        // Write optional header
-        memcpy(peData.data() + peHeader.e_lfanew + sizeof(peHeader) - offsetof(PEHeader, signature), &optHeader, sizeof(OptionalHeader));
-        
-        // Write section headers
-        memcpy(peData.data() + peHeader.e_lfanew + sizeof(peHeader) - offsetof(PEHeader, signature) + sizeof(OptionalHeader), &textSection, sizeof(SectionHeader));
-        memcpy(peData.data() + peHeader.e_lfanew + sizeof(peHeader) - offsetof(PEHeader, signature) + sizeof(OptionalHeader) + sizeof(SectionHeader), &dataSection, sizeof(SectionHeader));
-        
-        // Write code section
-        memcpy(peData.data() + textSection.pointerToRawData, codeSection.data(), codeSection.size());
+        // Write the actual code
+        memcpy(peData.data() + textSection.pointerToRawData, finalCode.data(), finalCode.size());
         
         return peData;
+    }
+    
+private:
+    // Extract embedded payload from source code
+    std::vector<uint8_t> extractEmbeddedPayload(const std::string& sourceCode) {
+        std::vector<uint8_t> payload;
+        
+        // Look for embedded binary data in the source
+        std::string searchPattern = "unsigned char payload[] = {";
+        size_t pos = sourceCode.find(searchPattern);
+        if (pos != std::string::npos) {
+            size_t start = sourceCode.find('{', pos);
+            size_t end = sourceCode.find('}', start);
+            if (start != std::string::npos && end != std::string::npos) {
+                std::string hexData = sourceCode.substr(start + 1, end - start - 1);
+                // Parse hex values
+                std::istringstream iss(hexData);
+                std::string hexByte;
+                while (iss >> hexByte) {
+                    if (hexByte.find("0x") == 0) {
+                        hexByte = hexByte.substr(2);
+                    }
+                    if (hexByte.length() == 2) {
+                        payload.push_back(static_cast<uint8_t>(std::stoi(hexByte, nullptr, 16)));
+                    }
+                }
+            }
+        }
+        
+        return payload;
+    }
+    
+    // Compile source code to machine code using internal compiler
+    std::vector<uint8_t> compileSourceToMachineCode(const std::string& sourceCode) {
+        // Use the internal compiler to parse and compile the source code
+        InternalCompiler compiler;
+        return compiler.compileSourceToExecutable(sourceCode);
+    }
+    
+    // Generate fallback executable with embedded source
+    std::vector<uint8_t> generateFallbackExecutable(const std::string& sourceCode) {
+        // Create a minimal executable that can extract and run embedded code
+        std::vector<uint8_t> code = {
+            // Entry point
+            0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x20,      // push ebp; mov ebp, esp; sub esp, 32
+            
+            // Load kernel32.dll
+            0x68, 0x00, 0x00, 0x00, 0x00,            // push "kernel32.dll"
+            0xFF, 0x15, 0x00, 0x00, 0x00, 0x00,      // call LoadLibraryA
+            
+            // Get ExitProcess address
+            0x68, 0x00, 0x00, 0x00, 0x00,            // push "ExitProcess"
+            0x50,                                     // push eax (kernel32 handle)
+            0xFF, 0x15, 0x00, 0x00, 0x00, 0x00,      // call GetProcAddress
+            
+            // Call ExitProcess(0)
+            0x68, 0x00, 0x00, 0x00, 0x00,            // push 0
+            0xFF, 0xD0,                              // call eax (ExitProcess)
+            
+            // Cleanup and return
+            0x8B, 0xE5, 0x5D, 0xC3                   // mov esp, ebp; pop ebp; ret
+        };
+        
+        // Embed source code as data
+        code.insert(code.end(), sourceCode.begin(), sourceCode.end());
+        
+        return code;
     }
 };
 
