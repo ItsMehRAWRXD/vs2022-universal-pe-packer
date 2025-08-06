@@ -379,3 +379,9 @@ VERIFIED FUD COMBINATIONS
    Link: https://www.virustotal.com/gui/file/aed0309467bdbb9f884b64d0304ed52aa54513dbbc4fc17c558c0a28a6511d65?nocache=1
    Notes: Manual test #50 - DOCX EXPLOIT FUD! (Document-based delivery vector success)
 
+✅ Adobe Systems Incorporated + GoDaddy Root Certificate Authority + AnyCPU
+   Date: 2025-08-06T05:50:33.611115
+   Hash: analysis_NTFlZWMyNTk4NTBmYTE0YmE2MTkyZjI3NzE5Y2QyNjQ6MTc1NDQ1OTM4NQ==
+   Link: https://www.virustotal.com/gui/file-analysis/NTFlZWMyNTk4NTBmYTE0YmE2MTkyZjI3NzE5Y2QyNjQ6MTc1NDQ1OTM4NQ==
+   Notes: Manual test #51 - XLL EXPLOIT FUD! (Excel add-in delivery vector + GoDaddy certificate success)
+
