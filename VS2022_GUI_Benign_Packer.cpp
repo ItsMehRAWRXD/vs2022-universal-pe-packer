@@ -2040,7 +2040,7 @@ public:
         int totalTests = combinations.size();
         int currentTest = 0;
         
-        std::cout << "📊 Testing " << totalTests << " combinations...\n\n";
+        std::cout << "[INFO] Testing " << totalTests << " combinations...\n\n";
         
         for (const auto& combo : combinations) {
             currentTest++;
@@ -2048,7 +2048,7 @@ public:
             std::string cert = std::get<1>(combo);
             std::string arch = std::get<2>(combo);
             
-            std::cout << "🧪 Test " << currentTest << "/" << totalTests << ": " 
+            std::cout << "[TEST] Test " << currentTest << "/" << totalTests << ": " 
                      << company << " + " << cert << " + " << arch << "\n";
             
             TestResult result = simulateVirusTotalTest(company, cert, arch);
