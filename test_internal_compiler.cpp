@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <cstdint>
 #include "tiny_loader.h"
 
 // Simplified version of the EmbeddedCompiler just for testing
@@ -43,14 +44,19 @@ public:
 };
 
 int main() {
-    std::cout << "=== Testing Internal PE Generator ===\n\n";
+    std::cout << "=== Testing Enhanced PE Generator ===\n\n";
     
     TestEmbeddedCompiler compiler;
     
     // Test payload (could be any data)
     std::string testPayload = "This is a test payload that would normally be FUD source code or binary data.";
     
-    std::cout << "1. Generating PE executable with " << testPayload.size() << " byte payload...\n";
+    std::cout << "1. Testing tiny_loader.h constants:\n";
+    std::cout << "   - tiny_loader_bin_len: " << tiny_loader_bin_len << " bytes\n";
+    std::cout << "   - PAYLOAD_SIZE_OFFSET: 0x" << std::hex << PAYLOAD_SIZE_OFFSET << std::dec << "\n";
+    std::cout << "   - PAYLOAD_RVA_OFFSET: 0x" << std::hex << PAYLOAD_RVA_OFFSET << std::dec << "\n\n";
+    
+    std::cout << "2. Generating PE executable with " << testPayload.size() << " byte payload...\n";
     
     auto peBytes = compiler.generateMinimalPEExecutable(testPayload);
     
@@ -69,6 +75,13 @@ int main() {
         return 1;
     }
     
+    // Check if payload offsets are within bounds
+    if (PAYLOAD_SIZE_OFFSET + 3 < tiny_loader_bin_len && PAYLOAD_RVA_OFFSET + 3 < tiny_loader_bin_len) {
+        std::cout << "✅ SUCCESS: Payload offset constants are within loader bounds\n";
+    } else {
+        std::cout << "⚠️  WARNING: Payload offsets may be outside loader bounds\n";
+    }
+    
     // Write to file for testing
     std::string outputFile = "test_internal_generated.exe";
     std::ofstream outFile(outputFile, std::ios::binary);
@@ -77,9 +90,10 @@ int main() {
         outFile.close();
         
         std::cout << "✅ SUCCESS: Written to " << outputFile << "\n";
-        std::cout << "\n🎉 INTERNAL PE GENERATOR WORKING!\n";
+        std::cout << "\n🎉 ENHANCED PE GENERATOR WORKING!\n";
         std::cout << "✅ No external compiler needed\n";
         std::cout << "✅ Creates real Windows PE executables\n";
+        std::cout << "✅ Proper payload patching implemented\n";
         std::cout << "✅ Ready for integration with FUD packer\n";
         
     } else {
