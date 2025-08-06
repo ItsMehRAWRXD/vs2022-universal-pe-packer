@@ -29,6 +29,7 @@
 #include <chrono>
 #include <sstream>
 #include <iomanip>
+#include <ctime>
 
 #pragma comment(lib, "ole32.lib")
 #pragma comment(lib, "crypt32.lib")
@@ -1822,57 +1823,28 @@ public:
             
             std::string compileCmd;
             
-            // Create a proper batch command that sets up VS environment and compiles
-            compileCmd = "cmd /c \"";
+            // Use smart compiler detection for robust compilation
+            auto compilerInfo = CompilerDetector::detectVisualStudio();
             
-            // Choose correct vcvars based on target architecture
-            std::string vcvarsName = (architecture == MultiArchitectureSupport::Architecture::x86) ? "vcvars32.bat" : "vcvars64.bat";
-            
-            // Try different VS paths in order of preference - prioritizing VS 2019
-            std::vector<std::string> vsPaths = {
-                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\" + vcvarsName,
-                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build\\" + vcvarsName,
-                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\" + vcvarsName,
-                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Auxiliary\\Build\\" + vcvarsName,
-                "C:\\Program Files\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\" + vcvarsName,
-                "C:\\Program Files\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build\\" + vcvarsName,
-                "C:\\Program Files\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\" + vcvarsName,
-                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\" + vcvarsName,
-                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\VC\\Auxiliary\\Build\\" + vcvarsName,
-                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\" + vcvarsName
-            };
-            
-            bool foundVS = false;
-            for (const auto& vsPath : vsPaths) {
-                DWORD attrs = GetFileAttributesA(vsPath.c_str());
-                if (attrs != INVALID_FILE_ATTRIBUTES && !(attrs & FILE_ATTRIBUTE_DIRECTORY)) {
-                    compileCmd += "call \\\"" + vsPath + "\\\" >nul 2>&1 && ";
-                    foundVS = true;
-                    break;
-                }
+            if (!compilerInfo.found) {
+                debugLog << "ERROR: Visual Studio compiler not found!\n";
+                debugLog.close();
+                return false;
             }
             
-            if (!foundVS) {
-                // Fallback: try VS 2019 developer command prompt environment
-                compileCmd += "echo Setting up VS 2019 environment... && ";
-                if (architecture == MultiArchitectureSupport::Architecture::x86) {
-                    compileCmd += "set INCLUDE=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\include;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\um;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\ucrt;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\shared && ";
-                    compileCmd += "set LIB=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\lib\\x86;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.19041.0\\um\\x86;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.19041.0\\ucrt\\x86 && ";
-                    compileCmd += "set PATH=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\Hostx86\\x86;%PATH% && ";
-                } else {
-                    compileCmd += "set INCLUDE=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\include;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\um;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\ucrt;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\shared && ";
-                    compileCmd += "set LIB=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\lib\\x64;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.19041.0\\um\\x64;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.19041.0\\ucrt\\x64 && ";
-                    compileCmd += "set PATH=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\Hostx64\\x64;%PATH% && ";
-                }
+            // Build compiler command with full paths and environment setup
+            if (!compilerInfo.vcvarsPath.empty()) {
+                // Use vcvars to set up environment - this is the key fix!
+                compileCmd = "cmd /c \"\"" + compilerInfo.vcvarsPath + "\" && \"" + compilerInfo.path + 
+                           "\" /nologo /std:c++17 /O2 /MT /EHsc \"" + sourceFilename + 
+                           "\" /Fe:\"" + outputPath + "\" /link /subsystem:console " + archFlags + 
+                           " user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib\" >nul 2>&1";
+            } else {
+                // Direct compiler call (fallback)
+                compileCmd = "\"" + compilerInfo.path + "\" /nologo /std:c++17 /O2 /MT /EHsc \"" + sourceFilename + 
+                           "\" /Fe:\"" + outputPath + "\" /link /subsystem:console " + archFlags + 
+                           " user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib >nul 2>&1";
             }
-            
-            // Add the actual compilation command
-            compileCmd += "cl.exe /nologo /O2 /EHsc /DNDEBUG /MD ";
-            compileCmd += "/Fe\\\"" + outputPath + "\\\" ";
-            compileCmd += "\\\"" + sourceFilename + "\\\" ";
-            compileCmd += "/link " + archFlags + " /OPT:REF /OPT:ICF ";
-            compileCmd += "user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib";
-            compileCmd += "\"";
             
             // DEBUG: Log compilation details
             std::ofstream debugLog("debug_pe_embedding.txt", std::ios::app);
@@ -1921,6 +1893,16 @@ public:
                 DWORD attrs = GetFileAttributesA(outputPath.c_str());
                 if (attrs != INVALID_FILE_ATTRIBUTES) {
                     debugLog << "SUCCESS: Output file created: " << outputPath << "\n";
+                    
+                    // CRITICAL FIX: Apply realistic timestamps to avoid 2096/2097 dates!
+                    TimestampEngine timestampFixer;
+                    if (timestampFixer.fixTimestamps(outputPath)) {
+                        DWORD newTimestamp = timestampFixer.generateRealisticTimestamp();
+                        std::string formattedTime = timestampFixer.formatTimestamp(newTimestamp);
+                        debugLog << "SUCCESS: Timestamps fixed - Creation time: " << formattedTime << "\n";
+                    } else {
+                        debugLog << "WARNING: Could not fix timestamps\n";
+                    }
                 } else {
                     debugLog << "WARNING: Compilation succeeded but no output file found\n";
                 }
@@ -3214,3 +3196,60 @@ public:
         std::cout << "[READY] Ready to update your packer with verified combinations!\n\n";
     }
 };
+
+// Main entry point - MUST be at the end of file
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+    // Initialize common controls
+    INITCOMMONCONTROLSEX icex;
+    icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
+    icex.dwICC = ICC_PROGRESS_CLASS | ICC_STANDARD_CLASSES;
+    InitCommonControlsEx(&icex);
+
+    // Create and initialize the packer
+    UltimateStealthPacker packer;
+
+    // Create main window class
+    WNDCLASSEX wc = {};
+    wc.cbSize = sizeof(WNDCLASSEX);
+    wc.style = CS_HREDRAW | CS_VREDRAW;
+    wc.lpfnWndProc = WindowProc;
+    wc.hInstance = hInstance;
+    wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wc.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
+    wc.lpszClassName = L"UltimateStealthPackerGUI";
+    wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+
+    if (!RegisterClassEx(&wc)) {
+        MessageBox(NULL, L"Failed to register window class!", L"Error", MB_OK | MB_ICONERROR);
+        return 1;
+    }
+
+    // Create main window
+    HWND hMainWnd = CreateWindowEx(
+        WS_EX_CLIENTEDGE | WS_EX_ACCEPTFILES,  // Enable drag and drop
+        L"UltimateStealthPackerGUI",
+        L"Ultimate VS2022 Stealth PE Packer v2.0 - Professional Edition",
+        WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, 620, 480,
+        NULL, NULL, hInstance, NULL
+    );
+
+    if (!hMainWnd) {
+        MessageBox(NULL, L"Failed to create main window!", L"Error", MB_OK | MB_ICONERROR);
+        return 1;
+    }
+
+    // Show the window
+    ShowWindow(hMainWnd, nCmdShow);
+    UpdateWindow(hMainWnd);
+
+    // Message loop
+    MSG msg;
+    while (GetMessage(&msg, NULL, 0, 0)) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+
+    return (int)msg.wParam;
+}
