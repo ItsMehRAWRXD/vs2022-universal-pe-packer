@@ -349,3 +349,21 @@ VERIFIED FUD COMBINATIONS
    Link: https://www.virustotal.com/gui/file/1c5ade733f9ae1549746f5485a19f357dd01d1b1795d316fd77eb90a8b9d1d6a?nocache=1
    Notes: Manual test #45 - FUD result (ongoing testing)
 
+✅ Adobe Systems Incorporated + Thawte Timestamping CA + AnyCPU
+   Date: 2025-08-06T05:41:01.720569
+   Hash: 1c3cb7c3354f2f3391cfbad591dcee1b2cc964ff18185067a4f628b22af2808c
+   Link: https://www.virustotal.com/gui/file/1c3cb7c3354f2f3391cfbad591dcee1b2cc964ff18185067a4f628b22af2808c?nocache=1
+   Notes: Manual test #46 - FUD result (triple success batch)
+
+✅ Adobe Systems Incorporated + Thawte Timestamping CA + AnyCPU
+   Date: 2025-08-06T05:41:01.721552
+   Hash: 158320a8c300162a1c1f9fdcf108c4eac46f5a654243827b5334f68693439342
+   Link: https://www.virustotal.com/gui/file/158320a8c300162a1c1f9fdcf108c4eac46f5a654243827b5334f68693439342?nocache=1
+   Notes: Manual test #47 - FUD result (continuing streak)
+
+✅ Adobe Systems Incorporated + Thawte Timestamping CA + AnyCPU
+   Date: 2025-08-06T05:41:01.722953
+   Hash: a83436b798b880aa38ec7600a11cc6a13fb6e80c450a66f6a7d0bb19fd755108
+   Link: https://www.virustotal.com/gui/file/a83436b798b880aa38ec7600a11cc6a13fb6e80c450a66f6a7d0bb19fd755108?nocache=1
+   Notes: Manual test #48 - FUD result (triple confirmation)
+

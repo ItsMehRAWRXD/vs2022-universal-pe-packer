@@ -900,5 +900,38 @@
     "vt_link": "https://www.virustotal.com/gui/file/1c5ade733f9ae1549746f5485a19f357dd01d1b1795d316fd77eb90a8b9d1d6a?nocache=1",
     "hash": "1c5ade733f9ae1549746f5485a19f357dd01d1b1795d316fd77eb90a8b9d1d6a",
     "notes": "Manual test #45 - FUD result (ongoing testing)"
+  },
+  {
+    "timestamp": "2025-08-06T05:41:01.720569",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Thawte Timestamping CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/1c3cb7c3354f2f3391cfbad591dcee1b2cc964ff18185067a4f628b22af2808c?nocache=1",
+    "hash": "1c3cb7c3354f2f3391cfbad591dcee1b2cc964ff18185067a4f628b22af2808c",
+    "notes": "Manual test #46 - FUD result (triple success batch)"
+  },
+  {
+    "timestamp": "2025-08-06T05:41:01.721552",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Thawte Timestamping CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/158320a8c300162a1c1f9fdcf108c4eac46f5a654243827b5334f68693439342?nocache=1",
+    "hash": "158320a8c300162a1c1f9fdcf108c4eac46f5a654243827b5334f68693439342",
+    "notes": "Manual test #47 - FUD result (continuing streak)"
+  },
+  {
+    "timestamp": "2025-08-06T05:41:01.722953",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Thawte Timestamping CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/a83436b798b880aa38ec7600a11cc6a13fb6e80c450a66f6a7d0bb19fd755108?nocache=1",
+    "hash": "a83436b798b880aa38ec7600a11cc6a13fb6e80c450a66f6a7d0bb19fd755108",
+    "notes": "Manual test #48 - FUD result (triple confirmation)"
   }
 ]
