@@ -1286,6 +1286,227 @@ private:
     }
 };
 
+class EmbeddedCompiler {
+private:
+    AdvancedRandomEngine randomEngine;
+    
+public:
+    struct CompilerResult {
+        bool success = false;
+        std::string errorMessage;
+        std::string outputPath;
+    };
+    
+    // Download and setup MinGW-w64 if not present
+    bool setupMinGWCompiler() {
+        std::string mingwPath = "mingw64\\bin\\g++.exe";
+        
+        // Check if MinGW is already available
+        if (GetFileAttributesA(mingwPath.c_str()) != INVALID_FILE_ATTRIBUTES) {
+            return true;
+        }
+        
+        // Try common MinGW installation paths
+        std::vector<std::string> commonPaths = {
+            "C:\\mingw64\\bin\\g++.exe",
+            "C:\\Program Files\\mingw-w64\\x86_64-8.1.0-posix-seh-rt_v6-rev0\\mingw64\\bin\\g++.exe",
+            "C:\\msys64\\mingw64\\bin\\g++.exe",
+            "C:\\TDM-GCC-64\\bin\\g++.exe"
+        };
+        
+        for (const auto& path : commonPaths) {
+            if (GetFileAttributesA(path.c_str()) != INVALID_FILE_ATTRIBUTES) {
+                // Copy to local directory for consistency
+                std::string copyCmd = "xcopy \"" + path + "\" mingw64\\bin\\ /Y /Q >nul 2>&1";
+                CreateDirectoryA("mingw64", NULL);
+                CreateDirectoryA("mingw64\\bin", NULL);
+                system(copyCmd.c_str());
+                return true;
+            }
+        }
+        
+        return downloadPortableMinGW();
+    }
+    
+    bool downloadPortableMinGW() {
+        // This would download a portable MinGW-w64 compiler
+        // For security and simplicity, we'll use a fallback method
+        return setupFallbackCompiler();
+    }
+    
+    bool setupFallbackCompiler() {
+        // Create a batch script that tries multiple compilation methods
+        std::string batchScript = R"(@echo off
+REM Try Visual Studio first
+where cl.exe >nul 2>&1
+if %errorlevel% == 0 (
+    cl /nologo /O2 /DNDEBUG /MD %1 /Fe%2 /link /SUBSYSTEM:CONSOLE user32.lib kernel32.lib advapi32.lib >nul 2>&1
+    if %errorlevel% == 0 exit /b 0
+)
+
+REM Try MinGW if available
+where g++.exe >nul 2>&1
+if %errorlevel% == 0 (
+    g++ -O2 -DNDEBUG -static-libgcc -static-libstdc++ %1 -o %2 -luser32 -lkernel32 -ladvapi32 >nul 2>&1
+    if %errorlevel% == 0 exit /b 0
+)
+
+REM Try TCC (Tiny C Compiler) - very small, portable
+where tcc.exe >nul 2>&1
+if %errorlevel% == 0 (
+    tcc -O2 %1 -o %2 -luser32 -lkernel32 -ladvapi32 >nul 2>&1
+    if %errorlevel% == 0 exit /b 0
+)
+
+exit /b 1
+)";
+        
+        std::ofstream batchFile("portable_compiler.bat");
+        if (batchFile.is_open()) {
+            batchFile << batchScript;
+            batchFile.close();
+            return true;
+        }
+        
+        return false;
+    }
+    
+    CompilerResult compileToExecutable(const std::string& sourceCode, const std::string& outputPath) {
+        CompilerResult result;
+        result.success = false;
+        result.outputPath = outputPath;
+        
+        // Create temporary source file
+        std::string tempSource = "temp_" + randomEngine.generateRandomName() + ".cpp";
+        std::ofstream sourceFile(tempSource);
+        if (!sourceFile.is_open()) {
+            result.errorMessage = "Failed to create temporary source file";
+            return result;
+        }
+        sourceFile << sourceCode;
+        sourceFile.close();
+        
+        // Try multiple compilation methods
+        std::vector<std::string> compileCommands = {
+            // Visual Studio (if available)
+            "cl /nologo /O2 /DNDEBUG /MD \"" + tempSource + "\" /Fe\"" + outputPath + "\" /link /SUBSYSTEM:CONSOLE user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib >nul 2>&1",
+            
+            // MinGW-w64
+            "g++ -O2 -DNDEBUG -static-libgcc -static-libstdc++ \"" + tempSource + "\" -o \"" + outputPath + "\" -luser32 -lkernel32 -ladvapi32 -lshell32 -lole32 >nul 2>&1",
+            
+            // TCC (Tiny C Compiler)
+            "tcc -O2 \"" + tempSource + "\" -o \"" + outputPath + "\" -luser32 -lkernel32 -ladvapi32 >nul 2>&1",
+            
+            // Fallback portable compiler
+            "portable_compiler.bat \"" + tempSource + "\" \"" + outputPath + "\" >nul 2>&1"
+        };
+        
+        // Try each compiler in order
+        for (const auto& cmd : compileCommands) {
+            int compileResult = system(cmd.c_str());
+            if (compileResult == 0) {
+                // Verify the executable was created
+                if (GetFileAttributesA(outputPath.c_str()) != INVALID_FILE_ATTRIBUTES) {
+                    result.success = true;
+                    result.errorMessage = "Compilation successful";
+                    break;
+                }
+            }
+        }
+        
+        // Clean up temporary file
+        DeleteFileA(tempSource.c_str());
+        
+        if (!result.success) {
+            result.errorMessage = "All compilation methods failed. Please install MinGW-w64 or Visual Studio Build Tools.";
+        }
+        
+        return result;
+    }
+    
+    // Create a completely self-contained executable generator
+    CompilerResult createSelfContainedExecutable(const std::string& sourceCode, const std::string& outputPath) {
+        CompilerResult result;
+        result.success = false;
+        result.outputPath = outputPath;
+        
+        // For ultimate portability, we use an embedded PE generator
+        // This creates a valid Windows executable directly from our C++ code without external tools
+        
+        std::vector<uint8_t> executableData = generateMinimalPEExecutable(sourceCode);
+        
+        if (!executableData.empty()) {
+            std::ofstream exeFile(outputPath, std::ios::binary);
+            if (exeFile.is_open()) {
+                exeFile.write(reinterpret_cast<const char*>(executableData.data()), executableData.size());
+                exeFile.close();
+                result.success = true;
+                result.errorMessage = "Self-contained PE executable created successfully (no external compiler needed!)";
+                
+                // Verify the file was created
+                DWORD attrs = GetFileAttributesA(outputPath.c_str());
+                if (attrs != INVALID_FILE_ATTRIBUTES) {
+                    WIN32_FILE_ATTRIBUTE_DATA fileInfo;
+                    if (GetFileAttributesExA(outputPath.c_str(), GetFileExInfoStandard, &fileInfo)) {
+                        ULARGE_INTEGER fileSize;
+                        fileSize.LowPart = fileInfo.nFileSizeLow;
+                        fileSize.HighPart = fileInfo.nFileSizeHigh;
+                        result.errorMessage += " (Size: " + std::to_string(fileSize.QuadPart) + " bytes)";
+                    }
+                }
+            } else {
+                result.errorMessage = "Failed to write executable file";
+            }
+        } else {
+            // Fallback to regular compilation
+            result.errorMessage = "Internal PE generator failed, trying external compiler...";
+            return compileToExecutable(sourceCode, outputPath);
+        }
+        
+        return result;
+    }
+    
+private:
+    std::vector<uint8_t> generateMinimalPEExecutable(const std::string& payload) {
+        // REAL INTERNAL COMPILER - NO EXTERNAL TOOLS NEEDED!
+        // Uses pre-built minimal PE loader, patches it with payload
+        
+        try {
+            // 1. Copy the pre-built loader into a vector
+            std::vector<uint8_t> exe(tiny_loader_bin, tiny_loader_bin + tiny_loader_bin_len);
+
+            // 2. Pad to next 0x200 boundary (PE file-alignment requirement)
+            constexpr size_t kAlign = 0x200;
+            size_t paddedSize = (exe.size() + kAlign - 1) & ~(kAlign - 1);
+            exe.resize(paddedSize, 0);
+
+            // 3. Append the payload
+            size_t payloadOffset = exe.size();          // file offset where payload starts
+            exe.insert(exe.end(), payload.begin(), payload.end());
+
+            // 4. Patch two 32-bit placeholders inside the loader
+            auto poke32 = [&](size_t off, uint32_t v) {
+                if (off + 3 < exe.size()) {
+                    exe[off+0] =  v        & 0xFF;
+                    exe[off+1] = (v >>  8) & 0xFF;
+                    exe[off+2] = (v >> 16) & 0xFF;
+                    exe[off+3] = (v >> 24) & 0xFF;
+                }
+            };
+            
+            poke32(PAYLOAD_SIZE_OFFSET, static_cast<uint32_t>(payload.size()));    // size
+            poke32(PAYLOAD_RVA_OFFSET, static_cast<uint32_t>(payloadOffset));     // RVA (=file offset here)
+
+            return exe;   // finished PE bytes - REAL WORKING EXECUTABLE!
+            
+        } catch (...) {
+            // Fallback to external compiler if anything goes wrong
+            return {};
+        }
+    }
+
+};
+
 class UltimateStealthPacker {
 public:
     AdvancedRandomEngine randomEngine;
@@ -2254,226 +2475,7 @@ public:
     }
 };
 
-class EmbeddedCompiler {
-private:
-    AdvancedRandomEngine randomEngine;
-    
-public:
-    struct CompilerResult {
-        bool success = false;
-        std::string errorMessage;
-        std::string outputPath;
-    };
-    
-    // Download and setup MinGW-w64 if not present
-    bool setupMinGWCompiler() {
-        std::string mingwPath = "mingw64\\bin\\g++.exe";
-        
-        // Check if MinGW is already available
-        if (GetFileAttributesA(mingwPath.c_str()) != INVALID_FILE_ATTRIBUTES) {
-            return true;
-        }
-        
-        // Try common MinGW installation paths
-        std::vector<std::string> commonPaths = {
-            "C:\\mingw64\\bin\\g++.exe",
-            "C:\\Program Files\\mingw-w64\\x86_64-8.1.0-posix-seh-rt_v6-rev0\\mingw64\\bin\\g++.exe",
-            "C:\\msys64\\mingw64\\bin\\g++.exe",
-            "C:\\TDM-GCC-64\\bin\\g++.exe"
-        };
-        
-        for (const auto& path : commonPaths) {
-            if (GetFileAttributesA(path.c_str()) != INVALID_FILE_ATTRIBUTES) {
-                // Copy to local directory for consistency
-                std::string copyCmd = "xcopy \"" + path + "\" mingw64\\bin\\ /Y /Q >nul 2>&1";
-                CreateDirectoryA("mingw64", NULL);
-                CreateDirectoryA("mingw64\\bin", NULL);
-                system(copyCmd.c_str());
-                return true;
-            }
-        }
-        
-        return downloadPortableMinGW();
-    }
-    
-    bool downloadPortableMinGW() {
-        // This would download a portable MinGW-w64 compiler
-        // For security and simplicity, we'll use a fallback method
-        return setupFallbackCompiler();
-    }
-    
-    bool setupFallbackCompiler() {
-        // Create a batch script that tries multiple compilation methods
-        std::string batchScript = R"(@echo off
-REM Try Visual Studio first
-where cl.exe >nul 2>&1
-if %errorlevel% == 0 (
-    cl /nologo /O2 /DNDEBUG /MD %1 /Fe%2 /link /SUBSYSTEM:CONSOLE user32.lib kernel32.lib advapi32.lib >nul 2>&1
-    if %errorlevel% == 0 exit /b 0
-)
 
-REM Try MinGW if available
-where g++.exe >nul 2>&1
-if %errorlevel% == 0 (
-    g++ -O2 -DNDEBUG -static-libgcc -static-libstdc++ %1 -o %2 -luser32 -lkernel32 -ladvapi32 >nul 2>&1
-    if %errorlevel% == 0 exit /b 0
-)
-
-REM Try TCC (Tiny C Compiler) - very small, portable
-where tcc.exe >nul 2>&1
-if %errorlevel% == 0 (
-    tcc -O2 %1 -o %2 -luser32 -lkernel32 -ladvapi32 >nul 2>&1
-    if %errorlevel% == 0 exit /b 0
-)
-
-exit /b 1
-)";
-        
-        std::ofstream batchFile("portable_compiler.bat");
-        if (batchFile.is_open()) {
-            batchFile << batchScript;
-            batchFile.close();
-            return true;
-        }
-        
-        return false;
-    }
-    
-    CompilerResult compileToExecutable(const std::string& sourceCode, const std::string& outputPath) {
-        CompilerResult result;
-        result.success = false;
-        result.outputPath = outputPath;
-        
-        // Create temporary source file
-        std::string tempSource = "temp_" + randomEngine.generateRandomName() + ".cpp";
-        std::ofstream sourceFile(tempSource);
-        if (!sourceFile.is_open()) {
-            result.errorMessage = "Failed to create temporary source file";
-            return result;
-        }
-        sourceFile << sourceCode;
-        sourceFile.close();
-        
-        // Try multiple compilation methods
-        std::vector<std::string> compileCommands = {
-            // Visual Studio (if available)
-            "cl /nologo /O2 /DNDEBUG /MD \"" + tempSource + "\" /Fe\"" + outputPath + "\" /link /SUBSYSTEM:CONSOLE user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib >nul 2>&1",
-            
-            // MinGW-w64
-            "g++ -O2 -DNDEBUG -static-libgcc -static-libstdc++ \"" + tempSource + "\" -o \"" + outputPath + "\" -luser32 -lkernel32 -ladvapi32 -lshell32 -lole32 >nul 2>&1",
-            
-            // TCC (Tiny C Compiler)
-            "tcc -O2 \"" + tempSource + "\" -o \"" + outputPath + "\" -luser32 -lkernel32 -ladvapi32 >nul 2>&1",
-            
-            // Fallback portable compiler
-            "portable_compiler.bat \"" + tempSource + "\" \"" + outputPath + "\" >nul 2>&1"
-        };
-        
-        // Try each compiler in order
-        for (const auto& cmd : compileCommands) {
-            int compileResult = system(cmd.c_str());
-            if (compileResult == 0) {
-                // Verify the executable was created
-                if (GetFileAttributesA(outputPath.c_str()) != INVALID_FILE_ATTRIBUTES) {
-                    result.success = true;
-                    result.errorMessage = "Compilation successful";
-                    break;
-                }
-            }
-        }
-        
-        // Clean up temporary file
-        DeleteFileA(tempSource.c_str());
-        
-        if (!result.success) {
-            result.errorMessage = "All compilation methods failed. Please install MinGW-w64 or Visual Studio Build Tools.";
-        }
-        
-        return result;
-    }
-    
-    // Create a completely self-contained executable generator
-    CompilerResult createSelfContainedExecutable(const std::string& sourceCode, const std::string& outputPath) {
-        CompilerResult result;
-        result.success = false;
-        result.outputPath = outputPath;
-        
-        // For ultimate portability, we use an embedded PE generator
-        // This creates a valid Windows executable directly from our C++ code without external tools
-        
-        std::vector<uint8_t> executableData = generateMinimalPEExecutable(sourceCode);
-        
-        if (!executableData.empty()) {
-            std::ofstream exeFile(outputPath, std::ios::binary);
-            if (exeFile.is_open()) {
-                exeFile.write(reinterpret_cast<const char*>(executableData.data()), executableData.size());
-                exeFile.close();
-                result.success = true;
-                result.errorMessage = "✅ Self-contained PE executable created successfully (no external compiler needed!)";
-                
-                // Verify the file was created
-                DWORD attrs = GetFileAttributesA(outputPath.c_str());
-                if (attrs != INVALID_FILE_ATTRIBUTES) {
-                    WIN32_FILE_ATTRIBUTE_DATA fileInfo;
-                    if (GetFileAttributesExA(outputPath.c_str(), GetFileExInfoStandard, &fileInfo)) {
-                        ULARGE_INTEGER fileSize;
-                        fileSize.LowPart = fileInfo.nFileSizeLow;
-                        fileSize.HighPart = fileInfo.nFileSizeHigh;
-                        result.errorMessage += " (Size: " + std::to_string(fileSize.QuadPart) + " bytes)";
-                    }
-                }
-            } else {
-                result.errorMessage = "❌ Failed to write executable file";
-            }
-        } else {
-            // Fallback to regular compilation
-            result.errorMessage = "🔄 Internal PE generator failed, trying external compiler...";
-            return compileToExecutable(sourceCode, outputPath);
-        }
-        
-        return result;
-    }
-    
-private:
-    std::vector<uint8_t> generateMinimalPEExecutable(const std::string& payload) {
-        // 🚀 REAL INTERNAL COMPILER - NO EXTERNAL TOOLS NEEDED!
-        // Uses pre-built minimal PE loader, patches it with payload
-        
-        try {
-            // 1. Copy the pre-built loader into a vector
-            std::vector<uint8_t> exe(tiny_loader_bin, tiny_loader_bin + tiny_loader_bin_len);
-
-            // 2. Pad to next 0x200 boundary (PE file-alignment requirement)
-            constexpr size_t kAlign = 0x200;
-            size_t paddedSize = (exe.size() + kAlign - 1) & ~(kAlign - 1);
-            exe.resize(paddedSize, 0);
-
-            // 3. Append the payload
-            size_t payloadOffset = exe.size();          // file offset where payload starts
-            exe.insert(exe.end(), payload.begin(), payload.end());
-
-            // 4. Patch two 32-bit placeholders inside the loader
-            auto poke32 = [&](size_t off, uint32_t v) {
-                if (off + 3 < exe.size()) {
-                    exe[off+0] =  v        & 0xFF;
-                    exe[off+1] = (v >>  8) & 0xFF;
-                    exe[off+2] = (v >> 16) & 0xFF;
-                    exe[off+3] = (v >> 24) & 0xFF;
-                }
-            };
-            
-            poke32(PAYLOAD_SIZE_OFFSET, static_cast<uint32_t>(payload.size()));    // size
-            poke32(PAYLOAD_RVA_OFFSET, static_cast<uint32_t>(payloadOffset));     // RVA (=file offset here)
-
-            return exe;   // ✅ finished PE bytes - REAL WORKING EXECUTABLE!
-            
-        } catch (...) {
-            // Fallback to external compiler if anything goes wrong
-            return {};
-        }
-    }
-
-};
 
 // Global variables
 HWND g_hInputPath, g_hOutputPath, g_hProgressBar, g_hStatusText, g_hCompanyCombo, g_hArchCombo, g_hCertCombo;
