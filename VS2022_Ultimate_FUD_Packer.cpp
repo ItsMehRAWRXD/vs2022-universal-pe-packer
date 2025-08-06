@@ -919,7 +919,7 @@ static void browseForFile(HWND hEdit, BOOL isInput) {
 }
 
 // Generate FUD executable
-void generateFUDExecutable() {
+static void generateFUDExecutable() {
     if (isGenerating) return;
     
     char outputPath[260];
@@ -952,7 +952,7 @@ void generateFUDExecutable() {
 }
 
 // Window procedure
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
         case WM_CREATE: {
             // Set ANSI codepage
@@ -1191,7 +1191,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 }
 
 // Main entry point
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow) {
     // Force ANSI codepage
     SetConsoleCP(1252);
     SetConsoleOutputCP(1252);
