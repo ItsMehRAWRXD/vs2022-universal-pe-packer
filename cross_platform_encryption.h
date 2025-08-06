@@ -244,11 +244,11 @@ private:
             }
 
             encrypted = data;
-            DWORD dataLen = static_cast<DWORD>(encrypted.size());
+            DWORD dataLen = static_cast<DWORD>(encrypted.size() & 0xFFFFFFFF);
 
-            if (!CryptEncrypt(hKey, 0, TRUE, 0, encrypted.data(), &dataLen, static_cast<DWORD>(encrypted.capacity()))) {
+            if (!CryptEncrypt(hKey, 0, TRUE, 0, encrypted.data(), &dataLen, static_cast<DWORD>(encrypted.capacity() & 0xFFFFFFFF))) {
                 encrypted.resize(dataLen);
-                if (!CryptEncrypt(hKey, 0, TRUE, 0, encrypted.data(), &dataLen, static_cast<DWORD>(encrypted.capacity()))) {
+                if (!CryptEncrypt(hKey, 0, TRUE, 0, encrypted.data(), &dataLen, static_cast<DWORD>(encrypted.capacity() & 0xFFFFFFFF))) {
                     throw std::runtime_error("CryptEncrypt failed");
                 }
             }
