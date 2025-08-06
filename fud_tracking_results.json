@@ -559,5 +559,16 @@
     "vt_link": "https://www.virustotal.com/gui/file/7f4f1a7383fa57c5619677f9e1c8fa539181fa0cb5c7c284f2a2cadb8cdd38ae?nocache=1",
     "hash": "7f4f1a7383fa57c5619677f9e1c8fa539181fa0cb5c7c284f2a2cadb8cdd38ae",
     "notes": "Manual test #16 - Apple Root CA + Adobe + x64 FUD! (2/2 x64 successes, testing for 3/3)"
+  },
+  {
+    "timestamp": "2025-08-06T04:52:58.031388",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Apple Root CA",
+    "architecture": "x64",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file-analysis/NWZmMDgwNjliMjRlOGIwNDhkNTFiNzQ0YTIyNDU1NDM6MTc1NDQ1NTkzMg==",
+    "hash": "analysis_NWZmMDgwNjliMjRlOGIwNDhkNTFiNzQ0YTIyNDU1NDM6MTc1NDQ1NTkzMg==",
+    "notes": "Manual test #17 - Apple Root CA + Adobe + x64 FUD! (PERFECT 3/3 x64 STREAK!)"
   }
 ]
