@@ -83,68 +83,99 @@ static int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools"
     };
     
-    // Method 1: Try to find and use VS2022 with proper environment setup
+    // Method 1: Try Developer Command Prompt (most reliable)
+    sprintf_s(compileCmd, sizeof(compileCmd),
+        "cmd /c \"call \"%%ProgramFiles%%\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" && "
+        "cl.exe /nologo /O2 /MD /TC /bigobj \"%s\" /Fe:\"%s\" "
+        "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
+        "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\"",
+        sourceFile, outputFile);
+    result = system(compileCmd);
+    if (result == 0) return 0;
+    
+    // Method 2: Try Professional edition
+    sprintf_s(compileCmd, sizeof(compileCmd),
+        "cmd /c \"call \"%%ProgramFiles%%\\Microsoft Visual Studio\\2022\\Professional\\Common7\\Tools\\VsDevCmd.bat\" && "
+        "cl.exe /nologo /O2 /MD /TC /bigobj \"%s\" /Fe:\"%s\" "
+        "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
+        "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\"",
+        sourceFile, outputFile);
+    result = system(compileCmd);
+    if (result == 0) return 0;
+    
+    // Method 3: Try Enterprise edition
+    sprintf_s(compileCmd, sizeof(compileCmd),
+        "cmd /c \"call \"%%ProgramFiles%%\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\Tools\\VsDevCmd.bat\" && "
+        "cl.exe /nologo /O2 /MD /TC /bigobj \"%s\" /Fe:\"%s\" "
+        "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
+        "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\"",
+        sourceFile, outputFile);
+    result = system(compileCmd);
+    if (result == 0) return 0;
+    
+    // Method 4: Try using vcvarsall.bat directly
     for (int i = 0; i < 8; i++) {
         sprintf_s(testCmd, sizeof(testCmd), "dir \"%s\" >nul 2>&1", vsPaths[i]);
         if (system(testCmd) == 0) {
-            // Found VS2022 installation, try to compile with it
-                                                   sprintf_s(compileCmd, sizeof(compileCmd),
-                  "cmd /c \"\"%s\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 && "
-                  "cl.exe /nologo /O2 /MD /TC /bigobj \"%s\" /Fe:\"%s\" "
-                  "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
-                  "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\"",
-                  vsPaths[i], sourceFile, outputFile);
-            
+            sprintf_s(compileCmd, sizeof(compileCmd),
+                "cmd /c \"\"%s\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 && "
+                "cl.exe /nologo /O2 /MD /TC /bigobj \"%s\" /Fe:\"%s\" "
+                "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
+                "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\"",
+                vsPaths[i], sourceFile, outputFile);
             result = system(compileCmd);
-            if (result == 0) {
-                return 0; // Success!
-            }
+            if (result == 0) return 0;
         }
     }
     
-    // Method 2: Try Windows SDK compiler if VS2022 failed
+    // Method 5: Try cl.exe directly if it's in PATH
     sprintf_s(compileCmd, sizeof(compileCmd),
-        "cmd /c \"\"C:\\Program Files (x86)\\Windows Kits\\10\\bin\\x64\\cl.exe\" "
-        "/nologo /O2 /MD /TC \"%s\" /Fe:\"%s\" "
-        "user32.lib kernel32.lib\"",
+        "cl.exe /nologo /O2 /MD /TC /bigobj \"%s\" /Fe:\"%s\" "
+        "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
+        "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib",
         sourceFile, outputFile);
     result = system(compileCmd);
+    if (result == 0) return 0;
     
-    if (result != 0) {
-        // Method 3: Try MinGW-w64 if available
-        sprintf_s(compileCmd, sizeof(compileCmd),
-            "gcc -O2 -static -mwindows \"%s\" -o \"%s\" "
-            "-luser32 -lkernel32 -lgdi32 -ladvapi32 -lshell32 -lole32",
-            sourceFile, outputFile);
-        result = system(compileCmd);
-    }
+    // Method 6: Try simple compilation with minimal flags
+    sprintf_s(compileCmd, sizeof(compileCmd),
+        "cl.exe /nologo /MD \"%s\" /Fe:\"%s\" user32.lib kernel32.lib",
+        sourceFile, outputFile);
+    result = system(compileCmd);
+    if (result == 0) return 0;
     
-    if (result != 0) {
-        // Method 4: Try TinyCC if available
-        sprintf_s(compileCmd, sizeof(compileCmd),
-            "tcc -static \"%s\" -o \"%s\" "
-            "-luser32 -lkernel32 -lgdi32",
-            sourceFile, outputFile);
-        result = system(compileCmd);
-    }
+    // Method 7: Try MinGW-w64 if available
+    sprintf_s(compileCmd, sizeof(compileCmd),
+        "gcc -O2 -static -mwindows \"%s\" -o \"%s\" "
+        "-luser32 -lkernel32 -lgdi32 -ladvapi32 -lshell32 -lole32",
+        sourceFile, outputFile);
+    result = system(compileCmd);
+    if (result == 0) return 0;
     
+    // If all methods failed, create a compile script for manual execution
     if (result != 0) {
-        // Method 5: Try to use vcvarsall globally
-        sprintf_s(compileCmd, sizeof(compileCmd),
-            "cmd /c \"call vcvarsall.bat x64 && "
-            "cl.exe /nologo /O2 /MD /TC \"%s\" /Fe:\"%s\" "
-            "user32.lib kernel32.lib\"",
-            sourceFile, outputFile);
-        result = system(compileCmd);
-    }
-    
-    if (result != 0) {
-        // Method 6: Last resort - try cl.exe directly (might work if already in PATH)
-        sprintf_s(compileCmd, sizeof(compileCmd),
-            "cl.exe /nologo /MD \"%s\" /Fe:\"%s\" "
-            "user32.lib kernel32.lib",
-            sourceFile, outputFile);
-        result = system(compileCmd);
+        char batchPath[MAX_PATH] = {0};
+        strcpy_s(batchPath, sizeof(batchPath), outputFile);
+        char* lastDot = strrchr(batchPath, '.');
+        if (lastDot) strcpy(lastDot, "_compile.bat");
+        
+        FILE* batchFile = NULL;
+        if (fopen_s(&batchFile, batchPath, "w") == 0 && batchFile) {
+            fprintf(batchFile, "@echo off\n");
+            fprintf(batchFile, "echo Attempting VS2022 compilation...\n");
+            fprintf(batchFile, "call \"%%ProgramFiles%%\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\"\n");
+            fprintf(batchFile, "if errorlevel 1 call \"%%ProgramFiles%%\\Microsoft Visual Studio\\2022\\Professional\\Common7\\Tools\\VsDevCmd.bat\"\n");
+            fprintf(batchFile, "if errorlevel 1 call \"%%ProgramFiles%%\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\Tools\\VsDevCmd.bat\"\n");
+            fprintf(batchFile, "cl.exe /nologo /O2 /MD /TC /bigobj \"%s\" /Fe:\"%s\" /link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\n", sourceFile, outputFile);
+            fprintf(batchFile, "if errorlevel 1 (\n");
+            fprintf(batchFile, "    echo Compilation failed. Please check VS2022 installation.\n");
+            fprintf(batchFile, "    pause\n");
+            fprintf(batchFile, ") else (\n");
+            fprintf(batchFile, "    echo Compilation successful: %s\n", outputFile);
+            fprintf(batchFile, "    pause\n");
+            fprintf(batchFile, ")\n");
+            fclose(batchFile);
+        }
     }
     
     return result;
@@ -787,7 +818,11 @@ static DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
                 }
             }
             
-            // VS2022 Auto-Compilation
+            // VS2022 Auto-Compilation with diagnostic feedback
+            char statusMsg2[256] = {0};
+            sprintf_s(statusMsg2, sizeof(statusMsg2), "Attempting compilation: %s -> %s", tempSource, finalExecutablePath);
+            SetWindowTextAnsi(hStatusText, statusMsg2);
+            
             int compileResult = VS2022_AutoCompile(tempSource, finalExecutablePath);
             
             // Verify compilation success
