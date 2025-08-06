@@ -487,3 +487,9 @@ VERIFIED FUD COMBINATIONS
    Link: https://www.virustotal.com/gui/file/73323080633cfaf4bda21d3fe571bb8a5c7b4ac58eaada53a26342915450e822?nocache=1
    Notes: Manual test #64 - Thawte FUD continues! (Despite GUI issues, the packer core works!)
 
+✅ Adobe Systems Incorporated + Thawte Timestamping CA + Unknown
+   Date: 2025-08-06T06:42:12.794565
+   Hash: 9b6a2a1b34f843474c10409eb252d45cc337fb52d58695186d89d9a5cd69b4ec
+   Link: https://www.virustotal.com/gui/file/9b6a2a1b34f843474c10409eb252d45cc337fb52d58695186d89d9a5cd69b4ec?nocache=1
+   Notes: Manual test #65 - POLYMORPHIC FUD! Unique hash achieved: 9b6a2a1b... vs previous 73323080... - TRUE MORPHING CONFIRMED!
+
