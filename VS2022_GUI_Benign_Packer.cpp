@@ -662,8 +662,12 @@ public:
             // Detect and use Visual Studio compiler
             auto compilerInfo = CompilerDetector::detectVisualStudio();
             if (!compilerInfo.found) {
-                // Try fallback methods
-                if (GetFileAttributesA("C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC") != INVALID_FILE_ATTRIBUTES ||
+                // Try fallback methods - check for Enterprise, Professional, or Community
+                if (GetFileAttributesA("C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Tools\\MSVC") != INVALID_FILE_ATTRIBUTES ||
+                    GetFileAttributesA("C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\VC\\Tools\\MSVC") != INVALID_FILE_ATTRIBUTES ||
+                    GetFileAttributesA("C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC") != INVALID_FILE_ATTRIBUTES ||
+                    GetFileAttributesA("C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Tools\\MSVC") != INVALID_FILE_ATTRIBUTES ||
+                    GetFileAttributesA("C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\Professional\\VC\\Tools\\MSVC") != INVALID_FILE_ATTRIBUTES ||
                     GetFileAttributesA("C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC") != INVALID_FILE_ATTRIBUTES) {
                     // Manual override - use system cl if VS is installed
                     compilerInfo.path = "cl.exe";
@@ -689,8 +693,12 @@ public:
             if (!compilerInfo.vcvarsPath.empty()) {
                 compileCmd = "call \"" + compilerInfo.vcvarsPath + "\" >nul 2>&1 && ";
             } else {
-                // Try alternative environment setup
-                compileCmd = "call \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\vcvars64.bat\" >nul 2>&1 && ";
+                // Try alternative environment setup - check for Enterprise first, then Community
+                if (GetFileAttributesA("C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat") != INVALID_FILE_ATTRIBUTES) {
+                    compileCmd = "call \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat\" >nul 2>&1 && ";
+                } else {
+                    compileCmd = "call \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\vcvars64.bat\" >nul 2>&1 && ";
+                }
             }
             
             // Build the compilation command
