@@ -307,3 +307,33 @@ VERIFIED FUD COMBINATIONS
    Link: https://www.virustotal.com/gui/file-analysis/NzcyM2JkZmZkMTI5MmRmYzQ4NWYyNDRjMzcwZDg1ZmI6MTc1NDQ1Njk4NQ==
    Notes: Manual test #38 - Apple Root CA + Adobe + AnyCPU FUD! (Continued AnyCPU success)
 
+✅ Adobe Systems Incorporated + Thawte Timestamping CA + AnyCPU
+   Date: 2025-08-06T05:14:21.792526
+   Hash: abed2faee3d7a5102d108575f1c1dbdeb532c0a4543df3649a99deb904a22fa4
+   Link: https://www.virustotal.com/gui/file/abed2faee3d7a5102d108575f1c1dbdeb532c0a4543df3649a99deb904a22fa4?nocache=1
+   Notes: Manual test #39 - Thawte Timestamping CA + Adobe + AnyCPU FUD! (Confirming new certificate reliability)
+
+✅ Adobe Systems Incorporated + Thawte Timestamping CA + AnyCPU
+   Date: 2025-08-06T05:14:21.796483
+   Hash: analysis_NzcyM2JkZmZkMTI5MmRmYzQ4NWYyNDRjMzcwZDg1ZmI6MTc1NDQ1Njk4NQ==
+   Link: https://www.virustotal.com/gui/file-analysis/NzcyM2JkZmZkMTI5MmRmYzQ4NWYyNDRjMzcwZDg1ZmI6MTc1NDQ1Njk4NQ==
+   Notes: Manual test #40 - Thawte Timestamping CA + Adobe + AnyCPU FUD! (Continuation test)
+
+✅ Adobe Systems Incorporated + Thawte Timestamping CA + AnyCPU
+   Date: 2025-08-06T05:14:21.802246
+   Hash: analysis_ZjU0N2E5ZDE2MzQwNGQ5ZTcwOGY1ZGRhYmE5YTA3ODk6MTc1NDQ1NzE1MQ==
+   Link: https://www.virustotal.com/gui/file-analysis/ZjU0N2E5ZDE2MzQwNGQ5ZTcwOGY1ZGRhYmE5YTA3ODk6MTc1NDQ1NzE1MQ==
+   Notes: Manual test #41 - Thawte Timestamping CA + Adobe + AnyCPU FUD! (Third consecutive FUD)
+
+✅ Adobe Systems Incorporated + Thawte Timestamping CA + AnyCPU
+   Date: 2025-08-06T05:14:21.803249
+   Hash: 14b65ba38c37b75e1184a419759e4876cc5db6aef311d0bfeb4450fae040ff86
+   Link: https://www.virustotal.com/gui/file/14b65ba38c37b75e1184a419759e4876cc5db6aef311d0bfeb4450fae040ff86?nocache=1
+   Notes: Manual test #42 - Thawte Timestamping CA + Adobe + AnyCPU FUD! (Fourth consecutive FUD)
+
+✅ Adobe Systems Incorporated + Thawte Timestamping CA + AnyCPU
+   Date: 2025-08-06T05:14:21.804250
+   Hash: e7d8d7ab3202b84f6e84876adafb60d6c7f0e990265cbe590a225468b0c6731d
+   Link: https://www.virustotal.com/gui/file/e7d8d7ab3202b84f6e84876adafb60d6c7f0e990265cbe590a225468b0c6731d?nocache=1
+   Notes: Manual test #43 - Thawte Timestamping CA + Adobe + AnyCPU FUD! (Fifth consecutive FUD!)
+
