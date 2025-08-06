@@ -16,14 +16,16 @@
 #include <chrono>
 #include <thread>
 #include <algorithm>
+#include <fstream>
+#include <iostream>
 
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "gdi32.lib")
 #pragma comment(lib, "comctl32.lib")
 #pragma comment(lib, "comdlg32.lib")
 
-// Force ANSI codepage
-#pragma code_page(1252)
+// Force ANSI codepage (comment out unknown pragma)
+// #pragma code_page(1252)
 
 // GUI Control IDs
 #define ID_INPUT_PATH 1001
@@ -80,21 +82,29 @@ public:
     }
     
     std::string generateJunkCode() {
-        std::stringstream junk;
+        std::string junk;
         std::uniform_int_distribution<> countDis(3, 8);
         int junkBlocks = countDis(gen);
         
         for (int i = 0; i < junkBlocks; i++) {
             std::string varName = generateRandomName(10);
             std::uniform_int_distribution<> valDis(1000, 99999);
+            int value = valDis(gen);
             
-            junk << "static int " << varName << " = " << valDis(gen) << ";\n";
-            junk << "void junk_" << varName << "() {\n";
-            junk << "    for(int i = 0; i < 10; i++) " << varName << " ^= i;\n";
-            junk << "}\n\n";
+            char buffer[256];
+            sprintf_s(buffer, "static int %s = %d;\n", varName.c_str(), value);
+            junk += buffer;
+            
+            sprintf_s(buffer, "void junk_%s() {\n", varName.c_str());
+            junk += buffer;
+            
+            sprintf_s(buffer, "    for(int i = 0; i < 10; i++) %s ^= i;\n", varName.c_str());
+            junk += buffer;
+            
+            junk += "}\n\n";
         }
         
-        return junk.str();
+        return junk;
     }
 };
 
@@ -190,33 +200,37 @@ void browseForFile(HWND hEdit, bool isInput) {
 }
 
 std::string generatePolymorphicSource() {
-    std::stringstream source;
+    std::string source;
     
     // Generate unique polymorphic code
-    source << "#include <windows.h>\n";
-    source << "#include <iostream>\n\n";
+    source += "#include <windows.h>\n";
+    source += "#include <stdio.h>\n\n";
     
     // Add polymorphic junk code
-    source << "// Polymorphic section - unique per generation\n";
-    source << randomEngine.generateJunkCode();
+    source += "// Polymorphic section - unique per generation\n";
+    source += randomEngine.generateJunkCode();
     
     // Add random padding array
-    source << "unsigned char padding_" << randomEngine.generateRandomName() << "[] = {\n";
+    std::string paddingName = randomEngine.generateRandomName();
+    source += "unsigned char padding_" + paddingName + "[] = {\n";
+    
     std::uniform_int_distribution<> byteDis(0, 255);
     for (int i = 0; i < 100; i++) {
-        source << "0x" << std::hex << byteDis(randomEngine.gen);
-        if (i < 99) source << ",";
-        if (i % 16 == 15) source << "\n";
+        char hexBuf[8];
+        sprintf_s(hexBuf, "0x%02x", byteDis(randomEngine.gen));
+        source += hexBuf;
+        if (i < 99) source += ",";
+        if (i % 16 == 15) source += "\n";
     }
-    source << "\n};\n\n";
+    source += "\n};\n\n";
     
     // Main function with benign behavior
-    source << "int main() {\n";
-    source << "    MessageBoxA(NULL, \"System check completed successfully.\", \"System Information\", MB_OK);\n";
-    source << "    return 0;\n";
-    source << "}\n";
+    source += "int main() {\n";
+    source += "    MessageBoxA(NULL, \"System check completed successfully.\", \"System Information\", MB_OK);\n";
+    source += "    return 0;\n";
+    source += "}\n";
     
-    return source.str();
+    return source;
 }
 
 void createExploit() {
