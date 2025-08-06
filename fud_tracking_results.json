@@ -152,5 +152,49 @@
     "vt_link": "https://www.virustotal.com/gui/file/654fc8b5643a15467312f13d82eaecf4e23d813e61c13b9e0f662e6517862b2c?nocache=1",
     "hash": "654fc8b5643a15467312f13d82eaecf4e23d813e61c13b9e0f662e6517862b2c",
     "notes": "Manual test - 0/72 detections confirmed"
+  },
+  {
+    "timestamp": "2025-08-06T04:16:29.556857",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "HP Enterprise Root CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/e3bbe2850fdf64bceddba9e0db1d65acc818cf53350ee159fb2364916d42701f?nocache=1",
+    "hash": "e3bbe2850fdf64bceddba9e0db1d65acc818cf53350ee159fb2364916d42701f",
+    "notes": "Manual test #1 - 0/72 detections confirmed (AnyCPU architecture)"
+  },
+  {
+    "timestamp": "2025-08-06T04:16:29.557105",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "HP Enterprise Root CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/b8e5564fd210cb2b4ee9235a33eb68400731e00fbf371495450a40afdfc9f895?nocache=1",
+    "hash": "b8e5564fd210cb2b4ee9235a33eb68400731e00fbf371495450a40afdfc9f895",
+    "notes": "Manual test #2 - 0/72 detections confirmed (AnyCPU architecture)"
+  },
+  {
+    "timestamp": "2025-08-06T04:16:29.557638",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "HP Enterprise Root CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/2eaab737031363eb36c17544eb027652b815981104d03b89bf3d11ac75d9a6ae?nocache=1",
+    "hash": "2eaab737031363eb36c17544eb027652b815981104d03b89bf3d11ac75d9a6ae",
+    "notes": "Manual test #3 - 0/72 detections confirmed (AnyCPU architecture)"
+  },
+  {
+    "timestamp": "2025-08-06T04:16:29.557980",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "HP Enterprise Root CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/121f2a039fc5675e36d0106374f36c3b0f1f9ea84f7467a9f4a84bb04e562dfc?nocache=1",
+    "hash": "121f2a039fc5675e36d0106374f36c3b0f1f9ea84f7467a9f4a84bb04e562dfc",
+    "notes": "Manual test #4 - 0/72 detections confirmed (AnyCPU architecture)"
   }
 ]
