@@ -50,3 +50,10 @@ BLOCKED COMBINATIONS
    Link: manual_test_sony_detected
    Notes: Manual test - 3/72 detections! Sony pattern changed from previous FUD status
 
+❌ Adobe Systems Incorporated + SecureTrust CA + AnyCPU
+   Detections: 1/72
+   Date: 2025-08-06T04:27:16.858582
+   Hash: unknown
+   Link: manual_test_securetrust_detected
+   Notes: Manual test - SecureTrust CA detected with Adobe + AnyCPU
+
