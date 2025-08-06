@@ -34,6 +34,8 @@
 #include <cstring>
 #include <cstdint>
 #include "tiny_loader.h"
+#include "cross_platform_encryption.h"
+#include "enhanced_loader_utils.h"
 
 #pragma comment(lib, "ole32.lib")
 #pragma comment(lib, "crypt32.lib")
