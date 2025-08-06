@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <ctype.h>
 
 // Link required libraries
 #pragma comment(lib, "user32.lib")
@@ -231,7 +232,7 @@ DWORD WINAPI ExploitGenerationThread(LPVOID lpParam) {
             snprintf(statusMsg, sizeof(statusMsg), "Generating exploit %d of %d...", batch + 1, batchCount);
             SetWindowTextAnsi(hStatusText, statusMsg);
         }
-        PostMessage(hMainWindow, WM_USER + 2, batch, batchCount);
+        PostMessage(hMainWindow, WM_USER + 2, MAKEWPARAM(batch, batchCount), 0);
         
         // Generate polymorphic source code
         char sourceCode[8192];
@@ -264,7 +265,8 @@ DWORD WINAPI ExploitGenerationThread(LPVOID lpParam) {
                 strcpy(finalOutputPath, outputPath);
                 // Ensure .exe extension
                 char* lastDot = strrchr(finalOutputPath, '.');
-                if (!lastDot || _stricmp(lastDot, ".exe") != 0) {
+                if (!lastDot || strlen(lastDot) != 4 ||
+                    !(tolower(lastDot[1]) == 'e' && tolower(lastDot[2]) == 'x' && tolower(lastDot[3]) == 'e')) {
                     if (lastDot) {
                         strcpy(lastDot, ".exe");
                     } else {
@@ -585,7 +587,13 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 snprintf(statusMsg, sizeof(statusMsg), "Generating polymorphic code with unique hash...");
             }
             SetWindowTextAnsi(hStatusText, statusMsg);
-            SendMessage(hProgressBar, PBM_SETPOS, 25 + (currentBatch * 25) / totalBatches, 0);
+            
+            // Calculate progress (avoid division by zero)
+            int progressPos = 25;
+            if (totalBatches > 0) {
+                progressPos = 25 + (currentBatch * 50) / totalBatches;
+            }
+            SendMessage(hProgressBar, PBM_SETPOS, progressPos, 0);
             return 0;
         }
         
