@@ -537,5 +537,27 @@
     "vt_link": "mcafee_scanner_detection",
     "hash": "unknown",
     "notes": "Manual test #14 - MCAFEE SCANNER detected (Ti!66F82B6328A9) + CrowdStrike Falcon - DUAL ENTERPRISE DETECTION"
+  },
+  {
+    "timestamp": "2025-08-06T04:52:17.244471",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Apple Root CA",
+    "architecture": "x64",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/713c3e0ef694b27a24cd14198f060df86db2d27981f76bb9ebebb3f78bc71b41/detection",
+    "hash": "713c3e0ef694b27a24cd14198f060df86db2d27981f76bb9ebebb3f78bc71b41",
+    "notes": "Manual test #15 - Apple Root CA + Adobe + x64 FUD! (Architecture pivot strategy working)"
+  },
+  {
+    "timestamp": "2025-08-06T04:52:17.244896",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Apple Root CA",
+    "architecture": "x64",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/7f4f1a7383fa57c5619677f9e1c8fa539181fa0cb5c7c284f2a2cadb8cdd38ae?nocache=1",
+    "hash": "7f4f1a7383fa57c5619677f9e1c8fa539181fa0cb5c7c284f2a2cadb8cdd38ae",
+    "notes": "Manual test #16 - Apple Root CA + Adobe + x64 FUD! (2/2 x64 successes, testing for 3/3)"
   }
 ]
