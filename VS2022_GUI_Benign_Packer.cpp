@@ -1688,11 +1688,8 @@ public:
             std::string combinedCode = exploitIncludes + "\n";
             combinedCode += benignCode + "\n\n";
             
-            // Add simple main function that calls the benign operations
-            combinedCode += "int main() {\n";
-            combinedCode += "    performBenignOperations();\n";
-            combinedCode += "    return 0;\n";
-            combinedCode += "}\n";
+            // Note: Main function will be added later in the process
+            // Do not add main function here to avoid duplicates
             
             debugLog << "Combined Code Length: " << combinedCode.length() << "\n";
             
