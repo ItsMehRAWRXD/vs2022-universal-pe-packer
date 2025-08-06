@@ -1859,20 +1859,26 @@ public:
             
             std::string compileCmd;
             
-            // Use the robust compiler detection system instead of manual paths
+            // Try robust compiler detection first
             auto compilerInfo = CompilerDetector::detectVisualStudio();
             
-            if (!compilerInfo.found) {
-                return false;
-            }
-            
-            // Build simplified compilation command
-            if (!compilerInfo.vcvarsPath.empty()) {
+            if (compilerInfo.found && !compilerInfo.vcvarsPath.empty()) {
+                // Use detected VS installation
                 compileCmd = "cmd /c \"\"" + compilerInfo.vcvarsPath + "\" && cl.exe /nologo /O2 /MD /EHsc \"" + sourceFilename + 
                            "\" /Fe:\"" + outputPath + "\" user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib\"";
             } else {
-                compileCmd = "cl.exe /nologo /O2 /MD /EHsc \"" + sourceFilename + 
-                           "\" /Fe:\"" + outputPath + "\" user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib";
+                // Fallback: Try common VS 2022 Enterprise path directly
+                std::string fallbackVcvars = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat";
+                DWORD attrs = GetFileAttributesA(fallbackVcvars.c_str());
+                
+                if (attrs != INVALID_FILE_ATTRIBUTES && !(attrs & FILE_ATTRIBUTE_DIRECTORY)) {
+                    compileCmd = "cmd /c \"\"" + fallbackVcvars + "\" && cl.exe /nologo /O2 /MD /EHsc \"" + sourceFilename + 
+                               "\" /Fe:\"" + outputPath + "\" user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib\"";
+                } else {
+                    // Last resort: Try without vcvars (assumes VS Developer Command Prompt)
+                    compileCmd = "cl.exe /nologo /O2 /MD /EHsc \"" + sourceFilename + 
+                               "\" /Fe:\"" + outputPath + "\" user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib";
+                }
             }
             
             // DEBUG: Log compilation details
