@@ -181,3 +181,33 @@ VERIFIED FUD COMBINATIONS
    Link: https://www.virustotal.com/gui/file/338526d9acd0c7aba371093601eb446dd1e54c578fba7c6d75612af3c9371584?nocache=1
    Notes: Manual test #6 - Apple Root CA + Adobe + AnyCPU (6th consecutive success!)
 
+✅ Adobe Systems Incorporated + Apple Root CA + AnyCPU
+   Date: 2025-08-06T04:47:38.618821
+   Hash: 947972065027a897aca5c0a3931365453f59c5201916d5f49b6b5e3c83f0deca
+   Link: https://www.virustotal.com/gui/file/947972065027a897aca5c0a3931365453f59c5201916d5f49b6b5e3c83f0deca?nocache=1
+   Notes: Manual test #8 - Apple Root CA recovery pattern? (FUD after detection)
+
+✅ Adobe Systems Incorporated + Apple Root CA + AnyCPU
+   Date: 2025-08-06T04:47:38.619247
+   Hash: b8a3e926c4c5d8d752dc24e7ce457e1932b6245e3470e25da1d025c972eca4d7
+   Link: https://www.virustotal.com/gui/file/b8a3e926c4c5d8d752dc24e7ce457e1932b6245e3470e25da1d025c972eca4d7?nocache=1
+   Notes: Manual test #9 - Apple Root CA recovery pattern? (FUD after detection)
+
+✅ Adobe Systems Incorporated + Apple Root CA + AnyCPU
+   Date: 2025-08-06T04:47:38.620214
+   Hash: 781c125ec0e468dfd4f9b49b805ace2a52205584d46db3bf83490dcbb8d8e151
+   Link: https://www.virustotal.com/gui/file/781c125ec0e468dfd4f9b49b805ace2a52205584d46db3bf83490dcbb8d8e151?nocache=1
+   Notes: Manual test #10 - Apple Root CA recovery pattern? (FUD after detection)
+
+✅ Adobe Systems Incorporated + Apple Root CA + AnyCPU
+   Date: 2025-08-06T04:47:38.620777
+   Hash: 16c2116a6081f0df800c4d1ab9cac3d1de49907ab7152624acaca3353c2faf75
+   Link: https://www.virustotal.com/gui/file/16c2116a6081f0df800c4d1ab9cac3d1de49907ab7152624acaca3353c2faf75?nocache=1
+   Notes: Manual test #11 - Apple Root CA recovery pattern? (FUD after detection)
+
+✅ Adobe Systems Incorporated + Apple Root CA + AnyCPU
+   Date: 2025-08-06T04:47:38.621284
+   Hash: analysis_MmY3YTcwMDEyMTU4YmMyMTNhNzE2ZWFiZmQwNzY3YzU6MTc1NDQ1NTU4NQ==
+   Link: https://www.virustotal.com/gui/file-analysis/MmY3YTcwMDEyMTU4YmMyMTNhNzE2ZWFiZmQwNzY3YzU6MTc1NDQ1NTU4NQ==
+   Notes: Manual test #12 - Apple Root CA recovery pattern? (FUD after detection)
+
