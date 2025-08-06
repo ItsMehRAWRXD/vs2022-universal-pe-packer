@@ -207,7 +207,7 @@ public:
             {"HP Enterprise Root CA", "HP Inc.", "7890123456789ABCDEF012345678ABCDEF", "sha256RSA"},
             {"Lenovo Certificate Authority", "Lenovo Group Limited", "890123456789ABCDEF012345678ABCDEF0", "sha256RSA"},
             {"Sony Root CA", "Sony Corporation", "90123456789ABCDEF012345678ABCDEF01", "sha256RSA"},
-            {"Samsung Knox Root CA", "Samsung Electronics", "0123456789ABCDEF012345678ABCDEF012", "sha256RSA"},
+
             {"Realtek Root Certificate", "Realtek Semiconductor", "123456789ABCDEF012345678ABCDEF0123", "sha256RSA"},
             {"Broadcom Root CA", "Broadcom Inc.", "23456789ABCDEF012345678ABCDEF01234", "sha256RSA"},
             {"Qualcomm Root Authority", "Qualcomm Technologies", "3456789ABCDEF012345678ABCDEF012345", "sha256RSA"},
