@@ -878,5 +878,27 @@
     "vt_link": "manual_detection_bkav_pro",
     "hash": "unknown",
     "notes": "Manual test - Bkav Pro detected W64.AIDetectMalware (breaking the perfect streak)"
+  },
+  {
+    "timestamp": "2025-08-06T05:40:03.380327",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Thawte Timestamping CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/e54ddbae9bde1e5723cc3744cf45771d2802c1a2c39b6ce2c8c19a6fc2973b4f?nocache=1",
+    "hash": "e54ddbae9bde1e5723cc3744cf45771d2802c1a2c39b6ce2c8c19a6fc2973b4f",
+    "notes": "Manual test #44 - FUD result (continuing pattern validation)"
+  },
+  {
+    "timestamp": "2025-08-06T05:40:03.381342",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Thawte Timestamping CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/1c5ade733f9ae1549746f5485a19f357dd01d1b1795d316fd77eb90a8b9d1d6a?nocache=1",
+    "hash": "1c5ade733f9ae1549746f5485a19f357dd01d1b1795d316fd77eb90a8b9d1d6a",
+    "notes": "Manual test #45 - FUD result (ongoing testing)"
   }
 ]
