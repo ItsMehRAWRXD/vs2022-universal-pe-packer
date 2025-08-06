@@ -99,3 +99,10 @@ BLOCKED COMBINATIONS
    Link: mcafee_scanner_detection
    Notes: Manual test #14 - MCAFEE SCANNER detected (Ti!66F82B6328A9) + CrowdStrike Falcon - DUAL ENTERPRISE DETECTION
 
+❌ Adobe Systems Incorporated + Apple Root CA + x64
+   Detections: 1/72
+   Date: 2025-08-06T04:54:27.549412
+   Hash: 969ff43a861255a772ff9606d2ec42b90bd89685296fdb85d8cdee3a52145525
+   Link: https://www.virustotal.com/gui/file/969ff43a861255a772ff9606d2ec42b90bd89685296fdb85d8cdee3a52145525?nocache=1
+   Notes: Manual test #19 - Apple Root CA + Adobe + x64 DETECTED by McAfee (perfect 4/4 streak broken on 5th test)
+
