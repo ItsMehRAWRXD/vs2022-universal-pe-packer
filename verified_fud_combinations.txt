@@ -481,3 +481,9 @@ VERIFIED FUD COMBINATIONS
    Link: https://www.virustotal.com/gui/file-analysis/NGMyNzllZDNlNDgzOTU4OGVhZDVjMTdjNjQyN2EwZWY6MTc1NDQ2MDEzMQ==
    Notes: Manual test #63 - Thawte + AnyCPU FUD! (Continuing dominance pattern)
 
+✅ Adobe Systems Incorporated + Thawte Timestamping CA + Unknown
+   Date: 2025-08-06T06:38:58.214556
+   Hash: 73323080633cfaf4bda21d3fe571bb8a5c7b4ac58eaada53a26342915450e822
+   Link: https://www.virustotal.com/gui/file/73323080633cfaf4bda21d3fe571bb8a5c7b4ac58eaada53a26342915450e822?nocache=1
+   Notes: Manual test #64 - Thawte FUD continues! (Despite GUI issues, the packer core works!)
+
