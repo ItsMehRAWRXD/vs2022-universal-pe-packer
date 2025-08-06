@@ -237,6 +237,9 @@ public:
         
         return R"(#include <windows.h>
 #include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
 #include <thread>
 #include <chrono>
 #include <cmath>
@@ -897,9 +900,9 @@ public:
             
             // Build the compilation command
             if (compilerInfo.path == "cl.exe") {
-                compileCmd += "cl /nologo /O2 /DNDEBUG /MD ";
+                compileCmd += "cl /nologo /O2 /EHsc /DNDEBUG /MD ";
             } else {
-                compileCmd += "\"" + compilerInfo.path + "\" /nologo /O2 /DNDEBUG /MD ";
+                compileCmd += "\"" + compilerInfo.path + "\" /nologo /O2 /EHsc /DNDEBUG /MD ";
             }
             
             compileCmd += "/Fe\"" + outputPath + "\" ";
