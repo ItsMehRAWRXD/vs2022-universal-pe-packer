@@ -162,3 +162,10 @@ BLOCKED COMBINATIONS
    Link: https://www.virustotal.com/gui/file/9354a42a6f08c042bd8d252dfb7a9cbe457022ff687bb78143de30ed982e2024?nocache=1
    Notes: Manual test #33 - Apple Root CA + Adobe + x64 DETECTED (Prolonged detection phase: 4/4 detections)
 
+❌ Adobe Systems Incorporated + Thawte Timestamping CA + AnyCPU
+   Detections: 2/72
+   Date: 2025-08-06T05:15:54.370894
+   Hash: unknown
+   Link: manual_detection_bkav_pro
+   Notes: Manual test - Bkav Pro detected W64.AIDetectMalware (breaking the perfect streak)
+

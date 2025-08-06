@@ -867,5 +867,16 @@
     "vt_link": "https://www.virustotal.com/gui/file/e7d8d7ab3202b84f6e84876adafb60d6c7f0e990265cbe590a225468b0c6731d?nocache=1",
     "hash": "e7d8d7ab3202b84f6e84876adafb60d6c7f0e990265cbe590a225468b0c6731d",
     "notes": "Manual test #43 - Thawte Timestamping CA + Adobe + AnyCPU FUD! (Fifth consecutive FUD!)"
+  },
+  {
+    "timestamp": "2025-08-06T05:15:54.370894",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Thawte Timestamping CA",
+    "architecture": "AnyCPU",
+    "is_fud": false,
+    "detection_count": 2,
+    "vt_link": "manual_detection_bkav_pro",
+    "hash": "unknown",
+    "notes": "Manual test - Bkav Pro detected W64.AIDetectMalware (breaking the perfect streak)"
   }
 ]
