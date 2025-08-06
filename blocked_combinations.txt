@@ -85,3 +85,10 @@ BLOCKED COMBINATIONS
    Link: https://www.virustotal.com/gui/file/831c0a4fc941c72f4bdbe88a330952dde9af605f585d540c4bc116f770c2a28c/detection
    Notes: Manual test #7 - Apple Root CA + Adobe + AnyCPU DETECTED (pattern breaks after 6 consecutive successes)
 
+❌ Adobe Systems Incorporated + Apple Root CA + AnyCPU
+   Detections: 1/72
+   Date: 2025-08-06T04:49:56.775796
+   Hash: unknown
+   Link: crowdstrike_falcon_detection
+   Notes: Manual test #13 - CROWDSTRIKE FALCON detected (Win/malicious_confidence_60%) - behavioral detection, not signature
+

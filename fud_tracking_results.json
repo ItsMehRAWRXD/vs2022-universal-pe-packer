@@ -515,5 +515,16 @@
     "vt_link": "https://www.virustotal.com/gui/file-analysis/MmY3YTcwMDEyMTU4YmMyMTNhNzE2ZWFiZmQwNzY3YzU6MTc1NDQ1NTU4NQ==",
     "hash": "analysis_MmY3YTcwMDEyMTU4YmMyMTNhNzE2ZWFiZmQwNzY3YzU6MTc1NDQ1NTU4NQ==",
     "notes": "Manual test #12 - Apple Root CA recovery pattern? (FUD after detection)"
+  },
+  {
+    "timestamp": "2025-08-06T04:49:56.775796",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Apple Root CA",
+    "architecture": "AnyCPU",
+    "is_fud": false,
+    "detection_count": 1,
+    "vt_link": "crowdstrike_falcon_detection",
+    "hash": "unknown",
+    "notes": "Manual test #13 - CROWDSTRIKE FALCON detected (Win/malicious_confidence_60%) - behavioral detection, not signature"
   }
 ]
