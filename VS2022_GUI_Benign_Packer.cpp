@@ -2602,6 +2602,7 @@ static void createFUDExecutable() {
         return;
     }
     
+    // Ensure output path always has .exe extension
     if (outputPath.empty()) {
         // Auto-generate output path based on input file location and random name
         std::string inputDir = inputPath.substr(0, inputPath.find_last_of("\\/"));
@@ -2616,6 +2617,20 @@ static void createFUDExecutable() {
         std::ofstream entryLog("debug_entry_points.txt", std::ios::app);
         entryLog << "Auto-generated output path: " << outputPath << "\n";
         entryLog.close();
+    } else {
+        // Ensure manual output path has .exe extension
+        if (outputPath.length() < 4 || outputPath.substr(outputPath.length() - 4) != ".exe") {
+            outputPath += ".exe";
+            
+            // Update the GUI with the corrected path
+            std::wstring wOutputPath(outputPath.begin(), outputPath.end());
+            SetWindowTextW(g_hOutputPath, wOutputPath.c_str());
+            
+            // Log the correction
+            std::ofstream entryLog("debug_entry_points.txt", std::ios::app);
+            entryLog << "Added .exe extension to output path: " << outputPath << "\n";
+            entryLog.close();
+        }
     }
     
     // Get selected exploit method
