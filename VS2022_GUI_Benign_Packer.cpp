@@ -1471,7 +1471,7 @@ static void SetWindowTextAnsi(HWND hwnd, const char* text) {
     SetWindowTextA(hwnd, text);
 }
 
-void startMassGeneration() {
+static void startMassGeneration() {
     if (g_massGenerationActive) return;
     
     // Get count from edit box
@@ -1495,7 +1495,7 @@ void startMassGeneration() {
     g_massGenerationThread = CreateThread(NULL, 0, massGenerationThread, &threadCount, 0, NULL);
 }
 
-void stopMassGeneration() {
+static void stopMassGeneration() {
     g_massGenerationActive = false;
     
     if (g_massGenerationThread) {
@@ -1510,7 +1510,7 @@ void stopMassGeneration() {
     SendMessage(g_hProgressBar, PBM_SETPOS, 0, 0);
 }
 
-std::string wstringToString(const std::wstring& wstr) {
+static std::string wstringToString(const std::wstring& wstr) {
     if (wstr.empty()) return std::string();
     
     int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
