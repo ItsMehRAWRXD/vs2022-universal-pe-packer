@@ -133,3 +133,9 @@ VERIFIED FUD COMBINATIONS
    Link: https://www.virustotal.com/gui/file-analysis/NjA3YjdmZTgwZjVkMWIwYTIxMTMyMGNhOGJhODM0MWM6MTc1NDQ1NDU3Mw==
    Notes: Manual test - ARCHITECTURE-SPECIFIC PATTERN! AnyCPU detected, x64 FUD
 
+✅ Adobe Systems Incorporated + Entrust Root CA + x64
+   Date: 2025-08-06T04:33:04.742102
+   Hash: 92c5ec970fc7d1d6896d874ae51121093f686373f44f186042e9b2f8b6deb3db
+   Link: https://www.virustotal.com/gui/file/92c5ec970fc7d1d6896d874ae51121093f686373f44f186042e9b2f8b6deb3db?nocache=1
+   Notes: Manual test - Entrust Root CA + Adobe + x64 confirmed FUD
+
