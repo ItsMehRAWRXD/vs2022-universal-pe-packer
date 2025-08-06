@@ -271,3 +271,9 @@ VERIFIED FUD COMBINATIONS
    Link: https://www.virustotal.com/gui/file/9707a0f0d7accf41038290fb0be0851e6e3bcf6e94cabc4bac0d2477a434f9ad?nocache=1
    Notes: Manual test #29 - Apple Root CA + Adobe + x64 FUD (1/5 FUD - PROLONGED DETECTION PHASE confirmed)
 
+✅ Adobe Systems Incorporated + Apple Root CA + x64
+   Date: 2025-08-06T05:03:35.031264
+   Hash: analysis_ZGZjYzRjNjg4ZTk5MWQxMzkyYzE4NDhlNjI3NTA5MDY6MTc1NDQ1NjU2Ng==
+   Link: https://www.virustotal.com/gui/file-analysis/ZGZjYzRjNjg4ZTk5MWQxMzkyYzE4NDhlNjI3NTA5MDY6MTc1NDQ1NjU2Ng==
+   Notes: Manual test #34 - Apple Root CA + Adobe + x64 FUD! (Unexpected success during prolonged detection phase - pattern complexity increases!)
+

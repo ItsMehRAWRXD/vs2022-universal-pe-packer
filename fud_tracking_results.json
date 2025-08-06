@@ -746,5 +746,16 @@
     "vt_link": "https://www.virustotal.com/gui/file/9354a42a6f08c042bd8d252dfb7a9cbe457022ff687bb78143de30ed982e2024?nocache=1",
     "hash": "9354a42a6f08c042bd8d252dfb7a9cbe457022ff687bb78143de30ed982e2024",
     "notes": "Manual test #33 - Apple Root CA + Adobe + x64 DETECTED (Prolonged detection phase: 4/4 detections)"
+  },
+  {
+    "timestamp": "2025-08-06T05:03:35.031264",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Apple Root CA",
+    "architecture": "x64",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file-analysis/ZGZjYzRjNjg4ZTk5MWQxMzkyYzE4NDhlNjI3NTA5MDY6MTc1NDQ1NjU2Ng==",
+    "hash": "analysis_ZGZjYzRjNjg4ZTk5MWQxMzkyYzE4NDhlNjI3NTA5MDY6MTc1NDQ1NjU2Ng==",
+    "notes": "Manual test #34 - Apple Root CA + Adobe + x64 FUD! (Unexpected success during prolonged detection phase - pattern complexity increases!)"
   }
 ]
