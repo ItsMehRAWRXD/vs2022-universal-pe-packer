@@ -79,6 +79,14 @@ enum ExploitDeliveryType {
     EXPLOIT_XLL = 5             // XLL Exploit
 };
 
+// Encryption Types
+enum EncryptionType {
+    ENCRYPT_NONE = 0,           // No encryption - plain binary
+    ENCRYPT_XOR = 1,            // XOR encryption (simple but effective)
+    ENCRYPT_AES = 2,            // AES-256 encryption
+    ENCRYPT_CHACHA20 = 3        // ChaCha20 encryption (modern, secure)
+};
+
 class AdvancedRandomEngine {
 public:
     std::random_device rd;
