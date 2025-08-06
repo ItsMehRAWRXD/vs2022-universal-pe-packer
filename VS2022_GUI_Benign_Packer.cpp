@@ -1183,12 +1183,13 @@ public:
     
     std::vector<FUDCombination> getVerifiedFUDCombinations() {
         return {
-            // Adobe Systems - VERIFIED FUD COMBINATIONS (5 confirmed reliable)
+            // Adobe Systems - VERIFIED FUD COMBINATIONS (6 confirmed reliable)
             {"Adobe Systems Incorporated", "DigiCert Assured ID Root CA", "Adobe + DigiCert"},
             {"Adobe Systems Incorporated", "GlobalSign Root CA", "Adobe + GlobalSign"},
             {"Adobe Systems Incorporated", "GoDaddy Root Certificate Authority", "Adobe + GoDaddy"},
             {"Adobe Systems Incorporated", "Lenovo Certificate Authority", "Adobe + Lenovo"},
             {"Adobe Systems Incorporated", "Baltimore CyberTrust Root", "Adobe + Baltimore"},
+            {"Adobe Systems Incorporated", "Realtek Root Certificate", "Adobe + Realtek"},
             
             // Google LLC - VERIFIED FUD COMBINATIONS
             {"Google LLC", "GlobalSign Root CA", "Google + GlobalSign"},
