@@ -1153,5 +1153,27 @@
     "vt_link": "YARA_Rule_Analysis_Windows_API_Function",
     "hash": "unknown",
     "notes": "YARA Rule Detection: Windows_API_Function detected API strings in XLL exploits - requires evasion strategies"
+  },
+  {
+    "timestamp": "2025-08-06T06:03:56.393758",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Thawte Timestamping CA",
+    "architecture": "x64",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/b142a8c44a4ada471e2fb26f6ccc902a429a8026d1477e36b194cdc6945a568d?nocache=1",
+    "hash": "b142a8c44a4ada471e2fb26f6ccc902a429a8026d1477e36b194cdc6945a568d",
+    "notes": "Manual test #62 - Thawte + x64 FUD! (Cross-architecture validation)"
+  },
+  {
+    "timestamp": "2025-08-06T06:03:56.395133",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Thawte Timestamping CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file-analysis/NGMyNzllZDNlNDgzOTU4OGVhZDVjMTdjNjQyN2EwZWY6MTc1NDQ2MDEzMQ==",
+    "hash": "analysis_NGMyNzllZDNlNDgzOTU4OGVhZDVjMTdjNjQyN2EwZWY6MTc1NDQ2MDEzMQ==",
+    "notes": "Manual test #63 - Thawte + AnyCPU FUD! (Continuing dominance pattern)"
   }
 ]

@@ -469,3 +469,15 @@ VERIFIED FUD COMBINATIONS
    Link: https://www.virustotal.com/gui/file-analysis/MzNmNGM1NDIxMDA0OTI3NDBiZGUxODA5ZjMxNjdhNDc6MTc1NDQ1OTY5OA==
    Notes: Manual test #61 - XLL EXPLOIT FUD! (ELEVENTH CONSECUTIVE SUCCESS - LEGENDARY 11/11 PERFECT PATTERN!)
 
+✅ Adobe Systems Incorporated + Thawte Timestamping CA + x64
+   Date: 2025-08-06T06:03:56.393758
+   Hash: b142a8c44a4ada471e2fb26f6ccc902a429a8026d1477e36b194cdc6945a568d
+   Link: https://www.virustotal.com/gui/file/b142a8c44a4ada471e2fb26f6ccc902a429a8026d1477e36b194cdc6945a568d?nocache=1
+   Notes: Manual test #62 - Thawte + x64 FUD! (Cross-architecture validation)
+
+✅ Adobe Systems Incorporated + Thawte Timestamping CA + AnyCPU
+   Date: 2025-08-06T06:03:56.395133
+   Hash: analysis_NGMyNzllZDNlNDgzOTU4OGVhZDVjMTdjNjQyN2EwZWY6MTc1NDQ2MDEzMQ==
+   Link: https://www.virustotal.com/gui/file-analysis/NGMyNzllZDNlNDgzOTU4OGVhZDVjMTdjNjQyN2EwZWY6MTc1NDQ2MDEzMQ==
+   Notes: Manual test #63 - Thawte + AnyCPU FUD! (Continuing dominance pattern)
+
