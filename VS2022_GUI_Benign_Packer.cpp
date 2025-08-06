@@ -13,6 +13,8 @@
 #include <commctrl.h>
 #include <shellapi.h>
 #include <shlobj.h>
+#include <tlhelp32.h>
+#include <tchar.h>
 
 #include <iostream>
 #include <fstream>
