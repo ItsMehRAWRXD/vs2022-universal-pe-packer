@@ -231,16 +231,44 @@ DWORD WINAPI ExploitGenerationThread(LPVOID lpParam) {
         fputs(sourceCode, file);
         fclose(file);
         
-        // Simulate compilation delay
-        Sleep(1500);
+        // Update progress
+        PostMessage(hMainWindow, WM_USER + 3, 0, 0);
         
-        // Copy to output path (in real implementation, invoke compiler here)
-        if (CopyFileA(tempSource, outputPath, FALSE)) {
-            DeleteFileA(tempSource);
-            PostMessage(hMainWindow, WM_USER + 1, 1, 0); // Success
+        // Try to compile using system compiler
+        char compileCmd[512];
+        char tempExe[64];
+        snprintf(tempExe, sizeof(tempExe), "temp_%d.exe", GetTickCount());
+        
+        // Try different compiler commands
+        snprintf(compileCmd, sizeof(compileCmd), "cl.exe /nologo /O2 \"%s\" /Fe:\"%s\" /link /SUBSYSTEM:WINDOWS user32.lib 2>nul", tempSource, tempExe);
+        int result = system(compileCmd);
+        
+        if (result != 0) {
+            // Try gcc if cl.exe fails
+            snprintf(compileCmd, sizeof(compileCmd), "gcc -O2 -mwindows \"%s\" -o \"%s\" -luser32 2>nul", tempSource, tempExe);
+            result = system(compileCmd);
+        }
+        
+        if (result != 0) {
+            // If no compiler available, just save the source code
+            if (CopyFileA(tempSource, outputPath, FALSE)) {
+                DeleteFileA(tempSource);
+                PostMessage(hMainWindow, WM_USER + 4, 0, 0); // Source only success
+            } else {
+                DeleteFileA(tempSource);
+                PostMessage(hMainWindow, WM_USER + 1, 0, 0); // Error
+            }
         } else {
-            DeleteFileA(tempSource);
-            PostMessage(hMainWindow, WM_USER + 1, 0, 0); // Error
+            // Compilation successful, copy executable to output path
+            if (CopyFileA(tempExe, outputPath, FALSE)) {
+                DeleteFileA(tempSource);
+                DeleteFileA(tempExe);
+                PostMessage(hMainWindow, WM_USER + 1, 1, 0); // Full success
+            } else {
+                DeleteFileA(tempSource);
+                DeleteFileA(tempExe);
+                PostMessage(hMainWindow, WM_USER + 1, 0, 0); // Error
+            }
         }
     } else {
         PostMessage(hMainWindow, WM_USER + 1, 0, 0); // Error
