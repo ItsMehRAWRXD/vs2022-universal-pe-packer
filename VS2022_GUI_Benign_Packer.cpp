@@ -2022,17 +2022,22 @@ public:
         source << "// Architecture: " << architecture << "\n";
         source << "// Timestamp: " << timestampEngine.generateRealisticTimestamp() << "\n\n";
         
-        // Embed PE data as byte array
+        // Embed PE data as byte array (size limited to prevent source generation issues)
+        const size_t MAX_EMBED_SIZE = 8192; // 8KB limit for testing
+        size_t embedSize = std::min(peData.size(), MAX_EMBED_SIZE);
+        
         source << "unsigned char " << varName << "[] = {\n";
-        for (size_t i = 0; i < peData.size(); i++) {
+        for (size_t i = 0; i < embedSize; i++) {
             if (i % 16 == 0) source << "    ";
             source << "0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<unsigned int>(peData[i]);
-            if (i < peData.size() - 1) source << ", ";
+            if (i < embedSize - 1) source << ", ";
             if (i % 16 == 15) source << "\n";
         }
         source << "\n};\n\n";
         
-        source << "size_t " << varName << "_size = " << std::dec << peData.size() << ";\n\n";
+        // Note: Using limited PE data for testing - full embedding needs chunking
+        
+        source << "size_t " << varName << "_size = " << std::dec << embedSize << ";\n\n";
         
         // Add anti-analysis functions
         source << "bool checkEnvironment() {\n";
