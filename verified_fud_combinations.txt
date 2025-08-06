@@ -91,3 +91,9 @@ VERIFIED FUD COMBINATIONS
    Link: https://www.virustotal.com/gui/file/8cd5ec1a0d8cd9999847705a876110b651ed69c763f62b0606d3ecf925d7eeef?nocache=1
    Notes: Manual test #5 - 0/72 detections confirmed (AnyCPU consistently FUD)
 
+✅ Adobe Systems Incorporated + Realtek Root Certificate + AnyCPU
+   Date: 2025-08-06T04:19:58.289570
+   Hash: analysis_Yjg1YmFmZDc4ZmIzYmY4YzMxNDYyZmViYTcyZmJmZGM6MTc1NDQ1Mzk1NA==
+   Link: https://www.virustotal.com/gui/file-analysis/Yjg1YmFmZDc4ZmIzYmY4YzMxNDYyZmViYTcyZmJmZGM6MTc1NDQ1Mzk1NA==
+   Notes: Manual test - 0/72 detections confirmed (3rd Realtek + AnyCPU validation)
+
