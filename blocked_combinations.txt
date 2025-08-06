@@ -43,3 +43,10 @@ BLOCKED COMBINATIONS
    Link: https://www.virustotal.com/gui/file-analysis/ODYzYTI3MDVjZDI1YTA5ODVmYTgyODViNWQyMzc1Y2Y6MTc1NDQ1NDE5NQ==
    Notes: Manual test - x64 ALSO detected! Realtek pattern changed across both architectures
 
+❌ Adobe Systems Incorporated + Sony Root CA + AnyCPU
+   Detections: 3/72
+   Date: 2025-08-06T04:25:55.906566
+   Hash: unknown
+   Link: manual_test_sony_detected
+   Notes: Manual test - 3/72 detections! Sony pattern changed from previous FUD status
+

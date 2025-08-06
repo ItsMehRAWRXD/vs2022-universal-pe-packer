@@ -284,5 +284,16 @@
     "vt_link": "https://www.virustotal.com/gui/file-analysis/NmExMDUyMzU3MmEwZTUzMTUxMGVmZDYyMDM2ZjAzNTk6MTc1NDQ1NDI2MA==",
     "hash": "analysis_NmExMDUyMzU3MmEwZTUzMTUxMGVmZDYyMDM2ZjAzNTk6MTc1NDQ1NDI2MA==",
     "notes": "Manual test - 0/72 detections confirmed (Samsung Knox AnyCPU validation)"
+  },
+  {
+    "timestamp": "2025-08-06T04:25:55.906566",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Sony Root CA",
+    "architecture": "AnyCPU",
+    "is_fud": false,
+    "detection_count": 3,
+    "vt_link": "manual_test_sony_detected",
+    "hash": "unknown",
+    "notes": "Manual test - 3/72 detections! Sony pattern changed from previous FUD status"
   }
 ]
