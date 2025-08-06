@@ -1871,8 +1871,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         0,
         CLASS_NAME,
         L"Ultimate FUD PE Packer v3.0 - Guaranteed 0/72 Detections",
-        WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX & ~WS_THICKFRAME,
-        CW_USEDEFAULT, CW_USEDEFAULT, 520, 400,
+        WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, 520, 500,
         NULL, NULL, hInstance, NULL
     );
     
