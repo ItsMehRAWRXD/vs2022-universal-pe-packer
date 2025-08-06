@@ -253,3 +253,15 @@ VERIFIED FUD COMBINATIONS
    Link: https://www.virustotal.com/gui/file-analysis/NDczODFmYmRkODgyMDZjYzZkZTgxYWI2NTlkZDZkNGQ6MTc1NDQ1NjA5Mg==
    Notes: Manual test #22 - Apple Root CA + Adobe + x64 FUD! (3rd consecutive recovery success - pattern extended!)
 
+✅ Adobe Systems Incorporated + Apple Root CA + x64
+   Date: 2025-08-06T05:00:05.141726
+   Hash: 94ab1cc36cb3f41e52a921bb332b5cccb0818abad78d21968694a135b23fb919
+   Link: https://www.virustotal.com/gui/file/94ab1cc36cb3f41e52a921bb332b5cccb0818abad78d21968694a135b23fb919?nocache=1
+   Notes: Manual test #24 - Apple Root CA + Adobe + x64 FUD (Recovery phase showing mixed results - 1/2 FUD)
+
+✅ Adobe Systems Incorporated + Apple Root CA + x64
+   Date: 2025-08-06T05:00:05.142308
+   Hash: fee50221db0b200e4738cfcd7593266560dfb6287f76f0089e709294b0755c32
+   Link: https://www.virustotal.com/gui/file/fee50221db0b200e4738cfcd7593266560dfb6287f76f0089e709294b0755c32?nocache=1
+   Notes: Manual test #25 - Apple Root CA + Adobe + x64 FUD (Recovery phase showing mixed results - 2/2 FUD)
+

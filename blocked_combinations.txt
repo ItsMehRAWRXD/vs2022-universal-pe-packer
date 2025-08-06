@@ -113,3 +113,24 @@ BLOCKED COMBINATIONS
    Link: https://www.virustotal.com/gui/file-analysis/OGIzYjVlOGJmYTdjY2VkMDI2ZTc5ODFhMTY3M2QxODg6MTc1NDQ1NjEzMw==
    Notes: Manual test #23 - ELASTIC SECURITY detected (malicious) - Recovery streak ended after 3 consecutive FUD successes
 
+❌ Adobe Systems Incorporated + Apple Root CA + x64
+   Detections: 1/72
+   Date: 2025-08-06T05:00:05.143466
+   Hash: 6628c015b82d74ae61f6dfe77d68f437c1711884dff0bab8890a55364c8441db
+   Link: https://www.virustotal.com/gui/file/6628c015b82d74ae61f6dfe77d68f437c1711884dff0bab8890a55364c8441db?nocache=1
+   Notes: Manual test #26 - Apple Root CA + Adobe + x64 DETECTED (1/3 detections in this batch)
+
+❌ Adobe Systems Incorporated + Apple Root CA + x64
+   Detections: 1/72
+   Date: 2025-08-06T05:00:05.144159
+   Hash: d5343585ca5bbf9e61a309e60dc2226c5f42d4b37a6942d7fc2fc637ecf0365a
+   Link: https://www.virustotal.com/gui/file/d5343585ca5bbf9e61a309e60dc2226c5f42d4b37a6942d7fc2fc637ecf0365a?nocache=1
+   Notes: Manual test #27 - Apple Root CA + Adobe + x64 DETECTED (2/3 detections in this batch)
+
+❌ Adobe Systems Incorporated + Apple Root CA + x64
+   Detections: 1/72
+   Date: 2025-08-06T05:00:05.144760
+   Hash: 486c26eb715c3f7e7b1ba40601ce82977c376eabe6c2df9c258f4619da790642
+   Link: https://www.virustotal.com/gui/file/486c26eb715c3f7e7b1ba40601ce82977c376eabe6c2df9c258f4619da790642?nocache=1
+   Notes: Manual test #28 - Apple Root CA + Adobe + x64 DETECTED (3/3 detections in this batch)
+
