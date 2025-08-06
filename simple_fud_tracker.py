@@ -280,4 +280,37 @@ if __name__ == "__main__":
         'Manual test #67 - Adobe + Thawte + AnyCPU + XOR + PE Exec delivery - FUD SUCCESS! Polymorphic generation working perfectly.'
     )
     
+    # Adding HTML delivery FUD result
+    tracker.add_result(
+        'https://www.virustotal.com/gui/file/8a60d843dbe203a33ad3926cfbd02ad9170067d9b98c61577c04b89d1913532c?nocache=1',
+        'Adobe Systems Incorporated',
+        'Thawte Timestamping CA',
+        'AnyCPU',
+        True,
+        0,
+        'Manual test #68 - Adobe + Thawte + AnyCPU + XOR + HTML delivery - FUD SUCCESS! Multi-vector approach validated.'
+    )
+    
+    # Adding DOCX delivery FUD result
+    tracker.add_result(
+        'https://www.virustotal.com/gui/file/2e82f19a582b6859b2d56223aff1cb1a608808a154babdd66a9c01cd0387a6f5?nocache=1',
+        'Adobe Systems Incorporated',
+        'Thawte Timestamping CA',
+        'AnyCPU',
+        True,
+        0,
+        'Manual test #69 - Adobe + Thawte + AnyCPU + XOR + DOCX delivery - FUD SUCCESS! Document-based evasion confirmed.'
+    )
+    
+    # Adding XLL delivery FUD result
+    tracker.add_result(
+        'https://www.virustotal.com/gui/file/df782b88827b5948529c6674ae1c4cfc8e48aa89638c060e84282173509ef8b1?nocache=1',
+        'Adobe Systems Incorporated',
+        'Thawte Timestamping CA',
+        'AnyCPU',
+        True,
+        0,
+        'Manual test #70 - Adobe + Thawte + AnyCPU + XOR + XLL delivery - FUD SUCCESS! Excel add-in vector working flawlessly.'
+    )
+    
     main()
