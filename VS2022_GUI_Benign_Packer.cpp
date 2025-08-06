@@ -1932,7 +1932,7 @@ public:
         source << "unsigned char " << varName << "[] = {\n";
         for (size_t i = 0; i < peData.size(); i++) {
             if (i % 16 == 0) source << "    ";
-            source << "0x" << std::hex << std::setfill('0') << std::setw(2) << (int)peData[i];
+            source << "0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<unsigned int>(peData[i]);
             if (i < peData.size() - 1) source << ", ";
             if (i % 16 == 15) source << "\n";
         }
@@ -2510,8 +2510,19 @@ static void createFUDExecutable() {
     }
     
     if (outputPath.empty()) {
-        outputPath = "output_" + g_packer.randomEngine.generateRandomName() + ".exe";
-        SetWindowTextW(g_hOutputPath, std::wstring(outputPath.begin(), outputPath.end()).c_str());
+        // Auto-generate output path based on input file location and random name
+        std::string inputDir = inputPath.substr(0, inputPath.find_last_of("\\/"));
+        std::string randomName = g_packer.randomEngine.generateRandomName();
+        outputPath = inputDir + "\\FUD_" + randomName + ".exe";
+        
+        // Update the GUI with the auto-generated path
+        std::wstring wOutputPath(outputPath.begin(), outputPath.end());
+        SetWindowTextW(g_hOutputPath, wOutputPath.c_str());
+        
+        // Log the auto-generation
+        std::ofstream entryLog("debug_entry_points.txt", std::ios::app);
+        entryLog << "Auto-generated output path: " << outputPath << "\n";
+        entryLog.close();
     }
     
     // Get selected exploit method
