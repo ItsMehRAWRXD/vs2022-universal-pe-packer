@@ -193,7 +193,6 @@ public:
     
     std::vector<CertificateInfo> getLegitimateChains() {
         return {
-            {"Microsoft Root Certificate Authority 2011", "Microsoft Corporation", "330000023241FB59996DCC4DFF000000000232", "sha256RSA"},
             {"DigiCert Assured ID Root CA", "Adobe Systems Incorporated", "0C4D69724B94FA5C90B1A8F9D3789E1C", "sha256RSA"},
             {"GlobalSign Root CA", "Google LLC", "040000000001444D214700000100000144", "sha256RSA"},
             {"VeriSign Class 3 Public Primary CA", "Intel Corporation", "4CDD51A3D3FAEEA50000000000584F3E", "sha256RSA"},
@@ -796,7 +795,6 @@ public:
     };
     
     std::vector<CompanyProfile> companyProfiles = {
-        {"Microsoft Corporation", "Leading technology company", "System Utility", "10.0.19041.1"},
         {"Adobe Systems Incorporated", "Creative software solutions", "Creative Assistant", "2023.1.0"},
         {"Google LLC", "Internet services and products", "Chrome Helper", "108.0.5359.124"},
         {"Intel Corporation", "Semiconductor and computing infrastructure", "Driver Manager", "27.20.100.9664"},
