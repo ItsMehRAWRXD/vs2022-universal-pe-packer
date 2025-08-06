@@ -1859,9 +1859,6 @@ public:
             
             std::string compileCmd;
             
-            // Try robust compiler detection first
-            auto compilerInfo = CompilerDetector::detectVisualStudio();
-            
             if (compilerInfo.found && !compilerInfo.vcvarsPath.empty()) {
                 // Use detected VS installation
                 compileCmd = "cmd /c \"\"" + compilerInfo.vcvarsPath + "\" && cl.exe /nologo /O2 /MD /EHsc \"" + sourceFilename + 
