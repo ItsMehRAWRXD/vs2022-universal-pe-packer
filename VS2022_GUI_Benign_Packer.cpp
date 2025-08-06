@@ -4383,13 +4383,15 @@ static void createStealthTripleEncryptedStub() {
             throw std::runtime_error("Input file is empty or could not be read");
         }
         
-        // Configure stealth encryption based on GUI options
-        // For now, we'll use the basic encryptFile method from StealthTripleEncryption
-        // This creates a self-contained stub with the encrypted data
-        bool success = g_packer.stealthEncryption.encryptFile(inputPath, outputPath);
+        // Reseed RNG for maximum uniqueness before encryption
+        g_packer.stealthEncryption.reseedForNewStub();
         
-        if (!success) {
-            throw std::runtime_error("Failed to create stealth encrypted file");
+        // Configure stealth encryption based on GUI options
+        // Use the enhanced encryptFile method from StealthTripleEncryption
+        std::string result = g_packer.stealthEncryption.encryptFile(inputPath, outputPath);
+        
+        if (result.find("Success") == std::string::npos) {
+            throw std::runtime_error("Failed to create stealth encrypted file: " + result);
         }
         
         // Update status with success message
