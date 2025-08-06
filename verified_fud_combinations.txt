@@ -85,3 +85,9 @@ VERIFIED FUD COMBINATIONS
    Link: https://www.virustotal.com/gui/file/121f2a039fc5675e36d0106374f36c3b0f1f9ea84f7467a9f4a84bb04e562dfc?nocache=1
    Notes: Manual test #4 - 0/72 detections confirmed (AnyCPU architecture)
 
+✅ Adobe Systems Incorporated + HP Enterprise Root CA + AnyCPU
+   Date: 2025-08-06T04:18:45.902325
+   Hash: 8cd5ec1a0d8cd9999847705a876110b651ed69c763f62b0606d3ecf925d7eeef
+   Link: https://www.virustotal.com/gui/file/8cd5ec1a0d8cd9999847705a876110b651ed69c763f62b0606d3ecf925d7eeef?nocache=1
+   Notes: Manual test #5 - 0/72 detections confirmed (AnyCPU consistently FUD)
+
