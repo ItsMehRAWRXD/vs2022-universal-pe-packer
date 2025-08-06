@@ -71,3 +71,10 @@ BLOCKED COMBINATIONS
    Link: manual_test_baltimore_detected
    Notes: Manual test - Baltimore CyberTrust Root CHANGED from previous FUD to DETECTED!
 
+❌ Adobe Systems Incorporated + Comodo RSA CA + AnyCPU
+   Detections: 1/72
+   Date: 2025-08-06T04:29:44.929498
+   Hash: unknown
+   Link: manual_test_comodo_detected_anycpu
+   Notes: Manual test - Comodo RSA CA detected with Adobe + AnyCPU (testing x64 next)
+

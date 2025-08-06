@@ -339,5 +339,16 @@
     "vt_link": "manual_test_baltimore_detected",
     "hash": "unknown",
     "notes": "Manual test - Baltimore CyberTrust Root CHANGED from previous FUD to DETECTED!"
+  },
+  {
+    "timestamp": "2025-08-06T04:29:44.929498",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Comodo RSA CA",
+    "architecture": "AnyCPU",
+    "is_fud": false,
+    "detection_count": 1,
+    "vt_link": "manual_test_comodo_detected_anycpu",
+    "hash": "unknown",
+    "notes": "Manual test - Comodo RSA CA detected with Adobe + AnyCPU (testing x64 next)"
   }
 ]
