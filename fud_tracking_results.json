@@ -251,5 +251,16 @@
     "vt_link": "https://www.virustotal.com/gui/file-analysis/MmM2YjM2YjgzOGE5YmFkOWRkNmNiNzhkN2MxYmI5MDk6MTc1NDQ1NDA5MA==",
     "hash": "analysis_MmM2YjM2YjgzOGE5YmFkOWRkNmNiNzhkN2MxYmI5MDk6MTc1NDQ1NDA5MA==",
     "notes": "Manual test - 0/72 detections confirmed (New certificate discovery for AnyCPU)"
+  },
+  {
+    "timestamp": "2025-08-06T04:23:13.146852",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Realtek Root Certificate",
+    "architecture": "AnyCPU",
+    "is_fud": false,
+    "detection_count": 1,
+    "vt_link": "https://www.virustotal.com/gui/file-analysis/YjA5Y2QzYzA4Y2FiZjQyYWZhOGNjZTA3MDZhOGViNGU6MTc1NDQ1NDE0Mw==",
+    "hash": "analysis_YjA5Y2QzYzA4Y2FiZjQyYWZhOGNjZTA3MDZhOGViNGU6MTc1NDQ1NDE0Mw==",
+    "notes": "Manual test - NOT FUD! First Realtek failure detected"
   }
 ]
