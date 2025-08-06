@@ -1399,25 +1399,19 @@ public:
             
             std::string compileCmd;
             
-            // Try to use vcvars64.bat if available
+            // Use cmd /c wrapper for better reliability (like the debug tool)
             if (!compilerInfo.vcvarsPath.empty()) {
-                compileCmd = "call \"" + compilerInfo.vcvarsPath + "\" >nul 2>&1 && ";
+                compileCmd = "cmd /c \"\"" + compilerInfo.vcvarsPath + "\" && ";
             } else {
                 // Use Enterprise vcvars64.bat
-                compileCmd = "call \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat\" >nul 2>&1 && ";
+                compileCmd = "cmd /c \"\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat\" && ";
             }
             
-            // Build the compilation command
-            if (compilerInfo.path == "cl.exe") {
-                compileCmd += "cl /nologo /O2 /EHsc /DNDEBUG /MD ";
-            } else {
-                compileCmd += "\"" + compilerInfo.path + "\" /nologo /O2 /EHsc /DNDEBUG /MD ";
-            }
-            
-            compileCmd += "/Fe\"" + outputPath + "\" ";
+            // Build the compilation command (simplified like debug tool)
+            compileCmd += "cl.exe /nologo /O2 /MT /EHsc ";
             compileCmd += "\"" + tempSource + "\" ";
-            compileCmd += "/link " + archFlags + " /OPT:REF /OPT:ICF ";
-            compileCmd += "user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib";
+            compileCmd += "/Fe:\"" + outputPath + "\" ";
+            compileCmd += "user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib\"";
             
             // DEBUG: Write compilation command to file for inspection
             std::ofstream debugFile("debug_compile_cmd.txt");
