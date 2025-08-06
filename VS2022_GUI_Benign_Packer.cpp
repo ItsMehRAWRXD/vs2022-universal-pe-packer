@@ -30,6 +30,7 @@
 #include <sstream>
 #include <iomanip>
 #include <ctime>
+#include <cstring>
 
 #pragma comment(lib, "ole32.lib")
 #pragma comment(lib, "crypt32.lib")
@@ -2405,9 +2406,339 @@ exit /b 1
     
 private:
     std::vector<uint8_t> generateMinimalPEExecutable(const std::string& sourceCode) {
-        // This would generate a minimal PE executable that contains the functionality
-        // For now, return empty to use fallback compilation
-        return std::vector<uint8_t>();
+        // Create a minimal PE executable from source code without external compilers
+        // This implements a basic PE generator for Windows executables
+        
+        std::vector<uint8_t> peData;
+        
+        try {
+            // Parse source code to extract key components
+            ParsedSource parsed = parseSourceCode(sourceCode);
+            if (!parsed.valid) {
+                return {}; // Fallback if parsing fails
+            }
+            
+            // Generate machine code for the parsed functionality
+            std::vector<uint8_t> machineCode = generateMachineCode(parsed);
+            if (machineCode.empty()) {
+                return {}; // Fallback if code generation fails
+            }
+            
+            // Build complete PE structure
+            peData = buildPEExecutable(machineCode, parsed);
+            
+            return peData;
+            
+        } catch (...) {
+            // Any error in PE generation - fallback to external compiler
+            return {};
+        }
+    }
+    
+    struct ParsedSource {
+        bool valid = false;
+        std::vector<std::string> messagesToShow;
+        std::string companyName;
+        bool hasMainFunction = false;
+        bool hasMessageBox = false;
+        bool hasSleep = false;
+        bool hasSystemChecks = false;
+    };
+    
+    ParsedSource parseSourceCode(const std::string& sourceCode) {
+        ParsedSource parsed;
+        
+        // Look for key patterns in the source code
+        if (sourceCode.find("int main(") != std::string::npos) {
+            parsed.hasMainFunction = true;
+        }
+        
+        if (sourceCode.find("MessageBoxA") != std::string::npos) {
+            parsed.hasMessageBox = true;
+            
+            // Extract message text from MessageBoxA calls
+            size_t pos = 0;
+            while ((pos = sourceCode.find("MessageBoxA(NULL, \"", pos)) != std::string::npos) {
+                pos += 19; // Skip "MessageBoxA(NULL, \""
+                size_t endPos = sourceCode.find("\"", pos);
+                if (endPos != std::string::npos) {
+                    std::string message = sourceCode.substr(pos, endPos - pos);
+                    // Replace \\n with actual newlines
+                    size_t nlPos = 0;
+                    while ((nlPos = message.find("\\n", nlPos)) != std::string::npos) {
+                        message.replace(nlPos, 2, "\n");
+                        nlPos += 1;
+                    }
+                    parsed.messagesToShow.push_back(message);
+                    
+                    // Extract company name if it's in the message
+                    if (parsed.companyName.empty()) {
+                        if (message.find("Adobe") != std::string::npos) {
+                            parsed.companyName = "Adobe Systems Incorporated";
+                        } else if (message.find("Google") != std::string::npos) {
+                            parsed.companyName = "Google LLC";
+                        } else if (message.find("Microsoft") != std::string::npos) {
+                            parsed.companyName = "Microsoft Corporation";
+                        } else if (message.find("Intel") != std::string::npos) {
+                            parsed.companyName = "Intel Corporation";
+                        }
+                    }
+                }
+                pos = endPos;
+            }
+        }
+        
+        if (sourceCode.find("sleep_for") != std::string::npos || 
+            sourceCode.find("Sleep(") != std::string::npos) {
+            parsed.hasSleep = true;
+        }
+        
+        if (sourceCode.find("GetVersion") != std::string::npos ||
+            sourceCode.find("GetComputerName") != std::string::npos) {
+            parsed.hasSystemChecks = true;
+        }
+        
+        parsed.valid = parsed.hasMainFunction && !parsed.messagesToShow.empty();
+        return parsed;
+    }
+    
+    std::vector<uint8_t> generateMachineCode(const ParsedSource& parsed) {
+        std::vector<uint8_t> code;
+        
+        // Generate x64 machine code for the basic functionality
+        // This creates a minimal program that shows message boxes
+        
+        // Function prologue
+        code.insert(code.end(), {
+            0x48, 0x83, 0xEC, 0x28,                    // sub rsp, 40 (shadow space)
+            0x48, 0x8D, 0x0D, 0x00, 0x00, 0x00, 0x00,  // lea rcx, [rip+message]
+        });
+        
+        // Store message offset for later patching
+        size_t messageOffsetPos = code.size() - 4;
+        
+        code.insert(code.end(), {
+            0x48, 0x8D, 0x15, 0x00, 0x00, 0x00, 0x00,  // lea rdx, [rip+title]
+        });
+        
+        // Store title offset for later patching  
+        size_t titleOffsetPos = code.size() - 4;
+        
+        code.insert(code.end(), {
+            0x45, 0x31, 0xC0,                          // xor r8d, r8d (MB_OK)
+            0x45, 0x31, 0xC9,                          // xor r9d, r9d (hWnd = NULL)
+            0xFF, 0x15, 0x00, 0x00, 0x00, 0x00,        // call [rip+MessageBoxA_import]
+        });
+        
+        // Store import offset for later patching
+        size_t importOffsetPos = code.size() - 4;
+        
+        // Function epilogue
+        code.insert(code.end(), {
+            0x31, 0xC0,                                // xor eax, eax (return 0)
+            0x48, 0x83, 0xC4, 0x28,                    // add rsp, 40
+            0xC3                                       // ret
+        });
+        
+        // Add string data
+        size_t stringDataStart = code.size();
+        
+        // Add message text
+        std::string message = parsed.messagesToShow.empty() ? 
+            "System check completed successfully." : parsed.messagesToShow[0];
+        code.insert(code.end(), message.begin(), message.end());
+        code.push_back(0); // null terminator
+        
+        // Add title text
+        std::string title = parsed.companyName.empty() ? "Application" : parsed.companyName;
+        size_t titleStart = code.size();
+        code.insert(code.end(), title.begin(), title.end());
+        code.push_back(0); // null terminator
+        
+        // Patch offsets (relative addressing)
+        // Message offset
+        int32_t messageOffset = static_cast<int32_t>(stringDataStart - (messageOffsetPos + 4));
+        memcpy(&code[messageOffsetPos], &messageOffset, 4);
+        
+                 // Title offset  
+         int32_t titleOffset = static_cast<int32_t>(titleStart - (titleOffsetPos + 4));
+         memcpy(&code[titleOffsetPos], &titleOffset, 4);
+         
+         // Import offset - calculate relative to import address table (IAT)
+         // The IAT will be at RVA 0x3000, and our code starts at RVA 0x1000
+         // So the relative offset from importOffsetPos to IAT is:
+         int32_t importOffset = 0x3000 - (0x1000 + importOffsetPos + 4);
+         memcpy(&code[importOffsetPos], &importOffset, 4);
+         
+         return code;
+    }
+    
+    std::vector<uint8_t> buildPEExecutable(const std::vector<uint8_t>& machineCode, const ParsedSource& parsed) {
+        std::vector<uint8_t> pe;
+        
+        // DOS Header
+        IMAGE_DOS_HEADER dosHeader = {};
+        dosHeader.e_magic = IMAGE_DOS_SIGNATURE;  // "MZ"
+        dosHeader.e_cblp = 0x90;
+        dosHeader.e_cp = 0x3;
+        dosHeader.e_crlc = 0x0;
+        dosHeader.e_cparhdr = 0x4;
+        dosHeader.e_minalloc = 0x0;
+        dosHeader.e_maxalloc = 0xFFFF;
+        dosHeader.e_ss = 0x0;
+        dosHeader.e_sp = 0xB8;
+        dosHeader.e_csum = 0x0;
+        dosHeader.e_ip = 0x0;
+        dosHeader.e_cs = 0x0;
+        dosHeader.e_lfarlc = 0x40;
+        dosHeader.e_ovno = 0x0;
+        dosHeader.e_lfanew = 0x80; // PE header starts at 0x80
+        
+        pe.resize(sizeof(dosHeader));
+        memcpy(pe.data(), &dosHeader, sizeof(dosHeader));
+        
+        // DOS stub
+        pe.resize(0x80, 0);
+        
+        // PE Header
+        IMAGE_NT_HEADERS64 ntHeaders = {};
+        ntHeaders.Signature = IMAGE_NT_SIGNATURE; // "PE\0\0"
+        
+        // File Header
+        ntHeaders.FileHeader.Machine = IMAGE_FILE_MACHINE_AMD64;
+        ntHeaders.FileHeader.NumberOfSections = 3; // .text, .rdata, .idata
+        ntHeaders.FileHeader.TimeDateStamp = static_cast<DWORD>(time(nullptr));
+        ntHeaders.FileHeader.PointerToSymbolTable = 0;
+        ntHeaders.FileHeader.NumberOfSymbols = 0;
+        ntHeaders.FileHeader.SizeOfOptionalHeader = sizeof(IMAGE_OPTIONAL_HEADER64);
+        ntHeaders.FileHeader.Characteristics = IMAGE_FILE_EXECUTABLE_IMAGE | 
+                                              IMAGE_FILE_LINE_NUMBERS_STRIPPED |
+                                              IMAGE_FILE_LOCAL_SYMS_STRIPPED |
+                                              IMAGE_FILE_LARGE_ADDRESS_AWARE;
+        
+        // Optional Header
+        ntHeaders.OptionalHeader.Magic = IMAGE_NT_OPTIONAL_HDR64_MAGIC;
+        ntHeaders.OptionalHeader.MajorLinkerVersion = 14;
+        ntHeaders.OptionalHeader.MinorLinkerVersion = 0;
+        ntHeaders.OptionalHeader.SizeOfCode = 0x1000;
+        ntHeaders.OptionalHeader.SizeOfInitializedData = 0x2000;
+        ntHeaders.OptionalHeader.SizeOfUninitializedData = 0;
+        ntHeaders.OptionalHeader.AddressOfEntryPoint = 0x1000; // .text section
+        ntHeaders.OptionalHeader.BaseOfCode = 0x1000;
+        ntHeaders.OptionalHeader.ImageBase = 0x140000000; // x64 default
+        ntHeaders.OptionalHeader.SectionAlignment = 0x1000;
+        ntHeaders.OptionalHeader.FileAlignment = 0x200;
+        ntHeaders.OptionalHeader.MajorOperatingSystemVersion = 6;
+        ntHeaders.OptionalHeader.MinorOperatingSystemVersion = 0;
+        ntHeaders.OptionalHeader.MajorImageVersion = 1;
+        ntHeaders.OptionalHeader.MinorImageVersion = 0;
+        ntHeaders.OptionalHeader.MajorSubsystemVersion = 6;
+        ntHeaders.OptionalHeader.MinorSubsystemVersion = 0;
+        ntHeaders.OptionalHeader.Win32VersionValue = 0;
+        ntHeaders.OptionalHeader.SizeOfImage = 0x4000; // Total loaded size
+        ntHeaders.OptionalHeader.SizeOfHeaders = 0x400;
+        ntHeaders.OptionalHeader.CheckSum = 0;
+        ntHeaders.OptionalHeader.Subsystem = IMAGE_SUBSYSTEM_WINDOWS_CUI; // Console app
+        ntHeaders.OptionalHeader.DllCharacteristics = IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE |
+                                                     IMAGE_DLLCHARACTERISTICS_NX_COMPAT |
+                                                     IMAGE_DLLCHARACTERISTICS_TERMINAL_SERVER_AWARE;
+        ntHeaders.OptionalHeader.SizeOfStackReserve = 0x100000;
+        ntHeaders.OptionalHeader.SizeOfStackCommit = 0x1000;
+        ntHeaders.OptionalHeader.SizeOfHeapReserve = 0x100000;
+        ntHeaders.OptionalHeader.SizeOfHeapCommit = 0x1000;
+        ntHeaders.OptionalHeader.LoaderFlags = 0;
+        ntHeaders.OptionalHeader.NumberOfRvaAndSizes = IMAGE_NUMBEROF_DIRECTORY_ENTRIES;
+        
+        // Import Directory
+        ntHeaders.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress = 0x3000;
+        ntHeaders.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size = 0x100;
+        
+        size_t ntHeadersPos = pe.size();
+        pe.resize(pe.size() + sizeof(ntHeaders));
+        memcpy(pe.data() + ntHeadersPos, &ntHeaders, sizeof(ntHeaders));
+        
+        // Section Headers
+        IMAGE_SECTION_HEADER sections[3] = {};
+        
+        // .text section
+        strcpy_s(reinterpret_cast<char*>(sections[0].Name), 8, ".text");
+        sections[0].Misc.VirtualSize = static_cast<DWORD>(machineCode.size());
+        sections[0].VirtualAddress = 0x1000;
+        sections[0].SizeOfRawData = 0x200;
+        sections[0].PointerToRawData = 0x400;
+        sections[0].Characteristics = IMAGE_SCN_CNT_CODE | IMAGE_SCN_MEM_EXECUTE | IMAGE_SCN_MEM_READ;
+        
+        // .rdata section
+        strcpy_s(reinterpret_cast<char*>(sections[1].Name), 8, ".rdata");
+        sections[1].Misc.VirtualSize = 0x100;
+        sections[1].VirtualAddress = 0x2000;
+        sections[1].SizeOfRawData = 0x200;
+        sections[1].PointerToRawData = 0x600;
+        sections[1].Characteristics = IMAGE_SCN_CNT_INITIALIZED_DATA | IMAGE_SCN_MEM_READ;
+        
+        // .idata section (imports)
+        strcpy_s(reinterpret_cast<char*>(sections[2].Name), 8, ".idata");
+        sections[2].Misc.VirtualSize = 0x200;
+        sections[2].VirtualAddress = 0x3000;
+        sections[2].SizeOfRawData = 0x200;
+        sections[2].PointerToRawData = 0x800;
+        sections[2].Characteristics = IMAGE_SCN_CNT_INITIALIZED_DATA | IMAGE_SCN_MEM_READ | IMAGE_SCN_MEM_WRITE;
+        
+        pe.resize(pe.size() + sizeof(sections));
+        memcpy(pe.data() + pe.size() - sizeof(sections), sections, sizeof(sections));
+        
+        // Pad to file alignment
+        pe.resize(0x400, 0);
+        
+        // .text section data
+        pe.resize(0x600);
+        if (machineCode.size() <= 0x200) {
+            memcpy(pe.data() + 0x400, machineCode.data(), machineCode.size());
+        }
+        
+        // .rdata section data (strings, etc.)
+        pe.resize(0x800, 0);
+        
+        // .idata section data (import table)
+        pe.resize(0xA00, 0);
+        buildImportTable(pe, 0x800);
+        
+        return pe;
+    }
+    
+    void buildImportTable(std::vector<uint8_t>& pe, size_t idataOffset) {
+        // Build import table for user32.dll (MessageBoxA)
+        
+        // Import Directory Table
+        IMAGE_IMPORT_DESCRIPTOR importDesc = {};
+        importDesc.OriginalFirstThunk = 0x3020; // RVA to Import Name Table
+        importDesc.TimeDateStamp = 0;
+        importDesc.ForwarderChain = 0;
+        importDesc.Name = 0x3040; // RVA to DLL name
+        importDesc.FirstThunk = 0x3000; // RVA to Import Address Table
+        
+        memcpy(pe.data() + idataOffset, &importDesc, sizeof(importDesc));
+        
+        // Null terminator for import directory
+        IMAGE_IMPORT_DESCRIPTOR nullDesc = {};
+        memcpy(pe.data() + idataOffset + sizeof(importDesc), &nullDesc, sizeof(nullDesc));
+        
+        // Import Address Table (IAT)
+        uint64_t messageBoxThunk = 0x3050; // RVA to import by name
+        memcpy(pe.data() + idataOffset + 0x200, &messageBoxThunk, sizeof(messageBoxThunk));
+        
+        // Import Name Table
+        memcpy(pe.data() + idataOffset + 0x220, &messageBoxThunk, sizeof(messageBoxThunk));
+        
+        // DLL name
+        const char* dllName = "user32.dll";
+        memcpy(pe.data() + idataOffset + 0x240, dllName, strlen(dllName) + 1);
+        
+        // Import by name (MessageBoxA)
+        uint16_t hint = 0;
+        const char* funcName = "MessageBoxA";
+        memcpy(pe.data() + idataOffset + 0x250, &hint, sizeof(hint));
+        memcpy(pe.data() + idataOffset + 0x252, funcName, strlen(funcName) + 1);
     }
 };
 
