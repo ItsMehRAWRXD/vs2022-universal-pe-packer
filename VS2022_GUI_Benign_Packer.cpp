@@ -1585,6 +1585,9 @@ public:
             // Generate super benign code with all enhancements
             std::string benignCode = benignBehavior.generateBenignCode(company.name);
             
+            // Append minimal entry-point so the stub links
+            benignCode += "\nint main() {\n    performBenignOperations();\n    return 0;\n}\n";
+            
             // Apply DNA randomization (this adds junk variables safely)
             benignCode = dnaRandomizer.randomizeCode(benignCode);
             
@@ -1768,6 +1771,9 @@ public:
             
             // Generate super benign code with all enhancements
             std::string benignCode = benignBehavior.generateBenignCode(company.name);
+            
+            // Append minimal entry-point so the stub links
+            benignCode += "\nint main() {\n    performBenignOperations();\n    return 0;\n}\n";
             
             // Apply DNA randomization (this adds junk variables safely)
             benignCode = dnaRandomizer.randomizeCode(benignCode);
