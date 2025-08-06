@@ -240,5 +240,16 @@
     "vt_link": "https://www.virustotal.com/gui/file-analysis/OGQwZTM0ZDdjYzk5NDFjNDJiM2Q3OGI3ODhkNjA5NTk6MTc1NDQ1NDA0Mw==",
     "hash": "analysis_OGQwZTM0ZDdjYzk5NDFjNDJiM2Q3OGI3ODhkNjA5NTk6MTc1NDQ1NDA0Mw==",
     "notes": "Manual test - 0/72 detections confirmed (AnyCPU architecture - differs from x64 result!)"
+  },
+  {
+    "timestamp": "2025-08-06T04:22:08.932503",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Broadcom Root CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file-analysis/MmM2YjM2YjgzOGE5YmFkOWRkNmNiNzhkN2MxYmI5MDk6MTc1NDQ1NDA5MA==",
+    "hash": "analysis_MmM2YjM2YjgzOGE5YmFkOWRkNmNiNzhkN2MxYmI5MDk6MTc1NDQ1NDA5MA==",
+    "notes": "Manual test - 0/72 detections confirmed (New certificate discovery for AnyCPU)"
   }
 ]
