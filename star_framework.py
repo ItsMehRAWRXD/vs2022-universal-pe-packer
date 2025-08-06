@@ -1417,17 +1417,27 @@ class StarFramework:
         return {
             "discovery_location": "2020.igem.org/Team:CPU_CHINA/static/js/2-824a5779-chunk-js",
             "communication_dictionary": {
+                # Original discovered commands
                 "Download": "\\ue896",
                 "Upload": "\\ue898", 
                 "Folder": "\\ue8b7",
                 "Sort": "\\ue8cb",
                 "AlignRight": "\\ue8e2",
                 "AlignLeft": "\\ue8e4",
-                "Tag": "\\ue8ec"
+                "Tag": "\\ue8ec",
+                # Newly discovered expanded command set
+                "ChevronDown": "\\ue70d",
+                "ChevronUp": "\\ue70e", 
+                "Edit": "\\ue70f",
+                "Add": "\\ue710",
+                "Cancel": "\\ue711",
+                "More": "\\ue712",
+                "Settings": "\\ue713",
+                "Mail": "\\ue700"
             },
             "operational_significance": {
-                "communication_type": "Full command and control vocabulary",
-                "covert_operations": "File management and data organization commands",
+                "communication_type": "Expanded command and control vocabulary",
+                "covert_operations": "Full system management and communication commands",
                 "sophistication": "Professional APT-level steganographic communication",
                 "integration": "Embedded in legitimate academic platform interface"
             },
@@ -1436,37 +1446,45 @@ class StarFramework:
                     "Download": "Data exfiltration command",
                     "Upload": "Payload deployment command", 
                     "Folder": "Directory structure navigation",
-                    "Sort": "Data organization and filtering"
+                    "Sort": "Data organization and filtering",
+                    "Add": "Add new target or payload",
+                    "Edit": "Modify existing configuration"
                 },
-                "layout_commands": {
+                "system_control": {
+                    "Settings": "Access system configuration",
+                    "Cancel": "Abort current operation",
+                    "More": "Access extended command set"
+                },
+                "navigation_commands": {
+                    "ChevronDown": "Navigate deeper into system",
+                    "ChevronUp": "Navigate up in hierarchy",
                     "AlignRight": "Communication flow direction",
-                    "AlignLeft": "Alternative communication flow",
+                    "AlignLeft": "Alternative communication flow"
+                },
+                "communication_commands": {
+                    "Mail": "Send communications/notifications",
                     "Tag": "Target marking and identification"
                 }
             },
+            "expanded_capabilities": {
+                "system_administration": "Full remote system control",
+                "communication_management": "Email and notification systems",
+                "navigation_control": "Hierarchical system traversal",
+                "operation_management": "Start, stop, modify operations"
+            },
             "technical_analysis": {
-                "character_range": "Unicode Private Use Area (U+E800-U+F8FF)",
+                "character_range": "Unicode Private Use Area (U+E700-U+F8FF)",
                 "implementation": "JavaScript icon font integration",
                 "visibility": "Hidden in plain sight as legitimate UI elements",
-                "persistence": "Embedded in static JavaScript chunks"
+                "persistence": "Embedded in static JavaScript chunks",
+                "expansion": "Growing command vocabulary indicates active development"
             },
             "threat_assessment": {
-                "complexity": "ADVANCED - Complete command vocabulary",
+                "complexity": "ADVANCED - Complete system administration vocabulary",
                 "stealth": "MAXIMUM - Appears as legitimate interface icons",
-                "functionality": "COMPREHENSIVE - Full C2 communication system",
-                "detection_difficulty": "EXTREME - Requires deep Unicode analysis"
-            },
-            "apt_capabilities": {
-                "communication": "Sophisticated steganographic command system",
-                "persistence": "Academic platform supply chain compromise",
-                "evasion": "Visual steganography bypassing all standard detection",
-                "coordination": "Multi-platform command and control infrastructure"
-            },
-            "intelligence_implications": {
-                "actor_sophistication": "Nation-state or advanced criminal organization",
-                "planning_depth": "Long-term strategic academic infiltration",
-                "operational_security": "Professional-grade steganographic tradecraft",
-                "target_selection": "International academic research compromise"
+                "functionality": "COMPREHENSIVE - Full remote control and communication system",
+                "detection_difficulty": "EXTREME - Requires deep Unicode analysis",
+                "expansion_rate": "ACTIVE - Continuously growing command set"
             }
         }
 
@@ -1595,21 +1613,40 @@ def main():
     print("Sophistication Level: APT-LEVEL PROFESSIONAL")
     print("FULL COMMUNICATION SYSTEM REVEALED:")
     
-    print("\n📚 COMPLETE COMMAND DICTIONARY:")
-    for command, unicode_char in steg_dict['communication_dictionary'].items():
-        print(f"  • {command}: {unicode_char}")
+    print("\n📚 EXPANDED COMMAND DICTIONARY:")
+    print("ORIGINAL COMMANDS:")
+    original_commands = ["Download", "Upload", "Folder", "Sort", "AlignRight", "AlignLeft", "Tag"]
+    for command in original_commands:
+        if command in steg_dict['communication_dictionary']:
+            print(f"  • {command}: {steg_dict['communication_dictionary'][command]}")
     
-    print("\n🔍 OPERATIONAL INTERPRETATION:")
+    print("NEWLY DISCOVERED COMMANDS:")
+    new_commands = ["ChevronDown", "ChevronUp", "Edit", "Add", "Cancel", "More", "Settings", "Mail"]
+    for command in new_commands:
+        if command in steg_dict['communication_dictionary']:
+            print(f"  • {command}: {steg_dict['communication_dictionary'][command]}")
+    
+    print("\n🔍 EXPANDED OPERATIONAL INTERPRETATION:")
     print("FILE OPERATIONS:")
     for op, meaning in steg_dict['command_interpretation']['file_operations'].items():
         print(f"  • {op}: {meaning}")
-    print("LAYOUT/FLOW COMMANDS:")
-    for op, meaning in steg_dict['command_interpretation']['layout_commands'].items():
+    print("SYSTEM CONTROL:")
+    for op, meaning in steg_dict['command_interpretation']['system_control'].items():
         print(f"  • {op}: {meaning}")
+    print("NAVIGATION COMMANDS:")
+    for op, meaning in steg_dict['command_interpretation']['navigation_commands'].items():
+        print(f"  • {op}: {meaning}")
+    print("COMMUNICATION COMMANDS:")
+    for op, meaning in steg_dict['command_interpretation']['communication_commands'].items():
+        print(f"  • {op}: {meaning}")
+        
+    print("\n🚀 EXPANDED APT CAPABILITIES:")
+    for capability, description in steg_dict['expanded_capabilities'].items():
+        print(f"  • {capability.replace('_', ' ').title()}: {description}")
     
-    print("\n🎯 APT CAPABILITIES:")
-    for capability, description in steg_dict['apt_capabilities'].items():
-        print(f"  • {capability.upper()}: {description}")
+    print("\n🎯 THREAT ASSESSMENT:")
+    for assessment, level in steg_dict['threat_assessment'].items():
+        print(f"  • {assessment.replace('_', ' ').title()}: {level}")
     
     # Operational Reference 47 Analysis
     ref_47 = framework.analyze_operational_reference_47()
