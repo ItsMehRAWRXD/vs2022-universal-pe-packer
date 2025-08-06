@@ -1907,6 +1907,11 @@ public:
             debugLog << "Output file: " << outputPath << "\n";
             debugLog << "Source file: " << sourceFilename << "\n";
             debugLog << "PE data size: " << originalPEData.size() << " bytes\n";
+            debugLog << "Architecture: " << (architecture == MultiArchitectureSupport::Architecture::x86 ? "x86" : 
+                                           architecture == MultiArchitectureSupport::Architecture::x64 ? "x64" : "AnyCPU") << "\n";
+            debugLog << "VCVars script: " << vcvarsScript << "\n";
+            debugLog << "Arch flags: " << archFlags << "\n";
+            debugLog << "VS found: " << (foundVS ? "YES" : "NO") << "\n";
             debugLog << "Compilation command: " << compileCmd << "\n";
             debugLog << "Command length: " << compileCmd.length() << "\n";
             debugLog.close();
