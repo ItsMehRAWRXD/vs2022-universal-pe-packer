@@ -391,3 +391,9 @@ VERIFIED FUD COMBINATIONS
    Link: https://www.virustotal.com/gui/file-analysis/NTFlZWMyNTk4NTBmYTE0YmE2MTkyZjI3NzE5Y2QyNjQ6MTc1NDQ1OTM4NQ==
    Notes: Manual test #51 - XLL EXPLOIT FUD! (Excel add-in delivery vector + Thawte Timestamping CA success)
 
+✅ Adobe Systems Incorporated + Thawte Timestamping CA + AnyCPU
+   Date: 2025-08-06T05:51:55.241286
+   Hash: 029df429b5a53949309ad1110844e12e58f10e3603008a801a4a80fba377bc6d
+   Link: https://www.virustotal.com/gui/file/029df429b5a53949309ad1110844e12e58f10e3603008a801a4a80fba377bc6d?nocache=1
+   Notes: Manual test #52 - XLL EXPLOIT FUD! (Second consecutive Thawte + XLL success - pattern confirmation)
+

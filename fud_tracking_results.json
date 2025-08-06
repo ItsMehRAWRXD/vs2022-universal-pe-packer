@@ -999,5 +999,16 @@
     "vt_link": "https://www.virustotal.com/gui/file-analysis/NTFlZWMyNTk4NTBmYTE0YmE2MTkyZjI3NzE5Y2QyNjQ6MTc1NDQ1OTM4NQ==",
     "hash": "analysis_NTFlZWMyNTk4NTBmYTE0YmE2MTkyZjI3NzE5Y2QyNjQ6MTc1NDQ1OTM4NQ==",
     "notes": "Manual test #51 - XLL EXPLOIT FUD! (Excel add-in delivery vector + Thawte Timestamping CA success)"
+  },
+  {
+    "timestamp": "2025-08-06T05:51:55.241286",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Thawte Timestamping CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/029df429b5a53949309ad1110844e12e58f10e3603008a801a4a80fba377bc6d?nocache=1",
+    "hash": "029df429b5a53949309ad1110844e12e58f10e3603008a801a4a80fba377bc6d",
+    "notes": "Manual test #52 - XLL EXPLOIT FUD! (Second consecutive Thawte + XLL success - pattern confirmation)"
   }
 ]
