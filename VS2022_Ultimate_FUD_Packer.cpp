@@ -70,7 +70,7 @@ static int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
     char compileCmd[2048];
     int result = -1;
     
-    // Method 1: Try VS2022 using Developer Command Prompt environment
+    // Method 1: Try VS2022 Developer Command Prompt environment (if already set)
     sprintf_s(compileCmd, sizeof(compileCmd),
         "cl.exe /nologo /O1 /MT /TC /bigobj \"%s\" /Fe:\"%s\" "
         "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
@@ -79,68 +79,56 @@ static int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
     result = system(compileCmd);
     
     if (result != 0) {
-        // Method 2: Try to find VS2022 Community with dynamic version detection
+        // Method 2: Try VS2022 Community with vcvarsall setup
         sprintf_s(compileCmd, sizeof(compileCmd),
-            "for /f \"tokens=*\" %%i in ('dir \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\" /b /o:d 2^>nul') do @set MSVC_VER=%%i & "
-            "\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\%%MSVC_VER%%\\bin\\Hostx64\\x64\\cl.exe\" "
-            "/nologo /O1 /MT /TC /bigobj \"%s\" /Fe:\"%s\" "
+            "cmd /c \"\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 && "
+            "cl.exe /nologo /O1 /MT /TC /bigobj \"%s\" /Fe:\"%s\" "
             "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
-            "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib",
+            "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\"",
             sourceFile, outputFile);
         result = system(compileCmd);
     }
     
     if (result != 0) {
-        // Method 3: Try VS2022 Enterprise with dynamic version detection
+        // Method 3: Try VS2022 Enterprise with vcvarsall setup
         sprintf_s(compileCmd, sizeof(compileCmd),
-            "for /f \"tokens=*\" %%i in ('dir \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Tools\\MSVC\" /b /o:d 2^>nul') do @set MSVC_VER=%%i & "
-            "\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Tools\\MSVC\\%%MSVC_VER%%\\bin\\Hostx64\\x64\\cl.exe\" "
-            "/nologo /O1 /MT /TC /bigobj \"%s\" /Fe:\"%s\" "
+            "cmd /c \"\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 && "
+            "cl.exe /nologo /O1 /MT /TC /bigobj \"%s\" /Fe:\"%s\" "
             "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
-            "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib",
+            "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\"",
             sourceFile, outputFile);
         result = system(compileCmd);
     }
     
     if (result != 0) {
-        // Method 4: Try VS2022 Professional with dynamic version detection
+        // Method 4: Try VS2022 Professional with vcvarsall setup
         sprintf_s(compileCmd, sizeof(compileCmd),
-            "for /f \"tokens=*\" %%i in ('dir \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\VC\\Tools\\MSVC\" /b /o:d 2^>nul') do @set MSVC_VER=%%i & "
-            "\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\VC\\Tools\\MSVC\\%%MSVC_VER%%\\bin\\Hostx64\\x64\\cl.exe\" "
-            "/nologo /O1 /MT /TC /bigobj \"%s\" /Fe:\"%s\" "
+            "cmd /c \"\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 && "
+            "cl.exe /nologo /O1 /MT /TC /bigobj \"%s\" /Fe:\"%s\" "
             "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
-            "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib",
+            "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\"",
             sourceFile, outputFile);
         result = system(compileCmd);
     }
     
     if (result != 0) {
-        // Method 5: Try with vswhere to find any VS2022 installation
+        // Method 5: Try using vswhere to find VS2022 installation
         sprintf_s(compileCmd, sizeof(compileCmd),
-            "for /f \"usebackq tokens=*\" %%i in (`\"%ProgramFiles(x86)%%\\Microsoft Visual Studio\\Installer\\vswhere.exe\" -version [17.0,18.0) -property installationPath 2^>nul`) do @("
-            "for /f \"tokens=*\" %%j in ('dir \"%%i\\VC\\Tools\\MSVC\" /b /o:d 2^>nul') do @("
-            "\"%%i\\VC\\Tools\\MSVC\\%%j\\bin\\Hostx64\\x64\\cl.exe\" "
-            "/nologo /O1 /MT /TC /bigobj \"%s\" /Fe:\"%s\" "
+            "for /f \"usebackq tokens=*\" %%i in (`\"%ProgramFiles(x86)%%\\Microsoft Visual Studio\\Installer\\vswhere.exe\" -version [17.0,18.0) -property installationPath 2^>nul`) do "
+            "cmd /c \"\"%%i\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 && "
+            "cl.exe /nologo /O1 /MT /TC /bigobj \"%s\" /Fe:\"%s\" "
             "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
-            "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib & exit /b 0))",
+            "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\"",
             sourceFile, outputFile);
         result = system(compileCmd);
     }
     
     if (result != 0) {
-        // Method 6: Try simplified MinGW for pure C compilation
+        // Method 6: Try MinGW as fallback
         sprintf_s(compileCmd, sizeof(compileCmd),
             "gcc -std=c99 -O2 -static -mwindows \"%s\" -o \"%s\" "
             "-luser32 -lkernel32 -lgdi32 -ladvapi32 -lshell32 -lole32",
             sourceFile, outputFile);
-        result = system(compileCmd);
-    }
-    
-    if (result != 0) {
-        // Method 7: Try TinyC compiler if available
-        sprintf_s(compileCmd, sizeof(compileCmd),
-            "tcc -o \"%s\" \"%s\" -luser32 -lkernel32 -lgdi32 -ladvapi32 -lshell32",
-            outputFile, sourceFile);
         result = system(compileCmd);
     }
     
