@@ -289,3 +289,21 @@ VERIFIED FUD COMBINATIONS
    Link: https://www.virustotal.com/gui/file-analysis/ZTM3N2QxY2ZmYWEzNjdjNTE3MTMyODViYjg4MGE1OTA6MTc1NDQ1NjkyMQ==
    Notes: Manual test #36 - Apple Root CA + Adobe + x64 FUD! (2nd consecutive escape window - pattern evolving!)
 
+✅ Adobe Systems Incorporated + Thawte Timestamping CA + AnyCPU
+   Date: 2025-08-06T05:11:31.269563
+   Hash: 92975e4c0398ee1acf78e81132bc9e29b0bc10898a5a003a5eb2481a94ea06e4
+   Link: https://www.virustotal.com/gui/file/92975e4c0398ee1acf78e81132bc9e29b0bc10898a5a003a5eb2481a94ea06e4?nocache=1
+   Notes: Manual test - Thawte Timestamping CA + Adobe + AnyCPU FUD (new certificate discovery!)
+
+✅ Adobe Systems Incorporated + Apple Root CA + AnyCPU
+   Date: 2025-08-06T05:11:31.270538
+   Hash: 8bdbb061370d821d86ce76bc797efa178ad89d0360e2bc4df7317f85123ef3b9
+   Link: https://www.virustotal.com/gui/file/8bdbb061370d821d86ce76bc797efa178ad89d0360e2bc4df7317f85123ef3b9?nocache=1
+   Notes: Manual test #37 - Apple Root CA + Adobe + AnyCPU FUD! (Cross-architecture success continues!)
+
+✅ Adobe Systems Incorporated + Apple Root CA + AnyCPU
+   Date: 2025-08-06T05:11:31.271372
+   Hash: analysis_NzcyM2JkZmZkMTI5MmRmYzQ4NWYyNDRjMzcwZDg1ZmI6MTc1NDQ1Njk4NQ==
+   Link: https://www.virustotal.com/gui/file-analysis/NzcyM2JkZmZkMTI5MmRmYzQ4NWYyNDRjMzcwZDg1ZmI6MTc1NDQ1Njk4NQ==
+   Notes: Manual test #38 - Apple Root CA + Adobe + AnyCPU FUD! (Continued AnyCPU success)
+
