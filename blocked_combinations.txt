@@ -57,3 +57,17 @@ BLOCKED COMBINATIONS
    Link: manual_test_securetrust_detected
    Notes: Manual test - SecureTrust CA detected with Adobe + AnyCPU
 
+❌ Adobe Systems Incorporated + Cisco Root CA + AnyCPU
+   Detections: 1/72
+   Date: 2025-08-06T04:28:41.374739
+   Hash: unknown
+   Link: manual_test_cisco_detected
+   Notes: Manual test - Cisco Root CA detected with Adobe + AnyCPU
+
+❌ Adobe Systems Incorporated + Baltimore CyberTrust Root + AnyCPU
+   Detections: 1/72
+   Date: 2025-08-06T04:28:41.375083
+   Hash: unknown
+   Link: manual_test_baltimore_detected
+   Notes: Manual test - Baltimore CyberTrust Root CHANGED from previous FUD to DETECTED!
+

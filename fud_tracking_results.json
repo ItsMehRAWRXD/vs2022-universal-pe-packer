@@ -317,5 +317,27 @@
     "vt_link": "manual_test_securetrust_detected",
     "hash": "unknown",
     "notes": "Manual test - SecureTrust CA detected with Adobe + AnyCPU"
+  },
+  {
+    "timestamp": "2025-08-06T04:28:41.374739",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Cisco Root CA",
+    "architecture": "AnyCPU",
+    "is_fud": false,
+    "detection_count": 1,
+    "vt_link": "manual_test_cisco_detected",
+    "hash": "unknown",
+    "notes": "Manual test - Cisco Root CA detected with Adobe + AnyCPU"
+  },
+  {
+    "timestamp": "2025-08-06T04:28:41.375083",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Baltimore CyberTrust Root",
+    "architecture": "AnyCPU",
+    "is_fud": false,
+    "detection_count": 1,
+    "vt_link": "manual_test_baltimore_detected",
+    "hash": "unknown",
+    "notes": "Manual test - Baltimore CyberTrust Root CHANGED from previous FUD to DETECTED!"
   }
 ]
