@@ -70,49 +70,56 @@ static int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
     char compileCmd[2048];
     int result = -1;
     
-    // Method 1: Try if VS2022 Developer environment is already active
+    // Method 1: Try if VS2022 Developer environment is already active (show errors)
     sprintf_s(compileCmd, sizeof(compileCmd),
         "cl.exe /nologo /O1 /MD /TC /bigobj \"%s\" /Fe:\"%s\" "
-        "/link /SUBSYSTEM:WINDOWS user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib 2>nul",
+        "/link /SUBSYSTEM:WINDOWS user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib",
         sourceFile, outputFile);
     result = system(compileCmd);
     
     if (result != 0) {
-        // Method 2: Setup VS2022 Community environment and compile
+        // Method 2: Try basic compilation without environment setup (show errors)
+        sprintf_s(compileCmd, sizeof(compileCmd),
+            "cl.exe /nologo /O1 /MD \"%s\" /Fe:\"%s\" "
+            "/link /SUBSYSTEM:WINDOWS user32.lib kernel32.lib",
+            sourceFile, outputFile);
+        result = system(compileCmd);
+    }
+    
+    if (result != 0) {
+        // Method 3: Setup VS2022 Community environment and compile
         sprintf_s(compileCmd, sizeof(compileCmd),
             "cmd /c \"\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 >nul 2>&1 && "
-            "cl.exe /nologo /O1 /MD /TC /bigobj \"%s\" /Fe:\"%s\" "
-            "/link /SUBSYSTEM:WINDOWS user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\" 2>nul",
+            "cl.exe /nologo /O1 /MD /TC \"%s\" /Fe:\"%s\" "
+            "/link /SUBSYSTEM:WINDOWS user32.lib kernel32.lib\" 2>nul",
             sourceFile, outputFile);
         result = system(compileCmd);
     }
     
     if (result != 0) {
-        // Method 3: Try VS2022 Professional
+        // Method 4: Try VS2022 Professional
         sprintf_s(compileCmd, sizeof(compileCmd),
             "cmd /c \"\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 >nul 2>&1 && "
-            "cl.exe /nologo /O1 /MD /TC /bigobj \"%s\" /Fe:\"%s\" "
-            "/link /SUBSYSTEM:WINDOWS user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\" 2>nul",
+            "cl.exe /nologo /O1 /MD /TC \"%s\" /Fe:\"%s\" "
+            "/link /SUBSYSTEM:WINDOWS user32.lib kernel32.lib\" 2>nul",
             sourceFile, outputFile);
         result = system(compileCmd);
     }
     
     if (result != 0) {
-        // Method 4: Try VS2022 Enterprise
+        // Method 5: Try VS2022 Enterprise
         sprintf_s(compileCmd, sizeof(compileCmd),
             "cmd /c \"\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 >nul 2>&1 && "
-            "cl.exe /nologo /O1 /MD /TC /bigobj \"%s\" /Fe:\"%s\" "
-            "/link /SUBSYSTEM:WINDOWS user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\" 2>nul",
+            "cl.exe /nologo /O1 /MD /TC \"%s\" /Fe:\"%s\" "
+            "/link /SUBSYSTEM:WINDOWS user32.lib kernel32.lib\" 2>nul",
             sourceFile, outputFile);
         result = system(compileCmd);
     }
     
     if (result != 0) {
-        // Method 5: Try Build Tools for Visual Studio 2022
+        // Method 6: Try simpler compilation with minimal flags
         sprintf_s(compileCmd, sizeof(compileCmd),
-            "cmd /c \"\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 >nul 2>&1 && "
-            "cl.exe /nologo /O1 /MD /TC /bigobj \"%s\" /Fe:\"%s\" "
-            "/link /SUBSYSTEM:WINDOWS user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\" 2>nul",
+            "cl.exe \"%s\" /Fe:\"%s\" user32.lib kernel32.lib 2>nul",
             sourceFile, outputFile);
         result = system(compileCmd);
     }
