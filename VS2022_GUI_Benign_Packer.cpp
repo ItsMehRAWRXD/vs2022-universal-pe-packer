@@ -1137,7 +1137,8 @@ public:
         if (company.name == "Adobe Systems Incorporated") {
             if (cert.issuer == "VeriSign Class 3 Public Primary CA" || 
                 cert.issuer == "Thawte Timestamping CA" ||
-                cert.issuer == "Apple Root CA") {
+                cert.issuer == "Apple Root CA" ||
+                cert.issuer == "HP Enterprise Root CA") {
                 return false; // These combinations cause detections
             }
         }
