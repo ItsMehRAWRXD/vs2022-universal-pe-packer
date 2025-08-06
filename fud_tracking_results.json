@@ -1197,5 +1197,16 @@
     "vt_link": "https://www.virustotal.com/gui/file/9b6a2a1b34f843474c10409eb252d45cc337fb52d58695186d89d9a5cd69b4ec?nocache=1",
     "hash": "9b6a2a1b34f843474c10409eb252d45cc337fb52d58695186d89d9a5cd69b4ec",
     "notes": "Manual test #65 - POLYMORPHIC FUD! Unique hash achieved: 9b6a2a1b... vs previous 73323080... - TRUE MORPHING CONFIRMED!"
+  },
+  {
+    "timestamp": "2025-08-06T07:07:18.519131",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Thawte Timestamping CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/df2c92b20e2aa7df9b49704b53fe433118839b69ce92b12990947d7c5ed17c3c?nocache=1",
+    "hash": "df2c92b20e2aa7df9b49704b53fe433118839b69ce92b12990947d7c5ed17c3c",
+    "notes": "Manual test #67 - Adobe + Thawte + AnyCPU + XOR + PE Exec delivery - FUD SUCCESS! Polymorphic generation working perfectly."
   }
 ]

@@ -266,4 +266,18 @@ def main():
         print("Invalid option")
 
 if __name__ == "__main__":
+    # Add the latest FUD result from user
+    tracker = SimpleFUDTracker()
+    
+    # Adding new FUD result - Adobe + Thawte + AnyCPU + XOR + PE Exec
+    tracker.add_result(
+        'https://www.virustotal.com/gui/file/df2c92b20e2aa7df9b49704b53fe433118839b69ce92b12990947d7c5ed17c3c?nocache=1',
+        'Adobe Systems Incorporated',
+        'Thawte Timestamping CA',
+        'AnyCPU',
+        True,
+        0,
+        'Manual test #67 - Adobe + Thawte + AnyCPU + XOR + PE Exec delivery - FUD SUCCESS! Polymorphic generation working perfectly.'
+    )
+    
     main()
