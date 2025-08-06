@@ -1852,12 +1852,26 @@ public:
             cmdFile << compileCmd;
             cmdFile.close();
             
-            // Execute compilation
+            // Execute compilation with visible output for debugging
             debugLog.open("debug_pe_embedding.txt", std::ios::app);
             debugLog << "Starting compilation...\n";
             debugLog.close();
             
-            int result = system(compileCmd.c_str());
+            // Create a version of the command that shows output for debugging
+            std::string debugCmd = compileCmd;
+            size_t pos = debugCmd.find(">nul 2>&1");
+            if (pos != std::string::npos) {
+                debugCmd.replace(pos, 10, ""); // Remove >nul 2>&1 to see errors
+            }
+            
+            // Add command to show errors
+            debugCmd = debugCmd.substr(0, debugCmd.length() - 1) + " 2>compile_errors.txt\"";
+            
+            debugLog.open("debug_pe_embedding.txt", std::ios::app);
+            debugLog << "Debug command: " << debugCmd << "\n";
+            debugLog.close();
+            
+            int result = system(debugCmd.c_str());
             
             // DEBUG: Log compilation result
             debugLog.open("debug_pe_embedding.txt", std::ios::app);
