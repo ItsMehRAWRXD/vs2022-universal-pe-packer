@@ -2635,7 +2635,7 @@ static void createFUDStubOnly() {
     // Get architecture
     int archIndex = (int)SendMessage(g_hArchCombo, CB_GETCURSEL, 0, 0);
     MultiArchitectureSupport::Architecture architecture = 
-        (archIndex == 1) ? MultiArchitectureSupport::Architecture::X86 : MultiArchitectureSupport::Architecture::X64;
+        (archIndex == 1) ? MultiArchitectureSupport::Architecture::x86 : MultiArchitectureSupport::Architecture::x64;
     
     entryLog.close();
     
