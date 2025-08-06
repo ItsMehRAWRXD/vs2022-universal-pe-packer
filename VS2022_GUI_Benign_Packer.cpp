@@ -2349,12 +2349,23 @@ static std::string browseForFile(HWND hwnd, bool save = false) {
 }
 
 static void createFUDExecutable() {
+    // DEBUG: Log function entry
+    std::ofstream entryLog("debug_entry_points.txt", std::ios::app);
+    entryLog << "=== createFUDExecutable() CALLED ===\n";
+    entryLog << "Timestamp: " << GetTickCount64() << "\n";
+    entryLog.close();
+    
     wchar_t inputBuffer[MAX_PATH] = {0}, outputBuffer[MAX_PATH] = {0};
     GetWindowTextW(g_hInputPath, inputBuffer, MAX_PATH);
     GetWindowTextW(g_hOutputPath, outputBuffer, MAX_PATH);
     
     std::string inputPath = wstringToString(std::wstring(inputBuffer));
     std::string outputPath = wstringToString(std::wstring(outputBuffer));
+    
+    // DEBUG: Log paths
+    entryLog.open("debug_entry_points.txt", std::ios::app);
+    entryLog << "Input path: " << inputPath << "\n";
+    entryLog << "Output path: " << outputPath << "\n";
     
     if (inputPath.empty()) {
         SetWindowTextW(g_hStatusText, L"Please select an input file.");
