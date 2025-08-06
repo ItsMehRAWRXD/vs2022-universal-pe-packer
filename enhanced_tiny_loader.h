@@ -1,5 +1,7 @@
 #pragma once
 #include <cstdint>
+#include <vector>
+#include <cstring>
 
 // Enhanced Minimal PE Loader with Decryption Support (831 bytes base + encryption stub)
 // This is a complete, functional Windows PE executable that loads and decrypts embedded payloads

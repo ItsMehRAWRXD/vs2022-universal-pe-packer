@@ -2,13 +2,22 @@
 
 // Cross-platform includes
 #ifdef _WIN32
+    #ifndef WIN32_LEAN_AND_MEAN
+    #define WIN32_LEAN_AND_MEAN
+    #endif
     #include <windows.h>
     #include <wincrypt.h>
     #pragma comment(lib, "advapi32.lib")
 #else
-    #include <openssl/aes.h>
-    #include <openssl/evp.h>
-    #include <openssl/rand.h>
+    // Only include OpenSSL if available
+    #ifdef __has_include
+        #if __has_include(<openssl/aes.h>)
+            #include <openssl/aes.h>
+            #include <openssl/evp.h>
+            #include <openssl/rand.h>
+            #define OPENSSL_AVAILABLE
+        #endif
+    #endif
     #include <unistd.h>
     #include <sys/stat.h>
 #endif
@@ -275,6 +284,7 @@ private:
 #else
     // OpenSSL AES implementation for Linux
     std::vector<uint8_t> aesEncryptOpenSSL(const std::vector<uint8_t>& data) {
+#ifdef OPENSSL_AVAILABLE
         EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
         if (!ctx) throw std::runtime_error("EVP_CIPHER_CTX_new failed");
         
@@ -305,6 +315,10 @@ private:
             EVP_CIPHER_CTX_free(ctx);
             throw;
         }
+#else
+        // Fallback to XOR if OpenSSL not available
+        return xorEncrypt(data);
+#endif
     }
 
     std::vector<uint8_t> aesDecryptOpenSSL(const std::vector<uint8_t>& data) {

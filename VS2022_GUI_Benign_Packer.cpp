@@ -31,6 +31,8 @@
 #include <iomanip>
 #include <ctime>
 #include <cstring>
+#include <cstdint>
+#include <cstdlib>
 #include "tiny_loader.h"
 #include "cross_platform_encryption.h"
 #include "enhanced_tiny_loader.h"
@@ -1468,7 +1470,7 @@ exit /b 1
         return result;
     }
     
-private:
+public:
     std::vector<uint8_t> generateMinimalPEExecutable(const std::string& payload) {
         // REAL INTERNAL COMPILER - NO EXTERNAL TOOLS NEEDED!
         // Uses pre-built minimal PE loader, patches it with payload
