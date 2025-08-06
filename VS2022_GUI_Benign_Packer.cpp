@@ -4155,85 +4155,82 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 // Function to create fileless execution stub
 static void createFilelessExecutionStub() {
-    // Get output path from GUI
-    wchar_t outputBuffer[MAX_PATH] = {0};
-    GetWindowTextW(g_hOutputPath, outputBuffer, MAX_PATH);
-    std::string outputPath = wstringToString(std::wstring(outputBuffer));
-    
-    if (outputPath.empty()) {
-        // Auto-generate output path
-        std::string randomName = g_packer.randomEngine.generateRandomName();
-        outputPath = randomName + "_fileless.exe";
-        SetWindowTextW(g_hOutputPath, std::wstring(outputPath.begin(), outputPath.end()).c_str());
-    }
-    
+    // Update status and disable button
     SetWindowTextW(g_hStatusText, L"Creating fileless execution stub...");
-    SendMessage(g_hProgressBar, PBM_SETPOS, 25, 0);
+    EnableWindow(g_hCreateButton, FALSE);
     
-    // Configure fileless execution based on GUI settings
-    FilelessExecutionGenerator::FilelessConfig config;
-    config.enableAntiDebug = SendMessage(g_hFilelessAntiDebugCheck, BM_GETCHECK, 0, 0) == BST_CHECKED;
-    config.enableDelays = SendMessage(g_hFilelessDelaysCheck, BM_GETCHECK, 0, 0) == BST_CHECKED;
-    config.enableMemoryProtect = SendMessage(g_hFilelessMemoryProtectCheck, BM_GETCHECK, 0, 0) == BST_CHECKED;
-    config.enableCacheFlush = SendMessage(g_hFilelessCacheFlushCheck, BM_GETCHECK, 0, 0) == BST_CHECKED;
-    config.enableMultiLayer = SendMessage(g_hFilelessMultiLayerCheck, BM_GETCHECK, 0, 0) == BST_CHECKED;
-    
-    SendMessage(g_hProgressBar, PBM_SETPOS, 50, 0);
-    
-    // Generate test payload
-    std::vector<uint8_t> testPayload = g_packer.filelessGenerator.generateTestPayload();
-    
-    SendMessage(g_hProgressBar, PBM_SETPOS, 75, 0);
-    
-    // Generate the fileless stub
-    std::string stubCode = g_packer.filelessGenerator.generateFilelessStub(testPayload, config);
-    
-    SendMessage(g_hProgressBar, PBM_SETPOS, 90, 0);
-    
-    // Write stub to file
-    std::ofstream outFile(outputPath);
-    bool success = false;
-    if (outFile.is_open()) {
-        outFile << stubCode;
-        outFile.close();
-        success = true;
-    }
-    
-    SendMessage(g_hProgressBar, PBM_SETPOS, 100, 0);
-    
-    if (success) {
-        std::wstring successMsg = L"Fileless execution stub created successfully: ";
+    try {
+        // Get fileless execution options from GUI checkboxes
+        FilelessConfig config;
+        config.enableAntiDebug = (SendMessage(g_hFilelessAntiDebugCheck, BM_GETCHECK, 0, 0) == BST_CHECKED);
+        config.enableDelays = (SendMessage(g_hFilelessDelaysCheck, BM_GETCHECK, 0, 0) == BST_CHECKED);
+        config.enableMemoryProtection = (SendMessage(g_hFilelessMemoryProtectCheck, BM_GETCHECK, 0, 0) == BST_CHECKED);
+        config.enableCacheFlush = (SendMessage(g_hFilelessCacheFlushCheck, BM_GETCHECK, 0, 0) == BST_CHECKED);
+        config.enableMultiLayer = (SendMessage(g_hFilelessMultiLayerCheck, BM_GETCHECK, 0, 0) == BST_CHECKED);
+        
+        // Generate test payload for demonstration
+        std::vector<uint8_t> testPayload = g_packer.filelessGenerator.generateTestPayload();
+        
+        // Generate the fileless stub code
+        std::string stubCode = g_packer.filelessGenerator.generateFilelessStub(testPayload, config);
+        
+        // Get output path from GUI
+        wchar_t outputBuffer[MAX_PATH] = {0};
+        GetWindowTextW(g_hOutputPath, outputBuffer, MAX_PATH);
+        std::string outputPath = wstringToString(std::wstring(outputBuffer));
+        (void)outputBuffer; // Suppress unused variable warning
+        
+        if (outputPath.empty()) {
+            // Auto-generate output path for fileless stub
+            std::string randomName = g_packer.randomEngine.generateRandomName();
+            outputPath = "Fileless_Stub_" + randomName + ".cpp";
+            
+            // Update the GUI with the auto-generated path
+            std::wstring wOutputPath(outputPath.begin(), outputPath.end());
+            SetWindowTextW(g_hOutputPath, wOutputPath.c_str());
+        } else {
+            // Ensure .cpp extension for fileless stub source
+            if (outputPath.length() < 4 || outputPath.substr(outputPath.length() - 4) != ".cpp") {
+                outputPath += ".cpp";
+                std::wstring wOutputPath(outputPath.begin(), outputPath.end());
+                SetWindowTextW(g_hOutputPath, wOutputPath.c_str());
+            }
+        }
+        
+        // Write the fileless stub to file
+        std::ofstream stubFile(outputPath);
+        if (!stubFile.is_open()) {
+            throw std::runtime_error("Failed to create output file: " + outputPath);
+        }
+        
+        stubFile << stubCode;
+        stubFile.close();
+        
+        // Update status
+        std::wstring successMsg = L"Fileless execution stub created successfully!\nFile: ";
         std::wstring wOutputPath(outputPath.begin(), outputPath.end());
         successMsg += wOutputPath;
         
-        // Add configuration details to success message
-        if (config.enableAntiDebug) {
-            successMsg += L"\n✓ Anti-debugging enabled";
-        }
-        if (config.enableDelays) {
-            successMsg += L"\n✓ Timing delays enabled";
-        }
-        if (config.enableMemoryProtect) {
-            successMsg += L"\n✓ Memory protection enabled";
-        }
-        if (config.enableCacheFlush) {
-            successMsg += L"\n✓ Cache flushing enabled";
-        }
-        if (config.enableMultiLayer) {
-            successMsg += L"\n✓ Multi-layer encryption enabled";
-        }
-        
-        // Get generated variable names for debugging
-        auto variables = g_packer.filelessGenerator.getGeneratedVariables();
-        successMsg += L"\n\nPolymorphic variables generated: ";
-        successMsg += std::to_wstring(variables.decryptKey.length() + variables.aesKey.length() + variables.chachaKey.length());
+        // Add feature summary
+        successMsg += L"\n\nFeatures enabled:";
+        if (config.enableAntiDebug) successMsg += L"\n• Anti-debugging";
+        if (config.enableDelays) successMsg += L"\n• Random delays";
+        if (config.enableMemoryProtection) successMsg += L"\n• Memory protection";
+        if (config.enableCacheFlush) successMsg += L"\n• Cache flushing";
+        if (config.enableMultiLayer) successMsg += L"\n• Multi-layer encryption";
         
         SetWindowTextW(g_hStatusText, successMsg.c_str());
-        MessageBoxW(NULL, successMsg.c_str(), L"Fileless Stub Created", MB_OK | MB_ICONINFORMATION);
-    } else {
-        SetWindowTextW(g_hStatusText, L"Failed to create fileless execution stub!");
-        MessageBoxW(NULL, L"Failed to create fileless execution stub!", L"Error", MB_OK | MB_ICONERROR);
+        MessageBoxW(NULL, successMsg.c_str(), L"Success", MB_OK | MB_ICONINFORMATION);
+        
+    } catch (const std::exception& e) {
+        std::string errorMsg = "Error creating fileless stub: " + std::string(e.what());
+        std::wstring wErrorMsg(errorMsg.begin(), errorMsg.end());
+        SetWindowTextW(g_hStatusText, wErrorMsg.c_str());
+        MessageBoxW(NULL, wErrorMsg.c_str(), L"Error", MB_OK | MB_ICONERROR);
     }
+    
+    // Re-enable button
+    EnableWindow(g_hCreateButton, TRUE);
 }
 
 // FUD Stub Only creation function (no PE embedding)
