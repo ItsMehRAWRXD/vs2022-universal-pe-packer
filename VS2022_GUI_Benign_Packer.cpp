@@ -198,10 +198,11 @@ public:
     // Format timestamp for display (for debugging/logging)
     std::string formatTimestamp(DWORD timestamp) {
         time_t time = static_cast<time_t>(timestamp);
-        struct tm* timeinfo = gmtime(&time);
+        struct tm timeinfo;
+        gmtime_s(&timeinfo, &time);  // Use secure version
         
         char buffer[80];
-        strftime(buffer, 80, "%Y-%m-%d %H:%M:%S UTC", timeinfo);
+        strftime(buffer, 80, "%Y-%m-%d %H:%M:%S UTC", &timeinfo);
         return std::string(buffer);
     }
     
