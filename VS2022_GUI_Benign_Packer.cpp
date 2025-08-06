@@ -1859,38 +1859,21 @@ public:
             
             std::string compileCmd;
             
-            // Create a proper batch command that sets up VS environment and compiles
-            compileCmd = "cmd /c \"";
+            // Use the robust compiler detection system instead of manual paths
+            auto compilerInfo = CompilerDetector::detectVisualStudio();
             
-            // Choose the correct vcvars script based on architecture
-            std::string vcvarsScript = (architecture == MultiArchitectureSupport::Architecture::x86) ? "vcvars32.bat" : "vcvars64.bat";
-            
-            // Try different VS paths in order of preference - prioritizing VS 2022 Enterprise
-            std::vector<std::string> vsPaths = {
-                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\" + vcvarsScript,
-                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\VC\\Auxiliary\\Build\\" + vcvarsScript,
-                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\" + vcvarsScript,
-                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\" + vcvarsScript,
-                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build\\" + vcvarsScript,
-                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\" + vcvarsScript
-            };
-            
-            bool foundVS = false;
-            for (const auto& vsPath : vsPaths) {
-                DWORD attrs = GetFileAttributesA(vsPath.c_str());
-                if (attrs != INVALID_FILE_ATTRIBUTES && !(attrs & FILE_ATTRIBUTE_DIRECTORY)) {
-                    compileCmd += "call \\\"" + vsPath + "\\\" >nul 2>&1 && ";
-                    foundVS = true;
-                    break;
-                }
+            if (!compilerInfo.found) {
+                return false;
             }
             
-            // Use simple compilation without complex environment setup
-            compileCmd += "cl.exe /nologo /O2 /EHsc /DNDEBUG /MD ";
-            compileCmd += "\\\"" + sourceFilename + "\\\" ";
-            compileCmd += "/Fe:\\\"" + outputPath + "\\\" ";
-            compileCmd += "user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib";
-            compileCmd += "\"";
+            // Build simplified compilation command
+            if (!compilerInfo.vcvarsPath.empty()) {
+                compileCmd = "cmd /c \"\"" + compilerInfo.vcvarsPath + "\" && cl.exe /nologo /O2 /MD /EHsc \"" + sourceFilename + 
+                           "\" /Fe:\"" + outputPath + "\" user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib\"";
+            } else {
+                compileCmd = "cl.exe /nologo /O2 /MD /EHsc \"" + sourceFilename + 
+                           "\" /Fe:\"" + outputPath + "\" user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib";
+            }
             
             // DEBUG: Log compilation details
             std::ofstream debugLog("debug_pe_embedding.txt", std::ios::app);
@@ -1901,9 +1884,9 @@ public:
             debugLog << "PE data size: " << originalPEData.size() << " bytes\n";
             debugLog << "Architecture: " << (architecture == MultiArchitectureSupport::Architecture::x86 ? "x86" : 
                                            architecture == MultiArchitectureSupport::Architecture::x64 ? "x64" : "AnyCPU") << "\n";
-            debugLog << "VCVars script: " << vcvarsScript << "\n";
-            debugLog << "Arch flags: " << archFlags << "\n";
-            debugLog << "VS found: " << (foundVS ? "YES" : "NO") << "\n";
+            debugLog << "VCVars script: " << (compilerInfo.vcvarsPath.empty() ? "NONE" : "vcvars64.bat") << "\n";
+            debugLog << "Compiler path: " << compilerInfo.path << "\n";
+            debugLog << "VS found: " << (compilerInfo.found ? "YES" : "NO") << "\n";
             debugLog << "Compilation command: " << compileCmd << "\n";
             debugLog << "Command length: " << compileCmd.length() << "\n";
             debugLog.close();
