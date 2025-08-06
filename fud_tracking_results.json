@@ -625,5 +625,16 @@
     "vt_link": "https://www.virustotal.com/gui/file-analysis/NDczODFmYmRkODgyMDZjYzZkZTgxYWI2NTlkZDZkNGQ6MTc1NDQ1NjA5Mg==",
     "hash": "analysis_NDczODFmYmRkODgyMDZjYzZkZTgxYWI2NTlkZDZkNGQ6MTc1NDQ1NjA5Mg==",
     "notes": "Manual test #22 - Apple Root CA + Adobe + x64 FUD! (3rd consecutive recovery success - pattern extended!)"
+  },
+  {
+    "timestamp": "2025-08-06T04:56:28.563412",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Apple Root CA",
+    "architecture": "x64",
+    "is_fud": false,
+    "detection_count": 1,
+    "vt_link": "https://www.virustotal.com/gui/file-analysis/OGIzYjVlOGJmYTdjY2VkMDI2ZTc5ODFhMTY3M2QxODg6MTc1NDQ1NjEzMw==",
+    "hash": "analysis_OGIzYjVlOGJmYTdjY2VkMDI2ZTc5ODFhMTY3M2QxODg6MTc1NDQ1NjEzMw==",
+    "notes": "Manual test #23 - ELASTIC SECURITY detected (malicious) - Recovery streak ended after 3 consecutive FUD successes"
   }
 ]

@@ -106,3 +106,10 @@ BLOCKED COMBINATIONS
    Link: https://www.virustotal.com/gui/file/969ff43a861255a772ff9606d2ec42b90bd89685296fdb85d8cdee3a52145525?nocache=1
    Notes: Manual test #19 - Apple Root CA + Adobe + x64 DETECTED by McAfee (perfect 4/4 streak broken on 5th test)
 
+❌ Adobe Systems Incorporated + Apple Root CA + x64
+   Detections: 1/72
+   Date: 2025-08-06T04:56:28.563412
+   Hash: analysis_OGIzYjVlOGJmYTdjY2VkMDI2ZTc5ODFhMTY3M2QxODg6MTc1NDQ1NjEzMw==
+   Link: https://www.virustotal.com/gui/file-analysis/OGIzYjVlOGJmYTdjY2VkMDI2ZTc5ODFhMTY3M2QxODg6MTc1NDQ1NjEzMw==
+   Notes: Manual test #23 - ELASTIC SECURITY detected (malicious) - Recovery streak ended after 3 consecutive FUD successes
+
