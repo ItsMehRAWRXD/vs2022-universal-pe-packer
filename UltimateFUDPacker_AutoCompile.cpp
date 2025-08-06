@@ -251,7 +251,17 @@ DWORD WINAPI ExploitGenerationThread(LPVOID lpParam) {
         
         if (result != 0) {
             // If no compiler available, just save the source code
-            if (CopyFileA(tempSource, outputPath, FALSE)) {
+            // Change extension to .cpp for source
+            char sourcePath[260];
+            strcpy(sourcePath, outputPath);
+            char* lastDot = strrchr(sourcePath, '.');
+            if (lastDot) {
+                strcpy(lastDot, ".cpp");
+            } else {
+                strcat(sourcePath, ".cpp");
+            }
+            
+            if (CopyFileA(tempSource, sourcePath, FALSE)) {
                 DeleteFileA(tempSource);
                 PostMessage(hMainWindow, WM_USER + 4, 0, 0); // Source only success
             } else {
@@ -265,9 +275,20 @@ DWORD WINAPI ExploitGenerationThread(LPVOID lpParam) {
                 DeleteFileA(tempExe);
                 PostMessage(hMainWindow, WM_USER + 1, 1, 0); // Full success
             } else {
-                DeleteFileA(tempSource);
-                DeleteFileA(tempExe);
-                PostMessage(hMainWindow, WM_USER + 1, 0, 0); // Error
+                // If copy failed, at least save the executable with a temp name
+                char backupPath[260];
+                strcpy(backupPath, "FUD_Exploit_");
+                strcat(backupPath, tempExe);
+                
+                if (CopyFileA(tempExe, backupPath, FALSE)) {
+                    DeleteFileA(tempSource);
+                    DeleteFileA(tempExe);
+                    PostMessage(hMainWindow, WM_USER + 5, 0, 0); // Backup success
+                } else {
+                    DeleteFileA(tempSource);
+                    DeleteFileA(tempExe);
+                    PostMessage(hMainWindow, WM_USER + 1, 0, 0); // Error
+                }
             }
         }
     } else {
@@ -297,8 +318,21 @@ void createExploit() {
         return;
     }
     
+    // Ensure output path has .exe extension if not specified
+    char finalPath[260];
+    strcpy(finalPath, outputPath);
+    
+    // Check if path already has an extension
+    char* lastDot = strrchr(finalPath, '.');
+    char* lastSlash = strrchr(finalPath, '\\');
+    
+    // If no dot after last slash (or no slash), add .exe
+    if (!lastDot || (lastSlash && lastDot < lastSlash)) {
+        strcat(finalPath, ".exe");
+    }
+    
     // Create thread for generation
-    char* pathCopy = _strdup(outputPath);
+    char* pathCopy = _strdup(finalPath);
     HANDLE hThread = CreateThread(NULL, 0, ExploitGenerationThread, pathCopy, 0, NULL);
     if (hThread) {
         CloseHandle(hThread);
@@ -452,7 +486,37 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         
         case WM_USER + 2: {
             SetWindowTextAnsi(hStatusText, "Generating polymorphic code with unique hash...");
-            SendMessage(hProgressBar, PBM_SETPOS, 50, 0);
+            SendMessage(hProgressBar, PBM_SETPOS, 25, 0);
+            return 0;
+        }
+        
+        case WM_USER + 3: {
+            SetWindowTextAnsi(hStatusText, "Compiling FUD executable...");
+            SendMessage(hProgressBar, PBM_SETPOS, 75, 0);
+            return 0;
+        }
+        
+        case WM_USER + 4: {
+            // Source code only success (no compiler available)
+            isGenerating = FALSE;
+            SetWindowTextAnsi(hCreateButton, "Generate Exploit");
+            EnableWindow(hCreateButton, TRUE);
+            SetWindowTextAnsi(hStatusText, "Source code generated successfully! (Compiler not found - source saved)");
+            MessageBoxA(hwnd, "Polymorphic FUD source code generated successfully!\n\nNo compiler was found on this system, so the C++ source code has been saved instead of a compiled executable.\n\nYou can compile it manually with:\ncl.exe /O2 filename.cpp /link user32.lib", 
+                       "Source Code Generated", MB_OK | MB_ICONINFORMATION);
+            SendMessage(hProgressBar, PBM_SETPOS, 0, 0);
+            return 0;
+        }
+        
+        case WM_USER + 5: {
+            // Backup executable saved
+            isGenerating = FALSE;
+            SetWindowTextAnsi(hCreateButton, "Generate Exploit");
+            EnableWindow(hCreateButton, TRUE);
+            SetWindowTextAnsi(hStatusText, "FUD executable generated! (Saved as backup file in current directory)");
+            MessageBoxA(hwnd, "Polymorphic FUD executable generated successfully!\n\nThe output path was invalid, so the executable has been saved in the current directory with a backup name.\n\nLook for files starting with 'FUD_Exploit_' in your current folder.", 
+                       "Executable Generated (Backup Location)", MB_OK | MB_ICONINFORMATION);
+            SendMessage(hProgressBar, PBM_SETPOS, 0, 0);
             return 0;
         }
         
