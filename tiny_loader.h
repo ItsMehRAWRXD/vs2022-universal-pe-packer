@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 // Minimal 32-bit Windows PE loader (268 bytes)
 // This is a working executable that can extract and run embedded payloads
 static const unsigned char tiny_loader_bin[] = {
