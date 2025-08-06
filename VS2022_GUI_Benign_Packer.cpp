@@ -1871,11 +1871,9 @@ public:
             }
             
             if (!foundVS) {
-                // Fallback: try VS 2022 Enterprise developer command prompt environment
+                // Fallback: Force VS 2022 Enterprise with explicit paths
                 compileCmd += "echo Setting up VS 2022 Enterprise environment... && ";
-                compileCmd += "set INCLUDE=C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Tools\\MSVC\\14.39.33519\\include;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.22621.0\\um;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.22621.0\\ucrt;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.22621.0\\shared && ";
-                compileCmd += "set LIB=C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Tools\\MSVC\\14.39.33519\\lib\\x64;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.22621.0\\um\\x64;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.22621.0\\ucrt\\x64 && ";
-                compileCmd += "set PATH=C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Tools\\MSVC\\14.39.33519\\bin\\Hostx64\\x64;%PATH% && ";
+                compileCmd += "call \\\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\Tools\\VsDevCmd.bat\\\" -arch=x64 -host_arch=x64 >nul 2>&1 && ";
             }
             
             // Add the actual compilation command
