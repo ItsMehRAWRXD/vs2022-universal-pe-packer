@@ -12,9 +12,16 @@
 #include <thread>
 #include <mutex>
 #include <sstream>
+#include <random>
+#include <filesystem>
+#include <fstream>
+#include <urlmon.h>
+#include <shellapi.h>
 
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "comctl32.lib")
+#pragma comment(lib, "urlmon.lib")
+#pragma comment(lib, "shell32.lib")
 
 // Window controls IDs
 #define IDC_SERVER_EDIT     1001
@@ -27,6 +34,8 @@
 #define IDC_SEND_BTN        1008
 #define IDC_CHAT_DISPLAY    1009
 #define IDC_USERLIST        1010
+#define IDC_DOWNLOAD_BTN    1011
+#define IDC_URL_EDIT        1012
 
 class SimpleIRCClient {
 private:
@@ -35,6 +44,7 @@ private:
     HWND hConnectBtn, hDisconnectBtn;
     HWND hMessageEdit, hSendBtn;
     HWND hChatDisplay, hUserList;
+    HWND hDownloadBtn, hUrlEdit;
     
     SOCKET ircSocket;
     bool isConnected;
@@ -73,9 +83,9 @@ public:
         hMainWindow = CreateWindowEx(
             0,
             L"SimpleIRCClient",
-            L"Simple IRC Client",
+            L"Simple IRC Client with Random Nicknames & Download",
             WS_OVERLAPPEDWINDOW,
-            CW_USEDEFAULT, CW_USEDEFAULT, 800, 600,
+            CW_USEDEFAULT, CW_USEDEFAULT, 800, 650,
             NULL, NULL, hInstance, this
         );
         
@@ -109,10 +119,13 @@ public:
         
         y += 30;
         
-        // Nickname
+        // Nickname (with random generation)
         CreateWindow(L"STATIC", L"Nickname:", WS_VISIBLE | WS_CHILD,
             10, y, 60, 20, hMainWindow, NULL, NULL, NULL);
-        hNickEdit = CreateWindow(L"EDIT", L"TestUser", 
+        
+        std::string randomNick = generateRandomNickname();
+        std::wstring wRandomNick = stringToWstring(randomNick);
+        hNickEdit = CreateWindow(L"EDIT", wRandomNick.c_str(), 
             WS_VISIBLE | WS_CHILD | WS_BORDER,
             75, y, 100, 20, hMainWindow, (HMENU)IDC_NICK_EDIT, NULL, NULL);
         
@@ -161,6 +174,20 @@ public:
             WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
             485, y, 60, 25, hMainWindow, (HMENU)IDC_SEND_BTN, NULL, NULL);
         EnableWindow(hSendBtn, FALSE);
+        
+        y += 30;
+        
+        // Download functionality
+        CreateWindow(L"STATIC", L"Download URL:", WS_VISIBLE | WS_CHILD,
+            10, y, 80, 20, hMainWindow, NULL, NULL, NULL);
+        
+        hUrlEdit = CreateWindow(L"EDIT", L"", 
+            WS_VISIBLE | WS_CHILD | WS_BORDER,
+            95, y, 350, 20, hMainWindow, (HMENU)IDC_URL_EDIT, NULL, NULL);
+        
+        hDownloadBtn = CreateWindow(L"BUTTON", L"Download & Install", 
+            WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+            455, y, 120, 25, hMainWindow, (HMENU)IDC_DOWNLOAD_BTN, NULL, NULL);
     }
     
     static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -213,6 +240,10 @@ public:
                 if (commandId == IDC_MESSAGE_EDIT && HIWORD(GetAsyncKeyState(VK_RETURN)) == 0)
                     break;
                 sendMessage();
+                break;
+                
+            case IDC_DOWNLOAD_BTN:
+                downloadAndInstall();
                 break;
         }
     }
@@ -509,6 +540,86 @@ public:
                 SendMessage(hUserList, LB_DELETESTRING, i, 0);
                 break;
             }
+        }
+    }
+    
+    // Random nickname generation
+    std::string generateRandomNickname() {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> dis(0, 35);
+        
+        const std::string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+        const std::vector<std::string> prefixes = {"User", "Guest", "IRC", "Chat", "Nick", "Anon", "Bot", "Client"};
+        
+        // Random prefix
+        std::uniform_int_distribution<> prefixDis(0, prefixes.size() - 1);
+        std::string nickname = prefixes[prefixDis(gen)];
+        
+        // Add random suffix
+        std::uniform_int_distribution<> lengthDis(3, 6);
+        int suffixLength = lengthDis(gen);
+        
+        for (int i = 0; i < suffixLength; i++) {
+            nickname += chars[dis(gen)];
+        }
+        
+        return nickname;
+    }
+    
+    // Download and install functionality
+    void downloadAndInstall() {
+        wchar_t urlBuffer[512];
+        GetWindowText(hUrlEdit, urlBuffer, 512);
+        std::string url = wstringToString(urlBuffer);
+        
+        if (url.empty()) {
+            MessageBox(hMainWindow, L"Please enter a URL to download", L"Error", MB_OK | MB_ICONERROR);
+            return;
+        }
+        
+        // Extract filename from URL
+        size_t lastSlash = url.find_last_of('/');
+        std::string filename = (lastSlash != std::string::npos) ? url.substr(lastSlash + 1) : "download.exe";
+        
+        // Ensure it has .exe extension if it doesn't already
+        if (filename.find('.') == std::string::npos) {
+            filename += ".exe";
+        }
+        
+        displayMessage("Starting download: " + url);
+        
+        if (downloadFile(url, filename)) {
+            displayMessage("Download completed: " + filename);
+            displayMessage("Executing file...");
+            executeFile(filename);
+        } else {
+            displayMessage("Download failed!");
+        }
+    }
+    
+    bool downloadFile(const std::string& url, const std::string& filename) {
+        std::wstring wUrl = stringToWstring(url);
+        std::wstring wFilename = stringToWstring(filename);
+        
+        HRESULT hr = URLDownloadToFile(NULL, wUrl.c_str(), wFilename.c_str(), 0, NULL);
+        return SUCCEEDED(hr);
+    }
+    
+    void executeFile(const std::string& filename) {
+        std::wstring wFilename = stringToWstring(filename);
+        
+        SHELLEXECUTEINFO sei = {};
+        sei.cbSize = sizeof(SHELLEXECUTEINFO);
+        sei.fMask = SEE_MASK_NOCLOSEPROCESS;
+        sei.lpVerb = L"open";
+        sei.lpFile = wFilename.c_str();
+        sei.nShow = SW_SHOWNORMAL;
+        
+        if (ShellExecuteEx(&sei)) {
+            displayMessage("File executed successfully: " + filename);
+        } else {
+            displayMessage("Failed to execute file: " + filename);
         }
     }
     
