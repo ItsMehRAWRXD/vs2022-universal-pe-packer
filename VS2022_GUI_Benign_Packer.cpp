@@ -5,7 +5,6 @@
 #include <windows.h>
 #include <wincrypt.h>
 #include <wininet.h>
-#include <tlhelp32.h>
 #include <psapi.h>
 #include <imagehlp.h>
 #include <wintrust.h>
