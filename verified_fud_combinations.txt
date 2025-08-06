@@ -127,3 +127,9 @@ VERIFIED FUD COMBINATIONS
    Link: https://www.virustotal.com/gui/file-analysis/ZWY3NGVmZjI0YzU1Yjk4ZGY1YjY1ZmE1OTZhNGNkNDk6MTc1NDQ1NDM0NA==
    Notes: Manual test #6 - 0/72 detections confirmed (HP Enterprise continues perfect AnyCPU streak!)
 
+✅ Adobe Systems Incorporated + Comodo RSA CA + x64
+   Date: 2025-08-06T04:30:17.608398
+   Hash: analysis_NjA3YjdmZTgwZjVkMWIwYTIxMTMyMGNhOGJhODM0MWM6MTc1NDQ1NDU3Mw==
+   Link: https://www.virustotal.com/gui/file-analysis/NjA3YjdmZTgwZjVkMWIwYTIxMTMyMGNhOGJhODM0MWM6MTc1NDQ1NDU3Mw==
+   Notes: Manual test - ARCHITECTURE-SPECIFIC PATTERN! AnyCPU detected, x64 FUD
+

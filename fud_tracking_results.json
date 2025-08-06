@@ -350,5 +350,16 @@
     "vt_link": "manual_test_comodo_detected_anycpu",
     "hash": "unknown",
     "notes": "Manual test - Comodo RSA CA detected with Adobe + AnyCPU (testing x64 next)"
+  },
+  {
+    "timestamp": "2025-08-06T04:30:17.608398",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Comodo RSA CA",
+    "architecture": "x64",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file-analysis/NjA3YjdmZTgwZjVkMWIwYTIxMTMyMGNhOGJhODM0MWM6MTc1NDQ1NDU3Mw==",
+    "hash": "analysis_NjA3YjdmZTgwZjVkMWIwYTIxMTMyMGNhOGJhODM0MWM6MTc1NDQ1NDU3Mw==",
+    "notes": "Manual test - ARCHITECTURE-SPECIFIC PATTERN! AnyCPU detected, x64 FUD"
   }
 ]
