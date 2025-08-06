@@ -1614,28 +1614,28 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                                         100, 47, 300, 25, hwnd, (HMENU)(UINT_PTR)ID_OUTPUT_PATH, NULL, NULL);
             
             CreateWindowW(L"BUTTON", L"Browse", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
-                         410, 47, 70, 25, hwnd, (HMENU)ID_BROWSE_OUTPUT, NULL, NULL);
+                         410, 47, 70, 25, hwnd, (HMENU)(UINT_PTR)ID_BROWSE_OUTPUT, NULL, NULL);
             
             // Company selection
             CreateWindowW(L"STATIC", L"Company Profile:", WS_VISIBLE | WS_CHILD,
                          10, 85, 120, 20, hwnd, NULL, NULL, NULL);
             
             g_hCompanyCombo = CreateWindowW(L"COMBOBOX", L"", WS_VISIBLE | WS_CHILD | CBS_DROPDOWNLIST | WS_VSCROLL,
-                                          140, 82, 200, 150, hwnd, (HMENU)ID_COMPANY_COMBO, NULL, NULL);
+                                          140, 82, 200, 150, hwnd, (HMENU)(UINT_PTR)ID_COMPANY_COMBO, NULL, NULL);
             
             // Architecture selection
             CreateWindowW(L"STATIC", L"Architecture:", WS_VISIBLE | WS_CHILD,
                          10, 120, 120, 20, hwnd, NULL, NULL, NULL);
             
             g_hArchCombo = CreateWindowW(L"COMBOBOX", L"", WS_VISIBLE | WS_CHILD | CBS_DROPDOWNLIST | WS_VSCROLL,
-                                       140, 117, 200, 150, hwnd, (HMENU)ID_ARCHITECTURE_COMBO, NULL, NULL);
+                                       140, 117, 200, 150, hwnd, (HMENU)(UINT_PTR)ID_ARCHITECTURE_COMBO, NULL, NULL);
             
             // Certificate selection
             CreateWindowW(L"STATIC", L"Certificate Chain:", WS_VISIBLE | WS_CHILD,
                          10, 155, 120, 20, hwnd, NULL, NULL, NULL);
             
             g_hCertCombo = CreateWindowW(L"COMBOBOX", L"", WS_VISIBLE | WS_CHILD | CBS_DROPDOWNLIST | WS_VSCROLL,
-                                       140, 152, 200, 150, hwnd, (HMENU)ID_CERTIFICATE_COMBO, NULL, NULL);
+                                       140, 152, 200, 150, hwnd, (HMENU)(UINT_PTR)ID_CERTIFICATE_COMBO, NULL, NULL);
             
             // Populate combo boxes
             auto companies = g_packer.getCompanyProfiles();
@@ -1661,52 +1661,52 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             
             // Create button
             CreateWindowW(L"BUTTON", L"Create Ultimate Stealth Executable", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
-                         10, 190, 250, 35, hwnd, (HMENU)ID_CREATE_BUTTON, NULL, NULL);
+                         10, 190, 250, 35, hwnd, (HMENU)(UINT_PTR)ID_CREATE_BUTTON, NULL, NULL);
             
             // About button  
             CreateWindowW(L"BUTTON", L"About", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
-                         270, 190, 70, 35, hwnd, (HMENU)ID_ABOUT_BUTTON, NULL, NULL);
+                         270, 190, 70, 35, hwnd, (HMENU)(UINT_PTR)ID_ABOUT_BUTTON, NULL, NULL);
             
             // Progress bar
             g_hProgressBar = CreateWindowW(PROGRESS_CLASSW, L"", WS_VISIBLE | WS_CHILD,
-                                         10, 240, 470, 20, hwnd, (HMENU)ID_PROGRESS_BAR, NULL, NULL);
+                                         10, 240, 470, 20, hwnd, (HMENU)(UINT_PTR)ID_PROGRESS_BAR, NULL, NULL);
             SendMessage(g_hProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, 100));
             
             // Status text
             g_hStatusText = CreateWindowW(L"STATIC", L"Ready to create ultimate stealth executable with ALL 8 advanced features...", 
                                         WS_VISIBLE | WS_CHILD,
-                                        10, 270, 470, 20, hwnd, (HMENU)ID_STATUS_TEXT, NULL, NULL);
+                                        10, 270, 470, 20, hwnd, (HMENU)(UINT_PTR)ID_STATUS_TEXT, NULL, NULL);
             
             // Mass generation controls
             CreateWindowW(L"STATIC", L"Mass Generation:", WS_VISIBLE | WS_CHILD,
                          10, 310, 120, 20, hwnd, NULL, NULL, NULL);
             
             g_hMassCountEdit = CreateWindowW(L"EDIT", L"10", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_AUTOHSCROLL,
-                                            140, 307, 50, 25, hwnd, (HMENU)ID_MASS_COUNT_EDIT, NULL, NULL);
+                                            140, 307, 50, 25, hwnd, (HMENU)(UINT_PTR)ID_MASS_COUNT_EDIT, NULL, NULL);
             
             g_hMassGenerateBtn = CreateWindowW(L"BUTTON", L"Start Mass Generation", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
-                                              200, 307, 100, 25, hwnd, (HMENU)ID_MASS_GENERATE_BUTTON, NULL, NULL);
+                                              200, 307, 100, 25, hwnd, (HMENU)(UINT_PTR)ID_MASS_GENERATE_BUTTON, NULL, NULL);
             
             g_hStopGenerationBtn = CreateWindowW(L"BUTTON", L"Stop Generation", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
-                                                310, 307, 100, 25, hwnd, (HMENU)ID_STOP_GENERATION_BUTTON, NULL, NULL);
+                                                310, 307, 100, 25, hwnd, (HMENU)(UINT_PTR)ID_STOP_GENERATION_BUTTON, NULL, NULL);
             
             // Mode selection radio buttons
             CreateWindowW(L"STATIC", L"Packing Mode:", WS_VISIBLE | WS_CHILD,
                          10, 350, 120, 20, hwnd, NULL, NULL, NULL);
             
             g_hModeGroup = CreateWindowW(L"BUTTON", L"", WS_VISIBLE | WS_CHILD | BS_GROUPBOX,
-                                        140, 345, 300, 100, hwnd, (HMENU)ID_MODE_GROUP, NULL, NULL);
+                                        140, 345, 300, 100, hwnd, (HMENU)(UINT_PTR)ID_MODE_GROUP, NULL, NULL);
             
             g_hModeStubRadio = CreateWindowW(L"BUTTON", L"FUD Stub Only", WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
-                                             150, 360, 120, 25, hwnd, (HMENU)ID_MODE_STUB_RADIO, NULL, NULL);
+                                             150, 360, 120, 25, hwnd, (HMENU)(UINT_PTR)ID_MODE_STUB_RADIO, NULL, NULL);
             SendMessageW(g_hModeStubRadio, BM_SETCHECK, BST_CHECKED, 0);
             
             g_hModePackRadio = CreateWindowW(L"BUTTON", L"PE Embedding/Packing", WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
-                                             150, 390, 120, 25, hwnd, (HMENU)ID_MODE_PACK_RADIO, NULL, NULL);
+                                             150, 390, 120, 25, hwnd, (HMENU)(UINT_PTR)ID_MODE_PACK_RADIO, NULL, NULL);
             SendMessageW(g_hModePackRadio, BM_SETCHECK, BST_UNCHECKED, 0);
             
             g_hModeMassRadio = CreateWindowW(L"BUTTON", L"Mass Generation", WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
-                                             150, 420, 120, 25, hwnd, (HMENU)ID_MODE_MASS_RADIO, NULL, NULL);
+                                             150, 420, 120, 25, hwnd, (HMENU)(UINT_PTR)ID_MODE_MASS_RADIO, NULL, NULL);
             SendMessageW(g_hModeMassRadio, BM_SETCHECK, BST_UNCHECKED, 0);
             
             // Enable drag and drop
