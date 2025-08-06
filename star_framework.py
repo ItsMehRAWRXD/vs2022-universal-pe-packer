@@ -202,6 +202,61 @@ XML-RPC Exploits:
 - Arbitrary file upload
 - Remote code execution
 
+🆕 WooCommerce Exploitation Infrastructure:
+
+WooCommerce Attack Vector Analysis:
+- **Primary Injector**: http://www.viajesortiz.es/wp-content/shop.php
+- **Target Platform**: WooCommerce e-commerce WordPress plugin
+- **Attack Method**: Compromised shop.php file acting as proxy injector
+- **Purpose**: E-commerce platform exploitation and payment data harvesting
+
+WooCommerce-Specific Vulnerabilities:
+1. **Shop Template Injection**: Compromised shop.php templates for proxy attacks
+2. **Payment Gateway Exploitation**: Credit card data interception
+3. **Customer Data Harvesting**: Personal information extraction
+4. **Order Manipulation**: Transaction tampering and fraud
+5. **Plugin Vulnerabilities**: WooCommerce extension exploits
+6. **Admin Panel Access**: WordPress admin compromise via WooCommerce
+
+E-commerce Attack Chain:
+```perl
+# WooCommerce exploitation through shop.php injector
+my $injectr = "http://www.viajesortiz.es/wp-content/shop.php";
+# Used for proxying attacks through compromised WooCommerce sites
+# Enables payment data harvesting and customer information theft
+```
+
+Advanced E-commerce Targeting:
+- **Payment Processing Interception**: Real-time credit card data capture
+- **Customer Database Access**: Personal and financial information theft
+- **Inventory Management Manipulation**: Stock level tampering
+- **Shipping Information Harvesting**: Address and delivery data collection
+- **Tax Calculation Bypass**: Financial manipulation capabilities
+
+🔴 CRITICAL: E-COMMERCE FOCUSED INFRASTRUCTURE 🔴
+
+This reveals the operation specifically targets e-commerce platforms:
+1. **Magento**: Primary target with Shoplift and Magmi exploits
+2. **WooCommerce**: Secondary target via shop.php injector
+3. **ZenCart**: Additional e-commerce platform coverage
+4. **OsCommerce**: Legacy e-commerce system exploitation
+
+Financial Crime Capabilities:
+- Credit card data interception
+- Payment gateway manipulation
+- Customer data harvesting
+- Transaction fraud
+- Financial information theft
+- PCI DSS compliance bypass
+
+🚨 PROFESSIONAL CRIMINAL INFRASTRUCTURE 🚨
+
+The combination of Magento + WooCommerce targeting indicates:
+- **Financial Crime Focus**: Payment and customer data theft
+- **E-commerce Specialization**: Dedicated retail platform exploitation
+- **Professional Operation**: Sophisticated infrastructure for monetary gain
+- **Supply Chain Attacks**: Compromising online retail infrastructure
+
 6. DDOS CAPABILITIES
 ====================
 
@@ -345,6 +400,13 @@ Process Indicators:
 - RevSlider file disclosure attempts
 - Database configuration file access
 
+🆕 WooCommerce-Specific Indicators:
+- Requests to shop.php injector
+- shop.php file access attempts
+- Shop template injection patterns
+- Payment gateway exploitation attempts
+- Customer data harvesting patterns
+
 12. MITIGATION STRATEGIES
 =========================
 
@@ -376,6 +438,12 @@ Response:
 - Shoplift patch deployment
 - RevSlider plugin updates
 - Admin panel access restrictions
+
+🆕 WooCommerce-Specific Mitigations:
+- Shop.php file protection
+- Payment gateway hardening
+- PCI DSS compliance enforcement
+- Customer data encryption
 
 13. COMPREHENSIVE EXPLOIT ARSENAL
 ==================================
