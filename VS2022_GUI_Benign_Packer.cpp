@@ -61,6 +61,7 @@ constexpr int ID_MODE_PACK_RADIO = 1016;
 constexpr int ID_MODE_MASS_RADIO = 1017;
 constexpr int ID_MODE_GROUP = 1018;
 constexpr int ID_EXPLOIT_COMBO = 1019;
+constexpr int ID_ENCRYPTION_COMBO = 1020;
 
 // Global variables for mass generation
 bool g_massGenerationActive = false;
