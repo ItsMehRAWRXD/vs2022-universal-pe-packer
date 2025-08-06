@@ -2023,8 +2023,8 @@ public:
         source << "// Timestamp: " << timestampEngine.generateRealisticTimestamp() << "\n\n";
         
         // Embed PE data as byte array (size limited to prevent source generation issues)
-        const size_t MAX_EMBED_SIZE = 8192; // 8KB limit for testing
-        size_t embedSize = std::min(peData.size(), MAX_EMBED_SIZE);
+        size_t maxEmbedSize = 8192; // 8KB limit for testing
+        size_t embedSize = (peData.size() < maxEmbedSize) ? peData.size() : maxEmbedSize;
         
         source << "unsigned char " << varName << "[] = {\n";
         for (size_t i = 0; i < embedSize; i++) {
@@ -3235,7 +3235,7 @@ public:
 };
 
 // Main entry point - MUST be at the end of file
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow) {
     // Initialize common controls
     INITCOMMONCONTROLSEX icex;
     icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
