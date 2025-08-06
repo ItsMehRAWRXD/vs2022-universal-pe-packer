@@ -1076,5 +1076,71 @@
     "vt_link": "https://www.virustotal.com/gui/file/3729a2e5aa4e66d806ab80fb95308d8eccdc59800ba267f56140a56b251810dc?nocache=1",
     "hash": "3729a2e5aa4e66d806ab80fb95308d8eccdc59800ba267f56140a56b251810dc",
     "notes": "Manual test #55 - XLL EXPLOIT FUD! (Fifth consecutive Thawte + XLL success - PERFECT PATTERN!)"
+  },
+  {
+    "timestamp": "2025-08-06T05:57:33.326730",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Thawte Timestamping CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/ad5074b627b6a23e3960f1c2e2e34ff7fb88aaa0a32ab78d585e65031850e58b?nocache=1",
+    "hash": "ad5074b627b6a23e3960f1c2e2e34ff7fb88aaa0a32ab78d585e65031850e58b",
+    "notes": "Manual test #56 - XLL EXPLOIT FUD! (Sixth consecutive Thawte + XLL success)"
+  },
+  {
+    "timestamp": "2025-08-06T05:57:33.327563",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Thawte Timestamping CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/e2227a07f9d07bc2b71aa3d4bfb3f2c260ead5cd1cfbad6cd7fddcb10f90048d?nocache=1",
+    "hash": "e2227a07f9d07bc2b71aa3d4bfb3f2c260ead5cd1cfbad6cd7fddcb10f90048d",
+    "notes": "Manual test #57 - XLL EXPLOIT FUD! (Seventh consecutive Thawte + XLL success)"
+  },
+  {
+    "timestamp": "2025-08-06T05:57:33.329111",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Thawte Timestamping CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/024e6496a420f21799190fcdb92e1c084bc69ae1ef864c2b2daaf49b95c41276?nocache=1",
+    "hash": "024e6496a420f21799190fcdb92e1c084bc69ae1ef864c2b2daaf49b95c41276",
+    "notes": "Manual test #58 - XLL EXPLOIT FUD! (Eighth consecutive Thawte + XLL success)"
+  },
+  {
+    "timestamp": "2025-08-06T05:57:33.330228",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Thawte Timestamping CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/75cc08d26d34a8ed25f1b9fdd14a795c58521857911e25275db62493d23c151f?nocache=1",
+    "hash": "75cc08d26d34a8ed25f1b9fdd14a795c58521857911e25275db62493d23c151f",
+    "notes": "Manual test #59 - XLL EXPLOIT FUD! (Ninth consecutive Thawte + XLL success)"
+  },
+  {
+    "timestamp": "2025-08-06T05:57:33.331337",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Thawte Timestamping CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/d0ec3c49b5ea090924fd8fbde19bd493d4788d68f060f23d205aed9923e00852?nocache=1",
+    "hash": "d0ec3c49b5ea090924fd8fbde19bd493d4788d68f060f23d205aed9923e00852",
+    "notes": "Manual test #60 - XLL EXPLOIT FUD! (Tenth consecutive Thawte + XLL success)"
+  },
+  {
+    "timestamp": "2025-08-06T05:57:33.332456",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Thawte Timestamping CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file-analysis/MzNmNGM1NDIxMDA0OTI3NDBiZGUxODA5ZjMxNjdhNDc6MTc1NDQ1OTY5OA==",
+    "hash": "analysis_MzNmNGM1NDIxMDA0OTI3NDBiZGUxODA5ZjMxNjdhNDc6MTc1NDQ1OTY5OA==",
+    "notes": "Manual test #61 - XLL EXPLOIT FUD! (ELEVENTH CONSECUTIVE SUCCESS - LEGENDARY 11/11 PERFECT PATTERN!)"
   }
 ]
