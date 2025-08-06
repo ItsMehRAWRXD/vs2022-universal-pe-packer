@@ -262,5 +262,16 @@
     "vt_link": "https://www.virustotal.com/gui/file-analysis/YjA5Y2QzYzA4Y2FiZjQyYWZhOGNjZTA3MDZhOGViNGU6MTc1NDQ1NDE0Mw==",
     "hash": "analysis_YjA5Y2QzYzA4Y2FiZjQyYWZhOGNjZTA3MDZhOGViNGU6MTc1NDQ1NDE0Mw==",
     "notes": "Manual test - NOT FUD! First Realtek failure detected"
+  },
+  {
+    "timestamp": "2025-08-06T04:23:49.717070",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Realtek Root Certificate",
+    "architecture": "x64",
+    "is_fud": false,
+    "detection_count": 1,
+    "vt_link": "https://www.virustotal.com/gui/file-analysis/ODYzYTI3MDVjZDI1YTA5ODVmYTgyODViNWQyMzc1Y2Y6MTc1NDQ1NDE5NQ==",
+    "hash": "analysis_ODYzYTI3MDVjZDI1YTA5ODVmYTgyODViNWQyMzc1Y2Y6MTc1NDQ1NDE5NQ==",
+    "notes": "Manual test - x64 ALSO detected! Realtek pattern changed across both architectures"
   }
 ]

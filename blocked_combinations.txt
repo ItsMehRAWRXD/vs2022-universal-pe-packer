@@ -36,3 +36,10 @@ BLOCKED COMBINATIONS
    Link: https://www.virustotal.com/gui/file-analysis/YjA5Y2QzYzA4Y2FiZjQyYWZhOGNjZTA3MDZhOGViNGU6MTc1NDQ1NDE0Mw==
    Notes: Manual test - NOT FUD! First Realtek failure detected
 
+❌ Adobe Systems Incorporated + Realtek Root Certificate + x64
+   Detections: 1/72
+   Date: 2025-08-06T04:23:49.717070
+   Hash: analysis_ODYzYTI3MDVjZDI1YTA5ODVmYTgyODViNWQyMzc1Y2Y6MTc1NDQ1NDE5NQ==
+   Link: https://www.virustotal.com/gui/file-analysis/ODYzYTI3MDVjZDI1YTA5ODVmYTgyODViNWQyMzc1Y2Y6MTc1NDQ1NDE5NQ==
+   Notes: Manual test - x64 ALSO detected! Realtek pattern changed across both architectures
+
