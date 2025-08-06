@@ -53,7 +53,7 @@
 #define ID_CERTIFICATE_COMBO 1011
 
 class AdvancedRandomEngine {
-private:
+public:
     std::random_device rd;
     std::mt19937 gen;
     std::uniform_int_distribution<> dis;
@@ -68,7 +68,7 @@ public:
     
     std::string generateRandomName(int length = 8) {
         const std::string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        std::uniform_int_distribution<> charDis(0, chars.length() - 1);
+        std::uniform_int_distribution<> charDis(0, static_cast<int>(chars.length() - 1));
         std::string result;
         for (int i = 0; i < length; ++i) {
             result += chars[charDis(gen)];
@@ -395,7 +395,7 @@ public:
         }
     }
     
-    std::string getArchitectureName(Architecture arch) {
+    std::string getArchitectureName(Architecture arch) const {
         switch (arch) {
             case Architecture::x86: return "x86 (32-bit)";
             case Architecture::x64: return "x64 (64-bit)";
@@ -556,7 +556,7 @@ private:
 };
 
 class UltimateStealthPacker {
-private:
+public:
     AdvancedRandomEngine randomEngine;
     TimestampEngine timestampEngine;
     AdvancedPEBuilder peBuilder;
@@ -817,13 +817,13 @@ void createBenignExecutable() {
         SetWindowTextW(g_hOutputPath, std::wstring(outputPath.begin(), outputPath.end()).c_str());
     }
     
-    int companyIndex = SendMessage(g_hCompanyCombo, CB_GETCURSEL, 0, 0);
-    int certIndex = SendMessage(g_hCertCombo, CB_GETCURSEL, 0, 0);
-    int archIndex = SendMessage(g_hArchCombo, CB_GETCURSEL, 0, 0);
+    int companyIndex = static_cast<int>(SendMessage(g_hCompanyCombo, CB_GETCURSEL, 0, 0));
+    int certIndex = static_cast<int>(SendMessage(g_hCertCombo, CB_GETCURSEL, 0, 0));
+    int archIndex = static_cast<int>(SendMessage(g_hArchCombo, CB_GETCURSEL, 0, 0));
     
     MultiArchitectureSupport::Architecture architecture = MultiArchitectureSupport::Architecture::x64;
     auto architectures = g_packer.getArchitectures();
-    if (archIndex >= 0 && archIndex < architectures.size()) {
+    if (archIndex >= 0 && archIndex < static_cast<int>(architectures.size())) {
         architecture = architectures[archIndex].first;
     }
     
