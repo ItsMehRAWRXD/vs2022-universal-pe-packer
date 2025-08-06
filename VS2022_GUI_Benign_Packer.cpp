@@ -1543,11 +1543,6 @@ public:
             sourceFile << benignCode;
             sourceFile.close();
             
-            // Simple compiler detection - just use system cl.exe
-            auto compilerInfo = CompilerDetector::detectVisualStudio();
-            compilerInfo.path = "cl.exe";
-            compilerInfo.found = true;
-            
             // Generate realistic timestamp
             uint32_t timestamp = timestampEngine.generateRealisticTimestamp();
             
@@ -1559,25 +1554,57 @@ public:
             
             std::string compileCmd;
             
-            // Try to use vcvars64.bat if available
-            if (!compilerInfo.vcvarsPath.empty()) {
-                compileCmd = "call \"" + compilerInfo.vcvarsPath + "\" >nul 2>&1 && ";
-            } else {
-                // Use Enterprise vcvars64.bat
-                compileCmd = "call \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat\" >nul 2>&1 && ";
+            // Create a proper batch command that sets up VS environment and compiles
+            compileCmd = "cmd /c \"";
+            
+            // Choose the correct vcvars script based on architecture
+            std::string vcvarsScript = (architecture == MultiArchitectureSupport::Architecture::x86) ? "vcvars32.bat" : "vcvars64.bat";
+            
+            // Try different VS paths in order of preference - prioritizing VS 2019
+            std::vector<std::string> vsPaths = {
+                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\" + vcvarsScript,
+                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build\\" + vcvarsScript,
+                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\" + vcvarsScript,
+                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Auxiliary\\Build\\" + vcvarsScript,
+                "C:\\Program Files\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\" + vcvarsScript,
+                "C:\\Program Files\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build\\" + vcvarsScript,
+                "C:\\Program Files\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\" + vcvarsScript,
+                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\" + vcvarsScript,
+                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\VC\\Auxiliary\\Build\\" + vcvarsScript,
+                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\" + vcvarsScript
+            };
+            
+            bool foundVS = false;
+            for (const auto& vsPath : vsPaths) {
+                DWORD attrs = GetFileAttributesA(vsPath.c_str());
+                if (attrs != INVALID_FILE_ATTRIBUTES && !(attrs & FILE_ATTRIBUTE_DIRECTORY)) {
+                    compileCmd += "call \\\"" + vsPath + "\\\" >nul 2>&1 && ";
+                    foundVS = true;
+                    break;
+                }
             }
             
-            // Build the compilation command
-            if (compilerInfo.path == "cl.exe") {
-                compileCmd += "cl /nologo /O2 /DNDEBUG /MD ";
-            } else {
-                compileCmd += "\"" + compilerInfo.path + "\" /nologo /O2 /DNDEBUG /MD ";
+            if (!foundVS) {
+                // Fallback: try VS 2019 developer command prompt environment
+                compileCmd += "echo Setting up VS 2019 environment... && ";
+                if (architecture == MultiArchitectureSupport::Architecture::x86) {
+                    compileCmd += "set INCLUDE=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\include;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\um;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\ucrt;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\shared && ";
+                    compileCmd += "set LIB=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\lib\\x86;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.19041.0\\um\\x86;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.19041.0\\ucrt\\x86 && ";
+                    compileCmd += "set PATH=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\Hostx86\\x86;%PATH% && ";
+                } else {
+                    compileCmd += "set INCLUDE=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\include;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\um;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\ucrt;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\shared && ";
+                    compileCmd += "set LIB=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\lib\\x64;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.19041.0\\um\\x64;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.19041.0\\ucrt\\x64 && ";
+                    compileCmd += "set PATH=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\Hostx64\\x64;%PATH% && ";
+                }
             }
             
-            compileCmd += "/Fe\"" + outputPath + "\" ";
-            compileCmd += "\"" + tempSource + "\" ";
+            // Add the actual compilation command
+            compileCmd += "cl.exe /nologo /O2 /EHsc /DNDEBUG /MD ";
+            compileCmd += "/Fe\\\"" + outputPath + "\\\" ";
+            compileCmd += "\\\"" + tempSource + "\\\" ";
             compileCmd += "/link " + archFlags + " /OPT:REF /OPT:ICF ";
             compileCmd += "user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib";
+            compileCmd += "\"";
             
             // DEBUG: Write compilation command to file for inspection
             std::ofstream debugFile("debug_compile_cmd.txt");
@@ -1821,25 +1848,57 @@ public:
             
             std::string compileCmd;
             
-            if (!compilerInfo.found) {
-                std::ofstream errorLog2("debug_pe_embedding.txt", std::ios::app); errorLog2 << "ERROR: Visual Studio compiler not found!\n";
-                errorLog2.close();
-                return false;
+            // Create a proper batch command that sets up VS environment and compiles
+            compileCmd = "cmd /c \"";
+            
+            // Choose the correct vcvars script based on architecture
+            std::string vcvarsScript = (architecture == MultiArchitectureSupport::Architecture::x86) ? "vcvars32.bat" : "vcvars64.bat";
+            
+            // Try different VS paths in order of preference - prioritizing VS 2019
+            std::vector<std::string> vsPaths = {
+                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\" + vcvarsScript,
+                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build\\" + vcvarsScript,
+                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\" + vcvarsScript,
+                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Auxiliary\\Build\\" + vcvarsScript,
+                "C:\\Program Files\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\" + vcvarsScript,
+                "C:\\Program Files\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build\\" + vcvarsScript,
+                "C:\\Program Files\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\" + vcvarsScript,
+                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\" + vcvarsScript,
+                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\VC\\Auxiliary\\Build\\" + vcvarsScript,
+                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\" + vcvarsScript
+            };
+            
+            bool foundVS = false;
+            for (const auto& vsPath : vsPaths) {
+                DWORD attrs = GetFileAttributesA(vsPath.c_str());
+                if (attrs != INVALID_FILE_ATTRIBUTES && !(attrs & FILE_ATTRIBUTE_DIRECTORY)) {
+                    compileCmd += "call \\\"" + vsPath + "\\\" >nul 2>&1 && ";
+                    foundVS = true;
+                    break;
+                }
             }
             
-            // Build compiler command with full paths and environment setup
-            if (!compilerInfo.vcvarsPath.empty()) {
-                // Use vcvars to set up environment - this is the key fix!
-                compileCmd = "cmd /c \"\"" + compilerInfo.vcvarsPath + "\" && \"" + compilerInfo.path + 
-                           "\" /nologo /std:c++17 /O2 /MT /EHsc \"" + sourceFilename + 
-                           "\" /Fe:\"" + outputPath + "\" /link " + archFlags + 
-                           " user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib\" >nul 2>&1";
-            } else {
-                // Direct compiler call (fallback)
-                compileCmd = "\"" + compilerInfo.path + "\" /nologo /std:c++17 /O2 /MT /EHsc \"" + sourceFilename + 
-                           "\" /Fe:\"" + outputPath + "\" /link " + archFlags + 
-                           " user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib >nul 2>&1";
+            if (!foundVS) {
+                // Fallback: try VS 2019 developer command prompt environment
+                compileCmd += "echo Setting up VS 2019 environment... && ";
+                if (architecture == MultiArchitectureSupport::Architecture::x86) {
+                    compileCmd += "set INCLUDE=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\include;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\um;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\ucrt;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\shared && ";
+                    compileCmd += "set LIB=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\lib\\x86;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.19041.0\\um\\x86;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.19041.0\\ucrt\\x86 && ";
+                    compileCmd += "set PATH=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\Hostx86\\x86;%PATH% && ";
+                } else {
+                    compileCmd += "set INCLUDE=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\include;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\um;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\ucrt;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\shared && ";
+                    compileCmd += "set LIB=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\lib\\x64;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.19041.0\\um\\x64;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.19041.0\\ucrt\\x64 && ";
+                    compileCmd += "set PATH=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\Hostx64\\x64;%PATH% && ";
+                }
             }
+            
+            // Add the actual compilation command
+            compileCmd += "cl.exe /nologo /O2 /EHsc /DNDEBUG /MD ";
+            compileCmd += "/Fe\\\"" + outputPath + "\\\" ";
+            compileCmd += "\\\"" + sourceFilename + "\\\" ";
+            compileCmd += "/link " + archFlags + " /OPT:REF /OPT:ICF ";
+            compileCmd += "user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib";
+            compileCmd += "\"";
             
             // DEBUG: Log compilation details
             std::ofstream debugLog("debug_pe_embedding.txt", std::ios::app);
