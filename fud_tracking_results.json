@@ -1142,5 +1142,16 @@
     "vt_link": "https://www.virustotal.com/gui/file-analysis/MzNmNGM1NDIxMDA0OTI3NDBiZGUxODA5ZjMxNjdhNDc6MTc1NDQ1OTY5OA==",
     "hash": "analysis_MzNmNGM1NDIxMDA0OTI3NDBiZGUxODA5ZjMxNjdhNDc6MTc1NDQ1OTY5OA==",
     "notes": "Manual test #61 - XLL EXPLOIT FUD! (ELEVENTH CONSECUTIVE SUCCESS - LEGENDARY 11/11 PERFECT PATTERN!)"
+  },
+  {
+    "timestamp": "2025-08-06T05:58:28.569762",
+    "company": "InQuest Labs",
+    "certificate": "Windows_API_Function Rule",
+    "architecture": "XLL",
+    "is_fud": false,
+    "detection_count": 1,
+    "vt_link": "YARA_Rule_Analysis_Windows_API_Function",
+    "hash": "unknown",
+    "notes": "YARA Rule Detection: Windows_API_Function detected API strings in XLL exploits - requires evasion strategies"
   }
 ]

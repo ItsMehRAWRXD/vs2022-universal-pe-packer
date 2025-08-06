@@ -183,3 +183,10 @@ BLOCKED COMBINATIONS
    Link: https://www.virustotal.com/gui/file/1c5ade733f9ae1549746f5485a19f357dd01d1b1795d316fd77eb90a8b9d1d6a
    Notes: Manual test - Follow-up NANO-Antivirus detection confirmation (Thawte pattern impact)
 
+❌ InQuest Labs + Windows_API_Function Rule + XLL
+   Detections: 1/72
+   Date: 2025-08-06T05:58:28.569762
+   Hash: unknown
+   Link: YARA_Rule_Analysis_Windows_API_Function
+   Notes: YARA Rule Detection: Windows_API_Function detected API strings in XLL exploits - requires evasion strategies
+
