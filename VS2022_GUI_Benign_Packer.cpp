@@ -138,12 +138,26 @@ public:
     }
     
     std::string generateRandomName(int length = 8) {
-        const std::string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        std::uniform_int_distribution<> charDis(0, static_cast<int>(chars.length() - 1));
+        // First character MUST be a letter (no digits allowed)
+        const std::string firstChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
+        // Subsequent characters can include digits
+        const std::string otherChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
+        
+        std::uniform_int_distribution<> firstDis(0, static_cast<int>(firstChars.length() - 1));
+        std::uniform_int_distribution<> otherDis(0, static_cast<int>(otherChars.length() - 1));
+        
         std::string result;
-        for (int i = 0; i < length; ++i) {
-            result += chars[charDis(gen)];
+        
+        // First character (no digits)
+        if (length > 0) {
+            result += firstChars[firstDis(gen)];
         }
+        
+        // Remaining characters (can include digits)
+        for (int i = 1; i < length; ++i) {
+            result += otherChars[otherDis(gen)];
+        }
+        
         return result;
     }
     
