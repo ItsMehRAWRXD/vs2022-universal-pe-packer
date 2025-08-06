@@ -2266,8 +2266,10 @@ public:
         std::vector<std::string> commonPaths = {
             "C:\\mingw64\\bin\\g++.exe",
             "C:\\Program Files\\mingw-w64\\x86_64-8.1.0-posix-seh-rt_v6-rev0\\mingw64\\bin\\g++.exe",
+            "C:\\Program Files\\mingw-w64\\x86_64-12.2.0-release-posix-seh-ucrt-rt_v10-rev2\\mingw64\\bin\\g++.exe",
             "C:\\msys64\\mingw64\\bin\\g++.exe",
-            "C:\\TDM-GCC-64\\bin\\g++.exe"
+            "C:\\TDM-GCC-64\\bin\\g++.exe",
+            "C:\\Program Files (x86)\\mingw-w64\\i686-8.1.0-posix-dwarf-rt_v6-rev0\\mingw32\\bin\\g++.exe"
         };
         
         for (const auto& path : commonPaths) {
@@ -2277,7 +2279,11 @@ public:
                 CreateDirectoryA("mingw64", NULL);
                 CreateDirectoryA("mingw64\\bin", NULL);
                 system(copyCmd.c_str());
-                return true;
+                
+                // Verify the copy worked
+                if (GetFileAttributesA(mingwPath.c_str()) != INVALID_FILE_ATTRIBUTES) {
+                    return true;
+                }
             }
         }
         
@@ -2358,15 +2364,35 @@ exit /b 1
         };
         
         // Try each compiler in order
-        for (const auto& cmd : compileCommands) {
+        for (size_t i = 0; i < compileCommands.size(); ++i) {
+            const auto& cmd = compileCommands[i];
+            
+            // Log compilation attempt
+            std::string logMessage = "Trying compiler " + std::to_string(i + 1) + ": " + cmd;
+            OutputDebugStringA(logMessage.c_str());
+            
             int compileResult = system(cmd.c_str());
             if (compileResult == 0) {
-                // Verify the executable was created
+                // Verify the executable was created and has reasonable size
                 if (GetFileAttributesA(outputPath.c_str()) != INVALID_FILE_ATTRIBUTES) {
-                    result.success = true;
-                    result.errorMessage = "Compilation successful";
-                    break;
+                    std::ifstream verifyFile(outputPath, std::ios::binary | std::ios::ate);
+                    if (verifyFile.is_open()) {
+                        std::streamsize fileSize = verifyFile.tellg();
+                        verifyFile.close();
+                        
+                        if (fileSize > 1024) {  // Minimum reasonable size
+                            result.success = true;
+                            result.errorMessage = "Compilation successful with compiler " + std::to_string(i + 1);
+                            break;
+                        } else {
+                            result.errorMessage = "Executable created but too small (" + std::to_string(fileSize) + " bytes)";
+                        }
+                    }
+                } else {
+                    result.errorMessage = "Compiler succeeded but executable not found";
                 }
+            } else {
+                result.errorMessage = "Compiler " + std::to_string(i + 1) + " failed with code " + std::to_string(compileResult);
             }
         }
         
