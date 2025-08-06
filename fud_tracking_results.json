@@ -372,5 +372,16 @@
     "vt_link": "https://www.virustotal.com/gui/file/92c5ec970fc7d1d6896d874ae51121093f686373f44f186042e9b2f8b6deb3db?nocache=1",
     "hash": "92c5ec970fc7d1d6896d874ae51121093f686373f44f186042e9b2f8b6deb3db",
     "notes": "Manual test - Entrust Root CA + Adobe + x64 confirmed FUD"
+  },
+  {
+    "timestamp": "2025-08-06T04:35:00.755207",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "GeoTrust Global CA",
+    "architecture": "x64",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file-analysis/N2U5Y2ZhNWRiNWNmNDY3NWRlMGIyYTRhMDg1MzEyNmI6MTc1NDQ1NDg2MQ==",
+    "hash": "analysis_N2U5Y2ZhNWRiNWNmNDY3NWRlMGIyYTRhMDg1MzEyNmI6MTc1NDQ1NDg2MQ==",
+    "notes": "Manual test - GeoTrust Global CA + Adobe + x64 confirmed FUD"
   }
 ]

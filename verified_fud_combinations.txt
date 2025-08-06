@@ -139,3 +139,9 @@ VERIFIED FUD COMBINATIONS
    Link: https://www.virustotal.com/gui/file/92c5ec970fc7d1d6896d874ae51121093f686373f44f186042e9b2f8b6deb3db?nocache=1
    Notes: Manual test - Entrust Root CA + Adobe + x64 confirmed FUD
 
+✅ Adobe Systems Incorporated + GeoTrust Global CA + x64
+   Date: 2025-08-06T04:35:00.755207
+   Hash: analysis_N2U5Y2ZhNWRiNWNmNDY3NWRlMGIyYTRhMDg1MzEyNmI6MTc1NDQ1NDg2MQ==
+   Link: https://www.virustotal.com/gui/file-analysis/N2U5Y2ZhNWRiNWNmNDY3NWRlMGIyYTRhMDg1MzEyNmI6MTc1NDQ1NDg2MQ==
+   Notes: Manual test - GeoTrust Global CA + Adobe + x64 confirmed FUD
+
