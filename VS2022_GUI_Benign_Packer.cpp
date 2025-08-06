@@ -88,7 +88,39 @@ enum EncryptionType {
     ENCRYPT_CHACHA20 = 3        // ChaCha20 encryption (modern, secure)
 };
 
+// Add at the very top of the file, after includes
+#ifdef _WIN32
+#include <tlhelp32.h>
+#include <tchar.h>
 
+// Function to kill running instances before build
+void killRunningInstances() {
+    HANDLE hProcessSnap;
+    PROCESSENTRY32 pe32;
+    
+    hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (hProcessSnap == INVALID_HANDLE_VALUE) return;
+    
+    pe32.dwSize = sizeof(PROCESSENTRY32);
+    
+    if (!Process32First(hProcessSnap, &pe32)) {
+        CloseHandle(hProcessSnap);
+        return;
+    }
+    
+    do {
+        if (_tcsicmp(pe32.szExeFile, _T("BenignPacker.exe")) == 0) {
+            HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pe32.th32ProcessID);
+            if (hProcess) {
+                TerminateProcess(hProcess, 0);
+                CloseHandle(hProcess);
+            }
+        }
+    } while (Process32Next(hProcessSnap, &pe32));
+    
+    CloseHandle(hProcessSnap);
+}
+#endif
 
 class AdvancedRandomEngine {
 public:
