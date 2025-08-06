@@ -632,8 +632,16 @@ public:
             // Detect and use Visual Studio compiler
             auto compilerInfo = CompilerDetector::detectVisualStudio();
             if (!compilerInfo.found) {
-                DeleteFileA(tempSource.c_str());
-                return false;
+                // Try fallback methods
+                if (GetFileAttributesA("C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC") != INVALID_FILE_ATTRIBUTES ||
+                    GetFileAttributesA("C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC") != INVALID_FILE_ATTRIBUTES) {
+                    // Manual override - use system cl if VS is installed
+                    compilerInfo.path = "cl.exe";
+                    compilerInfo.found = true;
+                } else {
+                    DeleteFileA(tempSource.c_str());
+                    return false;
+                }
             }
             
             // Generate realistic timestamp
@@ -646,16 +654,26 @@ public:
             std::string archFlags = multiArch.getCompilerFlags(architecture);
             
             std::string compileCmd;
+            
+            // Try to use vcvars64.bat if available
             if (!compilerInfo.vcvarsPath.empty()) {
-                compileCmd = "\"" + compilerInfo.vcvarsPath + "\" && ";
+                compileCmd = "call \"" + compilerInfo.vcvarsPath + "\" >nul 2>&1 && ";
+            } else {
+                // Try alternative environment setup
+                compileCmd = "call \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\vcvars64.bat\" >nul 2>&1 && ";
             }
             
-            compileCmd += "\"" + compilerInfo.path + "\" /nologo /O2 /GL /DNDEBUG /MD ";
+            // Build the compilation command
+            if (compilerInfo.path == "cl.exe") {
+                compileCmd += "cl /nologo /O2 /DNDEBUG /MD ";
+            } else {
+                compileCmd += "\"" + compilerInfo.path + "\" /nologo /O2 /DNDEBUG /MD ";
+            }
+            
             compileCmd += "/Fe\"" + outputPath + "\" ";
             compileCmd += "\"" + tempSource + "\" ";
             compileCmd += "/link " + archFlags + " /OPT:REF /OPT:ICF ";
-            compileCmd += "/TIMESTAMP:" + std::to_string(timestamp) + " ";
-            compileCmd += "/VERSION:" + std::to_string(compilerFingerprint.majorVersion) + "." + std::to_string(compilerFingerprint.minorVersion);
+            compileCmd += "user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib";
             
             // Execute compilation
             int result = system(compileCmd.c_str());
@@ -839,7 +857,7 @@ void createBenignExecutable() {
         MessageBoxW(NULL, L"Ultimate stealth executable created with ALL 8 advanced features!\n\nFeatures applied:\n- Enhanced PE Structure\n- Certificate Spoofing\n- Super Benign Behavior\n- Entropy Management\n- Compiler Masquerading\n- Dynamic APIs\n- Multi-Architecture\n- DNA Randomization\n\nTarget: 0/72 detections!", L"Ultimate Success!", MB_OK | MB_ICONINFORMATION);
     } else {
         SetWindowTextW(g_hStatusText, L"Failed to create executable. Please check compiler installation.");
-        MessageBoxW(NULL, L"Compilation failed. Please ensure Visual Studio 2022/2019 is properly installed.", L"Error", MB_OK | MB_ICONERROR);
+        MessageBoxW(NULL, L"Compilation failed!\n\nPossible solutions:\n1. Open 'Developer Command Prompt for VS 2022'\n2. Run: vcvars64.bat\n3. Ensure cl.exe is in PATH\n4. Try running from Visual Studio Developer Console\n\nOR manually set PATH to include:\nC:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\[version]\\bin\\Hostx64\\x64\\", L"Compiler Error", MB_OK | MB_ICONERROR);
     }
     
     SendMessage(g_hProgressBar, PBM_SETPOS, 0, 0);
