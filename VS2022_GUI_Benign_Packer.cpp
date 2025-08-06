@@ -1698,12 +1698,12 @@ public:
                 // Use vcvars to set up environment - this is the key fix!
                 compileCmd = "cmd /c \"\"" + compilerInfo.vcvarsPath + "\" && \"" + compilerInfo.path + 
                            "\" /nologo /std:c++17 /O2 /MT /EHsc \"" + tempSource + 
-                           "\" /Fe:\"" + outputPath + "\" /link /subsystem:console " + archFlags + 
+                           "\" /Fe:\"" + outputPath + "\" /link " + archFlags + 
                            " user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib\" >nul 2>&1";
             } else {
                 // Direct compiler call (fallback)
                 compileCmd = "\"" + compilerInfo.path + "\" /nologo /std:c++17 /O2 /MT /EHsc \"" + tempSource + 
-                           "\" /Fe:\"" + outputPath + "\" /link /subsystem:console " + archFlags + 
+                           "\" /Fe:\"" + outputPath + "\" /link " + archFlags + 
                            " user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib >nul 2>&1";
             }
             
@@ -1832,12 +1832,12 @@ public:
                 // Use vcvars to set up environment - this is the key fix!
                 compileCmd = "cmd /c \"\"" + compilerInfo.vcvarsPath + "\" && \"" + compilerInfo.path + 
                            "\" /nologo /std:c++17 /O2 /MT /EHsc \"" + sourceFilename + 
-                           "\" /Fe:\"" + outputPath + "\" /link /subsystem:console " + archFlags + 
+                           "\" /Fe:\"" + outputPath + "\" /link " + archFlags + 
                            " user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib\" >nul 2>&1";
             } else {
                 // Direct compiler call (fallback)
                 compileCmd = "\"" + compilerInfo.path + "\" /nologo /std:c++17 /O2 /MT /EHsc \"" + sourceFilename + 
-                           "\" /Fe:\"" + outputPath + "\" /link /subsystem:console " + archFlags + 
+                           "\" /Fe:\"" + outputPath + "\" /link " + archFlags + 
                            " user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib >nul 2>&1";
             }
             
