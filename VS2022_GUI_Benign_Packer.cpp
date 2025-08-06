@@ -217,14 +217,14 @@ private:
     
 public:
     std::string generateBenignCode(const std::string& companyName) {
-        std::uniform_int_distribution<> delayDis(2000, 5000);
+        std::uniform_int_distribution<> delayDis(1000, 3000);
         int startupDelay = delayDis(randomEngine.gen);
         
-        return R"(
-#include <windows.h>
+        return R"(#include <windows.h>
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <cmath>
 
 int main() {
     // Realistic startup delay
@@ -232,9 +232,9 @@ int main() {
     
     // Check system legitimately (read-only)
     DWORD version = GetVersion();
-    char computerName[MAX_COMPUTERNAME_LENGTH + 1];
-    DWORD size = sizeof(computerName);
-    GetComputerNameA(computerName, &size);
+    char computerName[MAX_COMPUTERNAME_LENGTH + 1] = {0};
+    DWORD nameSize = sizeof(computerName);
+    GetComputerNameA(computerName, &nameSize);
     
     // Read common registry keys (non-destructive)
     HKEY hKey;
@@ -250,6 +250,24 @@ int main() {
                               NULL, OPEN_EXISTING, 0, NULL);
     if (hFile != INVALID_HANDLE_VALUE) {
         CloseHandle(hFile);
+    }
+    
+    // Add some unique calculations for polymorphism
+    volatile int calc1 = )" + std::to_string(randomEngine.generateRandomDWORD() % 1000) + R"(;
+    volatile int calc2 = )" + std::to_string(randomEngine.generateRandomDWORD() % 1000) + R"(;
+    volatile double mathResult = sin(calc1) * cos(calc2);
+    (void)mathResult; // Suppress warning
+    
+    // Dynamic API resolution for stealth
+    HMODULE hKernel32 = LoadLibraryA("kernel32.dll");
+    if (hKernel32) {
+        typedef DWORD(WINAPI* GetTickCountProc)();
+        GetTickCountProc pGetTickCount = (GetTickCountProc)GetProcAddress(hKernel32, "GetTickCount");
+        if (pGetTickCount) {
+            DWORD ticks = pGetTickCount();
+            (void)ticks; // Use the result
+        }
+        FreeLibrary(hKernel32);
     }
     
     // Display benign message
@@ -470,9 +488,9 @@ private:
     std::string addMeaninglessCalculations(const std::string& code) {
         std::string calculation = R"(
     // Random calculation for uniqueness
-    double meaningless = sin()" + std::to_string(randomEngine.generateRandomDWORD() % 360) + R"() * cos()" + 
+    double meaninglessCalc = sin()" + std::to_string(randomEngine.generateRandomDWORD() % 360) + R"() * cos()" + 
                          std::to_string(randomEngine.generateRandomDWORD() % 360) + R"();
-    (void)meaningless;
+    (void)meaninglessCalc;
     
 )";
         
@@ -641,14 +659,15 @@ public:
             // Generate super benign code with all enhancements
             std::string benignCode = benignBehavior.generateBenignCode(company.name);
             
-            // Add dynamic API resolution
-            benignCode = benignCode.substr(0, benignCode.find("#include <windows.h>")) +
-                        "#include <windows.h>\n#include <math.h>\n" +
-                        dynamicAPI.generateDynamicAPICode() + "\n" +
-                        benignCode.substr(benignCode.find("#include <iostream>"));
-            
-            // Apply DNA randomization
+            // Apply DNA randomization (this adds junk variables safely)
             benignCode = dnaRandomizer.randomizeCode(benignCode);
+            
+            // DEBUG: Write generated code to file for inspection
+            std::ofstream debugCodeFile("debug_generated_code.txt");
+            if (debugCodeFile.is_open()) {
+                debugCodeFile << "Generated C++ code:\n" << benignCode << std::endl;
+                debugCodeFile.close();
+            }
             
             // Create temporary source file
             std::string tempSource = "temp_" + randomEngine.generateRandomName() + ".cpp";
