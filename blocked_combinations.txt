@@ -134,3 +134,31 @@ BLOCKED COMBINATIONS
    Link: https://www.virustotal.com/gui/file/486c26eb715c3f7e7b1ba40601ce82977c376eabe6c2df9c258f4619da790642?nocache=1
    Notes: Manual test #28 - Apple Root CA + Adobe + x64 DETECTED (3/3 detections in this batch)
 
+❌ Adobe Systems Incorporated + Apple Root CA + x64
+   Detections: 1/72
+   Date: 2025-08-06T05:02:47.575568
+   Hash: 418be4fed5e41e45dd732950e2e3772d02091d9cc3401ea2511e942f2dcc917d
+   Link: https://www.virustotal.com/gui/file/418be4fed5e41e45dd732950e2e3772d02091d9cc3401ea2511e942f2dcc917d?nocache=1
+   Notes: Manual test #30 - Apple Root CA + Adobe + x64 DETECTED (Prolonged detection phase: 1/4 detections)
+
+❌ Adobe Systems Incorporated + Apple Root CA + x64
+   Detections: 1/72
+   Date: 2025-08-06T05:02:47.576277
+   Hash: a10f9faa82d52420bb4f9121f301a70bbd6d4f04c521d9b64060df7d8482b0cf
+   Link: https://www.virustotal.com/gui/file/a10f9faa82d52420bb4f9121f301a70bbd6d4f04c521d9b64060df7d8482b0cf?nocache=1
+   Notes: Manual test #31 - Apple Root CA + Adobe + x64 DETECTED (Prolonged detection phase: 2/4 detections)
+
+❌ Adobe Systems Incorporated + Apple Root CA + x64
+   Detections: 1/72
+   Date: 2025-08-06T05:02:47.576897
+   Hash: 8c7ebd9a37c877a8a85ba42be46d6e8c1e4f5a7ce038345931e8bdbbccb4ff2e
+   Link: https://www.virustotal.com/gui/file/8c7ebd9a37c877a8a85ba42be46d6e8c1e4f5a7ce038345931e8bdbbccb4ff2e?nocache=1
+   Notes: Manual test #32 - Apple Root CA + Adobe + x64 DETECTED (Prolonged detection phase: 3/4 detections)
+
+❌ Adobe Systems Incorporated + Apple Root CA + x64
+   Detections: 1/72
+   Date: 2025-08-06T05:02:47.577744
+   Hash: 9354a42a6f08c042bd8d252dfb7a9cbe457022ff687bb78143de30ed982e2024
+   Link: https://www.virustotal.com/gui/file/9354a42a6f08c042bd8d252dfb7a9cbe457022ff687bb78143de30ed982e2024?nocache=1
+   Notes: Manual test #33 - Apple Root CA + Adobe + x64 DETECTED (Prolonged detection phase: 4/4 detections)
+
