@@ -72,7 +72,7 @@ static int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
     
     // Method 1: Try if VS2022 Developer environment is already active
     sprintf_s(compileCmd, sizeof(compileCmd),
-        "cl.exe /nologo /O1 /MT /TC /bigobj \"%s\" /Fe:\"%s\" "
+        "cl.exe /nologo /O1 /MD /TC /bigobj \"%s\" /Fe:\"%s\" "
         "/link /SUBSYSTEM:WINDOWS user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib 2>nul",
         sourceFile, outputFile);
     result = system(compileCmd);
@@ -81,7 +81,7 @@ static int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
         // Method 2: Setup VS2022 Community environment and compile
         sprintf_s(compileCmd, sizeof(compileCmd),
             "cmd /c \"\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 >nul 2>&1 && "
-            "cl.exe /nologo /O1 /MT /TC /bigobj \"%s\" /Fe:\"%s\" "
+            "cl.exe /nologo /O1 /MD /TC /bigobj \"%s\" /Fe:\"%s\" "
             "/link /SUBSYSTEM:WINDOWS user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\" 2>nul",
             sourceFile, outputFile);
         result = system(compileCmd);
@@ -91,7 +91,7 @@ static int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
         // Method 3: Try VS2022 Professional
         sprintf_s(compileCmd, sizeof(compileCmd),
             "cmd /c \"\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 >nul 2>&1 && "
-            "cl.exe /nologo /O1 /MT /TC /bigobj \"%s\" /Fe:\"%s\" "
+            "cl.exe /nologo /O1 /MD /TC /bigobj \"%s\" /Fe:\"%s\" "
             "/link /SUBSYSTEM:WINDOWS user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\" 2>nul",
             sourceFile, outputFile);
         result = system(compileCmd);
@@ -101,7 +101,7 @@ static int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
         // Method 4: Try VS2022 Enterprise
         sprintf_s(compileCmd, sizeof(compileCmd),
             "cmd /c \"\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 >nul 2>&1 && "
-            "cl.exe /nologo /O1 /MT /TC /bigobj \"%s\" /Fe:\"%s\" "
+            "cl.exe /nologo /O1 /MD /TC /bigobj \"%s\" /Fe:\"%s\" "
             "/link /SUBSYSTEM:WINDOWS user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\" 2>nul",
             sourceFile, outputFile);
         result = system(compileCmd);
@@ -111,7 +111,7 @@ static int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
         // Method 5: Try Build Tools for Visual Studio 2022
         sprintf_s(compileCmd, sizeof(compileCmd),
             "cmd /c \"\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 >nul 2>&1 && "
-            "cl.exe /nologo /O1 /MT /TC /bigobj \"%s\" /Fe:\"%s\" "
+            "cl.exe /nologo /O1 /MD /TC /bigobj \"%s\" /Fe:\"%s\" "
             "/link /SUBSYSTEM:WINDOWS user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\" 2>nul",
             sourceFile, outputFile);
         result = system(compileCmd);
