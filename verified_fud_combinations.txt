@@ -115,3 +115,9 @@ VERIFIED FUD COMBINATIONS
    Link: https://www.virustotal.com/gui/file-analysis/MmM2YjM2YjgzOGE5YmFkOWRkNmNiNzhkN2MxYmI5MDk6MTc1NDQ1NDA5MA==
    Notes: Manual test - 0/72 detections confirmed (New certificate discovery for AnyCPU)
 
+✅ Adobe Systems Incorporated + Samsung Knox Root CA + AnyCPU
+   Date: 2025-08-06T04:24:48.241430
+   Hash: analysis_NmExMDUyMzU3MmEwZTUzMTUxMGVmZDYyMDM2ZjAzNTk6MTc1NDQ1NDI2MA==
+   Link: https://www.virustotal.com/gui/file-analysis/NmExMDUyMzU3MmEwZTUzMTUxMGVmZDYyMDM2ZjAzNTk6MTc1NDQ1NDI2MA==
+   Notes: Manual test - 0/72 detections confirmed (Samsung Knox AnyCPU validation)
+

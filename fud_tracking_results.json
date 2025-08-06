@@ -273,5 +273,16 @@
     "vt_link": "https://www.virustotal.com/gui/file-analysis/ODYzYTI3MDVjZDI1YTA5ODVmYTgyODViNWQyMzc1Y2Y6MTc1NDQ1NDE5NQ==",
     "hash": "analysis_ODYzYTI3MDVjZDI1YTA5ODVmYTgyODViNWQyMzc1Y2Y6MTc1NDQ1NDE5NQ==",
     "notes": "Manual test - x64 ALSO detected! Realtek pattern changed across both architectures"
+  },
+  {
+    "timestamp": "2025-08-06T04:24:48.241430",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Samsung Knox Root CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file-analysis/NmExMDUyMzU3MmEwZTUzMTUxMGVmZDYyMDM2ZjAzNTk6MTc1NDQ1NDI2MA==",
+    "hash": "analysis_NmExMDUyMzU3MmEwZTUzMTUxMGVmZDYyMDM2ZjAzNTk6MTc1NDQ1NDI2MA==",
+    "notes": "Manual test - 0/72 detections confirmed (Samsung Knox AnyCPU validation)"
   }
 ]
