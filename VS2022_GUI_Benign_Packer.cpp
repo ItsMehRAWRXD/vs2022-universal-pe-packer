@@ -400,13 +400,13 @@ public:
     std::string getCompilerFlags(Architecture arch) {
         switch (arch) {
             case Architecture::x86:
-                return "/MACHINE:X86 /SUBSYSTEM:WINDOWS";
+                return "/MACHINE:X86 /SUBSYSTEM:CONSOLE";
             case Architecture::x64:
-                return "/MACHINE:X64 /SUBSYSTEM:WINDOWS";
+                return "/MACHINE:X64 /SUBSYSTEM:CONSOLE";
             case Architecture::AnyCPU:
-                return "/MACHINE:X64 /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE";
+                return "/MACHINE:X64 /SUBSYSTEM:CONSOLE /LARGEADDRESSAWARE";
             default:
-                return "/MACHINE:X64 /SUBSYSTEM:WINDOWS";
+                return "/MACHINE:X64 /SUBSYSTEM:CONSOLE";
         }
     }
     
