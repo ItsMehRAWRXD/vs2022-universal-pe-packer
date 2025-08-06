@@ -176,3 +176,10 @@ BLOCKED COMBINATIONS
    Link: https://www.virustotal.com/gui/file/158320a8c300162a1c1f9fdcf108c4eac46f5a654243827b5334f68693439342
    Notes: Manual test - NANO-Antivirus detected Trojan.Inf.Downloader.ezohxo (Thawte streak impact)
 
+❌ Adobe Systems Incorporated + Thawte Timestamping CA + AnyCPU
+   Detections: 1/72
+   Date: 2025-08-06T05:49:50.388780
+   Hash: 1c5ade733f9ae1549746f5485a19f357dd01d1b1795d316fd77eb90a8b9d1d6a
+   Link: https://www.virustotal.com/gui/file/1c5ade733f9ae1549746f5485a19f357dd01d1b1795d316fd77eb90a8b9d1d6a
+   Notes: Manual test - Follow-up NANO-Antivirus detection confirmation (Thawte pattern impact)
+

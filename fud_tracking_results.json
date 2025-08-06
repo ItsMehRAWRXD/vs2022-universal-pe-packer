@@ -944,5 +944,38 @@
     "vt_link": "https://www.virustotal.com/gui/file/158320a8c300162a1c1f9fdcf108c4eac46f5a654243827b5334f68693439342",
     "hash": "158320a8c300162a1c1f9fdcf108c4eac46f5a654243827b5334f68693439342",
     "notes": "Manual test - NANO-Antivirus detected Trojan.Inf.Downloader.ezohxo (Thawte streak impact)"
+  },
+  {
+    "timestamp": "2025-08-06T05:49:50.388780",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Thawte Timestamping CA",
+    "architecture": "AnyCPU",
+    "is_fud": false,
+    "detection_count": 1,
+    "vt_link": "https://www.virustotal.com/gui/file/1c5ade733f9ae1549746f5485a19f357dd01d1b1795d316fd77eb90a8b9d1d6a",
+    "hash": "1c5ade733f9ae1549746f5485a19f357dd01d1b1795d316fd77eb90a8b9d1d6a",
+    "notes": "Manual test - Follow-up NANO-Antivirus detection confirmation (Thawte pattern impact)"
+  },
+  {
+    "timestamp": "2025-08-06T05:49:50.389760",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Thawte Timestamping CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/3d028e6915a00bffcef9a246bde076ee7c08b6995520fa131c2232a0973858e7?nocache=1",
+    "hash": "3d028e6915a00bffcef9a246bde076ee7c08b6995520fa131c2232a0973858e7",
+    "notes": "Manual test #49 - HTML EXPLOIT FUD! (New delivery vector success)"
+  },
+  {
+    "timestamp": "2025-08-06T05:49:50.391050",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Thawte Timestamping CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/aed0309467bdbb9f884b64d0304ed52aa54513dbbc4fc17c558c0a28a6511d65?nocache=1",
+    "hash": "aed0309467bdbb9f884b64d0304ed52aa54513dbbc4fc17c558c0a28a6511d65",
+    "notes": "Manual test #50 - DOCX EXPLOIT FUD! (Document-based delivery vector success)"
   }
 ]
