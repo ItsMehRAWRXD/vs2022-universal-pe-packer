@@ -162,19 +162,77 @@ public:
 
 class TimestampEngine {
 private:
-    AdvancedRandomEngine randomEngine;
+    std::mt19937_64 rng;
     
 public:
-    uint32_t generateRealisticTimestamp() {
+    TimestampEngine() {
+        // High-quality seeding for better randomization
+        auto now = std::chrono::high_resolution_clock::now();
+        uint64_t seed = now.time_since_epoch().count() ^
+                       GetTickCount64() ^
+                       GetCurrentProcessId() ^
+                       GetCurrentThreadId() ^
+                       reinterpret_cast<uint64_t>(&seed);
+        rng.seed(seed);
+    }
+    
+    DWORD generateRealisticTimestamp() {
         auto now = std::chrono::system_clock::now();
-        auto epoch = now.time_since_epoch();
-        auto seconds = std::chrono::duration_cast<std::chrono::seconds>(epoch).count();
+        auto unixTime = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
+
+        // Random date between 6 months and 3 years ago (more realistic range)
+        int daysBack = (rng() % 912) + 180; // 180-1092 days
+        int hoursBack = rng() % 24;
+        int minutesBack = rng() % 60;
+        int secondsBack = rng() % 60;
+
+        uint64_t totalSecondsBack = (uint64_t)daysBack * 24 * 60 * 60 +
+                                   hoursBack * 60 * 60 +
+                                   minutesBack * 60 +
+                                   secondsBack;
+
+        return static_cast<DWORD>(unixTime - totalSecondsBack);
+    }
+    
+    // Format timestamp for display (for debugging/logging)
+    std::string formatTimestamp(DWORD timestamp) {
+        time_t time = static_cast<time_t>(timestamp);
+        struct tm* timeinfo = gmtime(&time);
         
-        // Generate timestamp between 6 months and 3 years ago
-        std::uniform_int_distribution<> ageDis(6 * 30 * 24 * 3600, 3 * 365 * 24 * 3600);
-        int ageInSeconds = ageDis(randomEngine.gen);
-        
-        return static_cast<uint32_t>(seconds - ageInSeconds);
+        char buffer[80];
+        strftime(buffer, 80, "%Y-%m-%d %H:%M:%S UTC", timeinfo);
+        return std::string(buffer);
+    }
+    
+    // Fix timestamps in compiled PE file
+    bool fixTimestamps(const std::string& filePath) {
+        std::ifstream file(filePath, std::ios::binary);
+        if (!file) return false;
+
+        std::vector<uint8_t> peData((std::istreambuf_iterator<char>(file)),
+                                   std::istreambuf_iterator<char>());
+        file.close();
+
+        if (peData.size() < sizeof(IMAGE_DOS_HEADER)) return false;
+
+        auto dosHeader = (IMAGE_DOS_HEADER*)peData.data();
+        if (dosHeader->e_magic != IMAGE_DOS_SIGNATURE) return false;
+
+        auto ntHeaders = (IMAGE_NT_HEADERS*)(peData.data() + dosHeader->e_lfanew);
+        if (ntHeaders->Signature != IMAGE_NT_SIGNATURE) return false;
+
+        // Apply realistic timestamp
+        DWORD timestamp = generateRealisticTimestamp();
+        ntHeaders->FileHeader.TimeDateStamp = timestamp;
+
+        // Write back to file
+        std::ofstream outFile(filePath, std::ios::binary);
+        if (!outFile) return false;
+
+        outFile.write(reinterpret_cast<const char*>(peData.data()), peData.size());
+        outFile.close();
+
+        return true;
     }
 };
 
@@ -1627,57 +1685,28 @@ public:
             
             std::string compileCmd;
             
-            // Create a proper batch command that sets up VS environment and compiles
-            compileCmd = "cmd /c \"";
+            // Use smart compiler detection for robust compilation
+            auto compilerInfo = CompilerDetector::detectVisualStudio();
             
-            // Choose correct vcvars based on target architecture  
-            std::string vcvarsName = (architecture == MultiArchitectureSupport::Architecture::x86) ? "vcvars32.bat" : "vcvars64.bat";
-            
-            // Try different VS paths in order of preference - prioritizing VS 2019
-            std::vector<std::string> vsPaths = {
-                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\" + vcvarsName,
-                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build\\" + vcvarsName,
-                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\" + vcvarsName,
-                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Auxiliary\\Build\\" + vcvarsName,
-                "C:\\Program Files\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\" + vcvarsName,
-                "C:\\Program Files\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build\\" + vcvarsName,
-                "C:\\Program Files\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\" + vcvarsName,
-                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\" + vcvarsName,
-                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\VC\\Auxiliary\\Build\\" + vcvarsName,
-                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\" + vcvarsName
-            };
-            
-            bool foundVS = false;
-            for (const auto& vsPath : vsPaths) {
-                DWORD attrs = GetFileAttributesA(vsPath.c_str());
-                if (attrs != INVALID_FILE_ATTRIBUTES && !(attrs & FILE_ATTRIBUTE_DIRECTORY)) {
-                    compileCmd += "call \\\"" + vsPath + "\\\" >nul 2>&1 && ";
-                    foundVS = true;
-                    break;
-                }
+            if (!compilerInfo.found) {
+                debugLog << "ERROR: Visual Studio compiler not found!\n";
+                debugLog.close();
+                return false;
             }
             
-            if (!foundVS) {
-                // Fallback: try VS 2019 developer command prompt environment
-                compileCmd += "echo Setting up VS 2019 environment... && ";
-                if (architecture == MultiArchitectureSupport::Architecture::x86) {
-                    compileCmd += "set INCLUDE=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\include;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\um;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\ucrt;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\shared && ";
-                    compileCmd += "set LIB=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\lib\\x86;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.19041.0\\um\\x86;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.19041.0\\ucrt\\x86 && ";
-                    compileCmd += "set PATH=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\Hostx86\\x86;%PATH% && ";
-                } else {
-                    compileCmd += "set INCLUDE=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\include;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\um;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\ucrt;C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.19041.0\\shared && ";
-                    compileCmd += "set LIB=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\lib\\x64;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.19041.0\\um\\x64;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.19041.0\\ucrt\\x64 && ";
-                    compileCmd += "set PATH=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\Hostx64\\x64;%PATH% && ";
-                }
+            // Build compiler command with full paths and environment setup
+            if (!compilerInfo.vcvarsPath.empty()) {
+                // Use vcvars to set up environment - this is the key fix!
+                compileCmd = "cmd /c \"\"" + compilerInfo.vcvarsPath + "\" && \"" + compilerInfo.path + 
+                           "\" /nologo /std:c++17 /O2 /MT /EHsc \"" + tempSource + 
+                           "\" /Fe:\"" + outputPath + "\" /link /subsystem:console " + archFlags + 
+                           " user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib\" >nul 2>&1";
+            } else {
+                // Direct compiler call (fallback)
+                compileCmd = "\"" + compilerInfo.path + "\" /nologo /std:c++17 /O2 /MT /EHsc \"" + tempSource + 
+                           "\" /Fe:\"" + outputPath + "\" /link /subsystem:console " + archFlags + 
+                           " user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib >nul 2>&1";
             }
-            
-            // Add the actual compilation command
-            compileCmd += "cl.exe /nologo /O2 /EHsc /DNDEBUG /MD ";
-            compileCmd += "/Fe\\\"" + outputPath + "\\\" ";
-            compileCmd += "\\\"" + tempSource + "\\\" ";
-            compileCmd += "/link " + archFlags + " /OPT:REF /OPT:ICF ";
-            compileCmd += "user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib";
-            compileCmd += "\"";
             
             // DEBUG: Log compilation details
             debugLog << "Compilation command: " << compileCmd << "\n";
@@ -1706,6 +1735,15 @@ public:
                 DWORD attrs = GetFileAttributesA(outputPath.c_str());
                 if (attrs != INVALID_FILE_ATTRIBUTES) {
                     debugLog << "SUCCESS: Output file created: " << outputPath << "\n";
+                    
+                    // CRITICAL FIX: Apply realistic timestamps to avoid 2096/2097 dates!
+                    if (timestampEngine.fixTimestamps(outputPath)) {
+                        DWORD newTimestamp = timestampEngine.generateRealisticTimestamp();
+                        std::string formattedTime = timestampEngine.formatTimestamp(newTimestamp);
+                        debugLog << "SUCCESS: Timestamps fixed - Creation time: " << formattedTime << "\n";
+                    } else {
+                        debugLog << "WARNING: Could not fix timestamps\n";
+                    }
                 } else {
                     debugLog << "WARNING: Compilation succeeded but no output file found\n";
                 }
