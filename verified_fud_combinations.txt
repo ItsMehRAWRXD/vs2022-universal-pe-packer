@@ -385,3 +385,9 @@ VERIFIED FUD COMBINATIONS
    Link: https://www.virustotal.com/gui/file-analysis/NTFlZWMyNTk4NTBmYTE0YmE2MTkyZjI3NzE5Y2QyNjQ6MTc1NDQ1OTM4NQ==
    Notes: Manual test #51 - XLL EXPLOIT FUD! (Excel add-in delivery vector + GoDaddy certificate success)
 
+✅ Adobe Systems Incorporated + Thawte Timestamping CA + AnyCPU
+   Date: 2025-08-06T05:51:19.920117
+   Hash: analysis_NTFlZWMyNTk4NTBmYTE0YmE2MTkyZjI3NzE5Y2QyNjQ6MTc1NDQ1OTM4NQ==
+   Link: https://www.virustotal.com/gui/file-analysis/NTFlZWMyNTk4NTBmYTE0YmE2MTkyZjI3NzE5Y2QyNjQ6MTc1NDQ1OTM4NQ==
+   Notes: Manual test #51 - XLL EXPLOIT FUD! (Excel add-in delivery vector + Thawte Timestamping CA success)
+

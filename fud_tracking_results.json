@@ -988,5 +988,16 @@
     "vt_link": "https://www.virustotal.com/gui/file-analysis/NTFlZWMyNTk4NTBmYTE0YmE2MTkyZjI3NzE5Y2QyNjQ6MTc1NDQ1OTM4NQ==",
     "hash": "analysis_NTFlZWMyNTk4NTBmYTE0YmE2MTkyZjI3NzE5Y2QyNjQ6MTc1NDQ1OTM4NQ==",
     "notes": "Manual test #51 - XLL EXPLOIT FUD! (Excel add-in delivery vector + GoDaddy certificate success)"
+  },
+  {
+    "timestamp": "2025-08-06T05:51:19.920117",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Thawte Timestamping CA",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file-analysis/NTFlZWMyNTk4NTBmYTE0YmE2MTkyZjI3NzE5Y2QyNjQ6MTc1NDQ1OTM4NQ==",
+    "hash": "analysis_NTFlZWMyNTk4NTBmYTE0YmE2MTkyZjI3NzE5Y2QyNjQ6MTc1NDQ1OTM4NQ==",
+    "notes": "Manual test #51 - XLL EXPLOIT FUD! (Excel add-in delivery vector + Thawte Timestamping CA success)"
   }
 ]
