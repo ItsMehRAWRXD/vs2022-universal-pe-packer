@@ -659,24 +659,10 @@ public:
             sourceFile << benignCode;
             sourceFile.close();
             
-            // Detect and use Visual Studio compiler
+            // Simple compiler detection - just use system cl.exe
             auto compilerInfo = CompilerDetector::detectVisualStudio();
-            if (!compilerInfo.found) {
-                // Try fallback methods - check for Enterprise, Professional, or Community
-                if (GetFileAttributesA("C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Tools\\MSVC") != INVALID_FILE_ATTRIBUTES ||
-                    GetFileAttributesA("C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\VC\\Tools\\MSVC") != INVALID_FILE_ATTRIBUTES ||
-                    GetFileAttributesA("C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC") != INVALID_FILE_ATTRIBUTES ||
-                    GetFileAttributesA("C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Tools\\MSVC") != INVALID_FILE_ATTRIBUTES ||
-                    GetFileAttributesA("C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\Professional\\VC\\Tools\\MSVC") != INVALID_FILE_ATTRIBUTES ||
-                    GetFileAttributesA("C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC") != INVALID_FILE_ATTRIBUTES) {
-                    // Manual override - use system cl if VS is installed
-                    compilerInfo.path = "cl.exe";
-                    compilerInfo.found = true;
-                } else {
-                    DeleteFileA(tempSource.c_str());
-                    return false;
-                }
-            }
+            compilerInfo.path = "cl.exe";
+            compilerInfo.found = true;
             
             // Generate realistic timestamp
             uint32_t timestamp = timestampEngine.generateRealisticTimestamp();
@@ -693,12 +679,8 @@ public:
             if (!compilerInfo.vcvarsPath.empty()) {
                 compileCmd = "call \"" + compilerInfo.vcvarsPath + "\" >nul 2>&1 && ";
             } else {
-                // Try alternative environment setup - check for Enterprise first, then Community
-                if (GetFileAttributesA("C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat") != INVALID_FILE_ATTRIBUTES) {
-                    compileCmd = "call \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat\" >nul 2>&1 && ";
-                } else {
-                    compileCmd = "call \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\vcvars64.bat\" >nul 2>&1 && ";
-                }
+                // Use Enterprise vcvars64.bat
+                compileCmd = "call \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvars64.bat\" >nul 2>&1 && ";
             }
             
             // Build the compilation command
