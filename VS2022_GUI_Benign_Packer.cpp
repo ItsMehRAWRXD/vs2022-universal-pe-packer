@@ -1466,6 +1466,11 @@ DWORD WINAPI massGenerationThread(LPVOID lpParam) {
     return 0;
 }
 
+// Helper function for ANSI text setting
+static void SetWindowTextAnsi(HWND hwnd, const char* text) {
+    SetWindowTextA(hwnd, text);
+}
+
 void startMassGeneration() {
     if (g_massGenerationActive) return;
     
@@ -1596,17 +1601,17 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                          10, 15, 80, 20, hwnd, NULL, NULL, NULL);
             
             g_hInputPath = CreateWindowW(L"EDIT", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_AUTOHSCROLL,
-                                       100, 12, 300, 25, hwnd, (HMENU)ID_INPUT_PATH, NULL, NULL);
+                                       100, 12, 300, 25, hwnd, (HMENU)(UINT_PTR)ID_INPUT_PATH, NULL, NULL);
             
             CreateWindowW(L"BUTTON", L"Browse", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
-                         410, 12, 70, 25, hwnd, (HMENU)ID_BROWSE_INPUT, NULL, NULL);
+                         410, 12, 70, 25, hwnd, (HMENU)(UINT_PTR)ID_BROWSE_INPUT, NULL, NULL);
             
             // Output file controls
             CreateWindowW(L"STATIC", L"Output File:", WS_VISIBLE | WS_CHILD,
                          10, 50, 80, 20, hwnd, NULL, NULL, NULL);
             
             g_hOutputPath = CreateWindowW(L"EDIT", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_AUTOHSCROLL,
-                                        100, 47, 300, 25, hwnd, (HMENU)ID_OUTPUT_PATH, NULL, NULL);
+                                        100, 47, 300, 25, hwnd, (HMENU)(UINT_PTR)ID_OUTPUT_PATH, NULL, NULL);
             
             CreateWindowW(L"BUTTON", L"Browse", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
                          410, 47, 70, 25, hwnd, (HMENU)ID_BROWSE_OUTPUT, NULL, NULL);
