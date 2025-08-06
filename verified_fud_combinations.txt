@@ -1,0 +1,57 @@
+VERIFIED FUD COMBINATIONS
+==================================================
+
+✅ Adobe Systems Incorporated + Realtek Root Certificate + AnyCPU
+   Date: 2025-08-06T04:11:08.828225
+   Hash: analysis_NzcxZGI0ZjI0ZDZmOGVmYmIwNjJkZDk5Yjc3M2VjODg6MTc1NDQ1MzI5Nw==
+   Link: https://www.virustotal.com/gui/file-analysis/NzcxZGI0ZjI0ZDZmOGVmYmIwNjJkZDk5Yjc3M2VjODg6MTc1NDQ1MzI5Nw==
+   Notes: Manual test - 0/72 detections confirmed
+
+✅ Adobe Systems Incorporated + GoDaddy Root Certificate Authority + x64
+   Date: 2025-08-06T04:11:56.618771
+   Hash: e09ddc17b05f716e258c4debe587e00647265070ea195e66ed42da06f52c10a2
+   Link: https://www.virustotal.com/gui/file/e09ddc17b05f716e258c4debe587e00647265070ea195e66ed42da06f52c10a2
+   Notes: Confirmed FUD from manual testing
+
+✅ Adobe Systems Incorporated + DigiCert Assured ID Root CA + x64
+   Date: 2025-08-06T04:11:56.618940
+   Hash: 78ddef4bd8f51b70327dd23e0591d838579d1f245f737d3c9e471731b49cf2b1
+   Link: https://www.virustotal.com/gui/file/78ddef4bd8f51b70327dd23e0591d838579d1f245f737d3c9e471731b49cf2b1
+   Notes: Confirmed FUD from manual testing
+
+✅ Adobe Systems Incorporated + GlobalSign Root CA + x64
+   Date: 2025-08-06T04:11:56.619825
+   Hash: c99bcf0fe8f16575c5a3c0e46081d49aa7c5a7d26ac36e924808a4d7195ffed0
+   Link: https://www.virustotal.com/gui/file/c99bcf0fe8f16575c5a3c0e46081d49aa7c5a7d26ac36e924808a4d7195ffed0
+   Notes: Confirmed FUD from manual testing
+
+✅ Adobe Systems Incorporated + Lenovo Certificate Authority + x64
+   Date: 2025-08-06T04:11:56.620493
+   Hash: 3589ae323a149bd0c8b8024bfa934fe0f88654df3aaaa730a079ba13f6e9d142
+   Link: https://www.virustotal.com/gui/file/3589ae323a149bd0c8b8024bfa934fe0f88654df3aaaa730a079ba13f6e9d142
+   Notes: Confirmed FUD from manual testing
+
+✅ Adobe Systems Incorporated + Baltimore CyberTrust Root + x64
+   Date: 2025-08-06T04:11:56.620758
+   Hash: analysis_01eedf7e7fd0eb26c615f9fb5cece035d5a455a1855208bbd6dc50ea28eae4cd
+   Link: https://www.virustotal.com/gui/file-analysis/01eedf7e7fd0eb26c615f9fb5cece035d5a455a1855208bbd6dc50ea28eae4cd
+   Notes: Confirmed FUD from manual testing
+
+✅ Adobe Systems Incorporated + Realtek Root Certificate + AnyCPU
+   Date: 2025-08-06T04:11:56.621054
+   Hash: 6f78360e4ce2b999c3d4178c9ee67f5ec38e42e903403d7bd7071e2a9dc4422a
+   Link: https://www.virustotal.com/gui/file/6f78360e4ce2b999c3d4178c9ee67f5ec38e42e903403d7bd7071e2a9dc4422a
+   Notes: Confirmed FUD from manual testing
+
+✅ Adobe Systems Incorporated + Apple Root CA + x64
+   Date: 2025-08-06T04:11:56.621352
+   Hash: 9da5e9238963cef41f77caef081c63d671dc01eae4872ac3b141859c04e3e38a
+   Link: https://www.virustotal.com/gui/file/9da5e9238963cef41f77caef081c63d671dc01eae4872ac3b141859c04e3e38a
+   Notes: FUD but inconsistent - detected in other tests
+
+✅ Google LLC + Comodo RSA CA + x64
+   Date: 2025-08-06T04:11:56.621626
+   Hash: unknown
+   Link: https://websec.nl/scanner/result/aef3cc12-5ebb-4aa8-ad89-0a3592efb7d7
+   Notes: Confirmed FUD - alternative scanner
+

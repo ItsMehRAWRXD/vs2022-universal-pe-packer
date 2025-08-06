@@ -1,0 +1,31 @@
+BLOCKED COMBINATIONS
+==================================================
+
+❌ Adobe Systems Incorporated + Apple Root CA + AnyCPU
+   Detections: 1/72
+   Date: 2025-08-06T04:11:56.621956
+   Hash: 6c6c4fe52bed6125448af25ac786c89c2d23882e500201fde87c379e5fb08ffa
+   Link: https://www.virustotal.com/gui/file/6c6c4fe52bed6125448af25ac786c89c2d23882e500201fde87c379e5fb08ffa
+   Notes: Inconsistent - sometimes FUD, sometimes detected
+
+❌ Adobe Systems Incorporated + HP Enterprise Root CA + x64
+   Detections: 2/72
+   Date: 2025-08-06T04:11:56.622280
+   Hash: analysis_MDNiMGFiOWE1YTcyMjM3MTA1MTg2MTBhMzJiYzdhYjI6MTc1NDQ1MTU4Ng==
+   Link: https://www.virustotal.com/gui/file-analysis/MDNiMGFiOWE1YTcyMjM3MTA1MTg2MTBhMzJiYzdhYjI6MTc1NDQ1MTU4Ng==
+   Notes: Consistently detected - avoid this combination
+
+❌ Adobe Systems Incorporated + Qualcomm Root Authority + x64
+   Detections: 1/72
+   Date: 2025-08-06T04:11:56.622898
+   Hash: analysis_Y2UxZDQyZWMwNjNjOTZiYTBmMDdmN2Y4ZjhiYmFmNWQ6MTc1NDQ1MjQzMg==
+   Link: https://www.virustotal.com/gui/file-analysis/Y2UxZDQyZWMwNjNjOTZiYTBmMDdmN2Y4ZjhiYmFmNWQ6MTc1NDQ1MjQzMg==
+   Notes: Inconsistent - 2/3 FUD rate, unreliable
+
+❌ Adobe Systems Incorporated + Microsoft Root Certificate Authority + AnyCPU
+   Detections: 3/72
+   Date: 2025-08-06T04:11:56.623047
+   Hash: analysis_ZGVkNWUxYmY5MTliNjRkZmZmNTgzYjE0Yjc1MjE0ZTY6MTc1NDQ1MjQ3Mg==
+   Link: https://www.virustotal.com/gui/file-analysis/ZGVkNWUxYmY5MTliNjRkZmZmNTgzYjE0Yjc1MjE0ZTY6MTc1NDQ1MjQ3Mg==
+   Notes: Microsoft combinations consistently detected
+

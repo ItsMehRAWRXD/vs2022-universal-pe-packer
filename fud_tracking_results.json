@@ -1,0 +1,145 @@
+[
+  {
+    "timestamp": "2025-08-06T04:11:08.828225",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Realtek Root Certificate",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file-analysis/NzcxZGI0ZjI0ZDZmOGVmYmIwNjJkZDk5Yjc3M2VjODg6MTc1NDQ1MzI5Nw==",
+    "hash": "analysis_NzcxZGI0ZjI0ZDZmOGVmYmIwNjJkZDk5Yjc3M2VjODg6MTc1NDQ1MzI5Nw==",
+    "notes": "Manual test - 0/72 detections confirmed"
+  },
+  {
+    "timestamp": "2025-08-06T04:11:56.618771",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "GoDaddy Root Certificate Authority",
+    "architecture": "x64",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/e09ddc17b05f716e258c4debe587e00647265070ea195e66ed42da06f52c10a2",
+    "hash": "e09ddc17b05f716e258c4debe587e00647265070ea195e66ed42da06f52c10a2",
+    "notes": "Confirmed FUD from manual testing"
+  },
+  {
+    "timestamp": "2025-08-06T04:11:56.618940",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "DigiCert Assured ID Root CA",
+    "architecture": "x64",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/78ddef4bd8f51b70327dd23e0591d838579d1f245f737d3c9e471731b49cf2b1",
+    "hash": "78ddef4bd8f51b70327dd23e0591d838579d1f245f737d3c9e471731b49cf2b1",
+    "notes": "Confirmed FUD from manual testing"
+  },
+  {
+    "timestamp": "2025-08-06T04:11:56.619825",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "GlobalSign Root CA",
+    "architecture": "x64",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/c99bcf0fe8f16575c5a3c0e46081d49aa7c5a7d26ac36e924808a4d7195ffed0",
+    "hash": "c99bcf0fe8f16575c5a3c0e46081d49aa7c5a7d26ac36e924808a4d7195ffed0",
+    "notes": "Confirmed FUD from manual testing"
+  },
+  {
+    "timestamp": "2025-08-06T04:11:56.620493",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Lenovo Certificate Authority",
+    "architecture": "x64",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/3589ae323a149bd0c8b8024bfa934fe0f88654df3aaaa730a079ba13f6e9d142",
+    "hash": "3589ae323a149bd0c8b8024bfa934fe0f88654df3aaaa730a079ba13f6e9d142",
+    "notes": "Confirmed FUD from manual testing"
+  },
+  {
+    "timestamp": "2025-08-06T04:11:56.620758",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Baltimore CyberTrust Root",
+    "architecture": "x64",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file-analysis/01eedf7e7fd0eb26c615f9fb5cece035d5a455a1855208bbd6dc50ea28eae4cd",
+    "hash": "analysis_01eedf7e7fd0eb26c615f9fb5cece035d5a455a1855208bbd6dc50ea28eae4cd",
+    "notes": "Confirmed FUD from manual testing"
+  },
+  {
+    "timestamp": "2025-08-06T04:11:56.621054",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Realtek Root Certificate",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/6f78360e4ce2b999c3d4178c9ee67f5ec38e42e903403d7bd7071e2a9dc4422a",
+    "hash": "6f78360e4ce2b999c3d4178c9ee67f5ec38e42e903403d7bd7071e2a9dc4422a",
+    "notes": "Confirmed FUD from manual testing"
+  },
+  {
+    "timestamp": "2025-08-06T04:11:56.621352",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Apple Root CA",
+    "architecture": "x64",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file/9da5e9238963cef41f77caef081c63d671dc01eae4872ac3b141859c04e3e38a",
+    "hash": "9da5e9238963cef41f77caef081c63d671dc01eae4872ac3b141859c04e3e38a",
+    "notes": "FUD but inconsistent - detected in other tests"
+  },
+  {
+    "timestamp": "2025-08-06T04:11:56.621626",
+    "company": "Google LLC",
+    "certificate": "Comodo RSA CA",
+    "architecture": "x64",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://websec.nl/scanner/result/aef3cc12-5ebb-4aa8-ad89-0a3592efb7d7",
+    "hash": "unknown",
+    "notes": "Confirmed FUD - alternative scanner"
+  },
+  {
+    "timestamp": "2025-08-06T04:11:56.621956",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Apple Root CA",
+    "architecture": "AnyCPU",
+    "is_fud": false,
+    "detection_count": 1,
+    "vt_link": "https://www.virustotal.com/gui/file/6c6c4fe52bed6125448af25ac786c89c2d23882e500201fde87c379e5fb08ffa",
+    "hash": "6c6c4fe52bed6125448af25ac786c89c2d23882e500201fde87c379e5fb08ffa",
+    "notes": "Inconsistent - sometimes FUD, sometimes detected"
+  },
+  {
+    "timestamp": "2025-08-06T04:11:56.622280",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "HP Enterprise Root CA",
+    "architecture": "x64",
+    "is_fud": false,
+    "detection_count": 2,
+    "vt_link": "https://www.virustotal.com/gui/file-analysis/MDNiMGFiOWE1YTcyMjM3MTA1MTg2MTBhMzJiYzdhYjI6MTc1NDQ1MTU4Ng==",
+    "hash": "analysis_MDNiMGFiOWE1YTcyMjM3MTA1MTg2MTBhMzJiYzdhYjI6MTc1NDQ1MTU4Ng==",
+    "notes": "Consistently detected - avoid this combination"
+  },
+  {
+    "timestamp": "2025-08-06T04:11:56.622898",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Qualcomm Root Authority",
+    "architecture": "x64",
+    "is_fud": false,
+    "detection_count": 1,
+    "vt_link": "https://www.virustotal.com/gui/file-analysis/Y2UxZDQyZWMwNjNjOTZiYTBmMDdmN2Y4ZjhiYmFmNWQ6MTc1NDQ1MjQzMg==",
+    "hash": "analysis_Y2UxZDQyZWMwNjNjOTZiYTBmMDdmN2Y4ZjhiYmFmNWQ6MTc1NDQ1MjQzMg==",
+    "notes": "Inconsistent - 2/3 FUD rate, unreliable"
+  },
+  {
+    "timestamp": "2025-08-06T04:11:56.623047",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Microsoft Root Certificate Authority",
+    "architecture": "AnyCPU",
+    "is_fud": false,
+    "detection_count": 3,
+    "vt_link": "https://www.virustotal.com/gui/file-analysis/ZGVkNWUxYmY5MTliNjRkZmZmNTgzYjE0Yjc1MjE0ZTY6MTc1NDQ1MjQ3Mg==",
+    "hash": "analysis_ZGVkNWUxYmY5MTliNjRkZmZmNTgzYjE0Yjc1MjE0ZTY6MTc1NDQ1MjQ3Mg==",
+    "notes": "Microsoft combinations consistently detected"
+  }
+]
