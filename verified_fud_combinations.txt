@@ -235,3 +235,9 @@ VERIFIED FUD COMBINATIONS
    Link: https://www.virustotal.com/gui/file-analysis/ZDI5ZGU2OGMzYTdhNGFhMTQ4YjYyMDIyOTI1ZDg3YmY6MTc1NDQ1NTk3Nw==
    Notes: Manual test #18 - Apple Root CA + Adobe + x64 FUD! (LEGENDARY 4/4 PERFECT STREAK!)
 
+✅ Adobe Systems Incorporated + Apple Root CA + x64
+   Date: 2025-08-06T04:54:55.206230
+   Hash: analysis_M2YyMDY0YzdlMjRjOWNjMmM5YzRiYzRlMTJmYzExYjc6MTc1NDQ1NjA1NA==
+   Link: https://www.virustotal.com/gui/file-analysis/M2YyMDY0YzdlMjRjOWNjMmM5YzRiYzRlMTJmYzExYjc6MTc1NDQ1NjA1NA==
+   Notes: Manual test #20 - Apple Root CA + Adobe + x64 FUD! (Recovery after McAfee detection - cyclical pattern confirmed)
+

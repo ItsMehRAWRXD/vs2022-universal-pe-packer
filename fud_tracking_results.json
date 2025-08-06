@@ -592,5 +592,16 @@
     "vt_link": "https://www.virustotal.com/gui/file/969ff43a861255a772ff9606d2ec42b90bd89685296fdb85d8cdee3a52145525?nocache=1",
     "hash": "969ff43a861255a772ff9606d2ec42b90bd89685296fdb85d8cdee3a52145525",
     "notes": "Manual test #19 - Apple Root CA + Adobe + x64 DETECTED by McAfee (perfect 4/4 streak broken on 5th test)"
+  },
+  {
+    "timestamp": "2025-08-06T04:54:55.206230",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Apple Root CA",
+    "architecture": "x64",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file-analysis/M2YyMDY0YzdlMjRjOWNjMmM5YzRiYzRlMTJmYzExYjc6MTc1NDQ1NjA1NA==",
+    "hash": "analysis_M2YyMDY0YzdlMjRjOWNjMmM5YzRiYzRlMTJmYzExYjc6MTc1NDQ1NjA1NA==",
+    "notes": "Manual test #20 - Apple Root CA + Adobe + x64 FUD! (Recovery after McAfee detection - cyclical pattern confirmed)"
   }
 ]
