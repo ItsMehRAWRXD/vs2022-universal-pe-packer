@@ -97,3 +97,9 @@ VERIFIED FUD COMBINATIONS
    Link: https://www.virustotal.com/gui/file-analysis/Yjg1YmFmZDc4ZmIzYmY4YzMxNDYyZmViYTcyZmJmZGM6MTc1NDQ1Mzk1NA==
    Notes: Manual test - 0/72 detections confirmed (3rd Realtek + AnyCPU validation)
 
+✅ Adobe Systems Incorporated + GoDaddy Root Certificate Authority + AnyCPU
+   Date: 2025-08-06T04:20:43.309891
+   Hash: analysis_YTU1YjllOTY1M2MxOGM0ODA2ZTkyZmU0MzMzZGU0OGI6MTc1NDQ1NDAwNw==
+   Link: https://www.virustotal.com/gui/file-analysis/YTU1YjllOTY1M2MxOGM0ODA2ZTkyZmU0MzMzZGU0OGI6MTc1NDQ1NDAwNw==
+   Notes: Manual test - 0/72 detections confirmed (GoDaddy + AnyCPU validation)
+

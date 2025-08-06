@@ -218,5 +218,16 @@
     "vt_link": "https://www.virustotal.com/gui/file-analysis/Yjg1YmFmZDc4ZmIzYmY4YzMxNDYyZmViYTcyZmJmZGM6MTc1NDQ1Mzk1NA==",
     "hash": "analysis_Yjg1YmFmZDc4ZmIzYmY4YzMxNDYyZmViYTcyZmJmZGM6MTc1NDQ1Mzk1NA==",
     "notes": "Manual test - 0/72 detections confirmed (3rd Realtek + AnyCPU validation)"
+  },
+  {
+    "timestamp": "2025-08-06T04:20:43.309891",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "GoDaddy Root Certificate Authority",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file-analysis/YTU1YjllOTY1M2MxOGM0ODA2ZTkyZmU0MzMzZGU0OGI6MTc1NDQ1NDAwNw==",
+    "hash": "analysis_YTU1YjllOTY1M2MxOGM0ODA2ZTkyZmU0MzMzZGU0OGI6MTc1NDQ1NDAwNw==",
+    "notes": "Manual test - 0/72 detections confirmed (GoDaddy + AnyCPU validation)"
   }
 ]
