@@ -169,3 +169,10 @@ BLOCKED COMBINATIONS
    Link: manual_detection_bkav_pro
    Notes: Manual test - Bkav Pro detected W64.AIDetectMalware (breaking the perfect streak)
 
+❌ Adobe Systems Incorporated + Thawte Timestamping CA + AnyCPU
+   Detections: 1/72
+   Date: 2025-08-06T05:48:10.827220
+   Hash: 158320a8c300162a1c1f9fdcf108c4eac46f5a654243827b5334f68693439342
+   Link: https://www.virustotal.com/gui/file/158320a8c300162a1c1f9fdcf108c4eac46f5a654243827b5334f68693439342
+   Notes: Manual test - NANO-Antivirus detected Trojan.Inf.Downloader.ezohxo (Thawte streak impact)
+

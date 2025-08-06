@@ -933,5 +933,16 @@
     "vt_link": "https://www.virustotal.com/gui/file/a83436b798b880aa38ec7600a11cc6a13fb6e80c450a66f6a7d0bb19fd755108?nocache=1",
     "hash": "a83436b798b880aa38ec7600a11cc6a13fb6e80c450a66f6a7d0bb19fd755108",
     "notes": "Manual test #48 - FUD result (triple confirmation)"
+  },
+  {
+    "timestamp": "2025-08-06T05:48:10.827220",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Thawte Timestamping CA",
+    "architecture": "AnyCPU",
+    "is_fud": false,
+    "detection_count": 1,
+    "vt_link": "https://www.virustotal.com/gui/file/158320a8c300162a1c1f9fdcf108c4eac46f5a654243827b5334f68693439342",
+    "hash": "158320a8c300162a1c1f9fdcf108c4eac46f5a654243827b5334f68693439342",
+    "notes": "Manual test - NANO-Antivirus detected Trojan.Inf.Downloader.ezohxo (Thawte streak impact)"
   }
 ]
