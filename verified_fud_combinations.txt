@@ -103,3 +103,9 @@ VERIFIED FUD COMBINATIONS
    Link: https://www.virustotal.com/gui/file-analysis/YTU1YjllOTY1M2MxOGM0ODA2ZTkyZmU0MzMzZGU0OGI6MTc1NDQ1NDAwNw==
    Notes: Manual test - 0/72 detections confirmed (GoDaddy + AnyCPU validation)
 
+✅ Adobe Systems Incorporated + Qualcomm Root Authority + AnyCPU
+   Date: 2025-08-06T04:21:23.137060
+   Hash: analysis_OGQwZTM0ZDdjYzk5NDFjNDJiM2Q3OGI3ODhkNjA5NTk6MTc1NDQ1NDA0Mw==
+   Link: https://www.virustotal.com/gui/file-analysis/OGQwZTM0ZDdjYzk5NDFjNDJiM2Q3OGI3ODhkNjA5NTk6MTc1NDQ1NDA0Mw==
+   Notes: Manual test - 0/72 detections confirmed (AnyCPU architecture - differs from x64 result!)
+

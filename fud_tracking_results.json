@@ -229,5 +229,16 @@
     "vt_link": "https://www.virustotal.com/gui/file-analysis/YTU1YjllOTY1M2MxOGM0ODA2ZTkyZmU0MzMzZGU0OGI6MTc1NDQ1NDAwNw==",
     "hash": "analysis_YTU1YjllOTY1M2MxOGM0ODA2ZTkyZmU0MzMzZGU0OGI6MTc1NDQ1NDAwNw==",
     "notes": "Manual test - 0/72 detections confirmed (GoDaddy + AnyCPU validation)"
+  },
+  {
+    "timestamp": "2025-08-06T04:21:23.137060",
+    "company": "Adobe Systems Incorporated",
+    "certificate": "Qualcomm Root Authority",
+    "architecture": "AnyCPU",
+    "is_fud": true,
+    "detection_count": 0,
+    "vt_link": "https://www.virustotal.com/gui/file-analysis/OGQwZTM0ZDdjYzk5NDFjNDJiM2Q3OGI3ODhkNjA5NTk6MTc1NDQ1NDA0Mw==",
+    "hash": "analysis_OGQwZTM0ZDdjYzk5NDFjNDJiM2Q3OGI3ODhkNjA5NTk6MTc1NDQ1NDA0Mw==",
+    "notes": "Manual test - 0/72 detections confirmed (AnyCPU architecture - differs from x64 result!)"
   }
 ]
