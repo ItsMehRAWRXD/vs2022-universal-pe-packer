@@ -357,6 +357,50 @@ public:
         }
         return bytes;
     }
+    
+    // NEW: Generate polymorphic junk code for unique binaries
+    std::string generateJunkCode() {
+        std::stringstream junk;
+        int junkBlocks = 3 + (generateRandomDWORD() % 8); // 3-10 junk blocks
+        
+        for (int i = 0; i < junkBlocks; i++) {
+            std::string varName = generateRandomName(12);
+            std::string funcName = generateRandomName(10);
+            
+            // Random variable declarations
+            junk << "volatile int " << varName << "_" << i << " = " << generateRandomDWORD() << ";\n";
+            junk << "static char " << varName << "_arr[" << (16 + (generateRandomDWORD() % 128)) << "];\n";
+            
+            // Random function with meaningless operations
+            junk << "void " << funcName << "_junk" << i << "() {\n";
+            junk << "    for(int x = 0; x < " << (10 + (generateRandomDWORD() % 50)) << "; x++) {\n";
+            junk << "        " << varName << "_" << i << " ^= x + " << generateRandomDWORD() << ";\n";
+            junk << "        " << varName << "_arr[x % sizeof(" << varName << "_arr)] = x ^ 0x" << std::hex << (generateRandomDWORD() % 256) << std::dec << ";\n";
+            junk << "    }\n";
+            junk << "}\n\n";
+        }
+        
+        return junk.str();
+    }
+    
+    // NEW: Generate random padding data
+    std::string generateRandomPadding() {
+        std::stringstream padding;
+        int paddingSize = 100 + (generateRandomDWORD() % 500); // 100-600 bytes
+        
+        padding << "// Polymorphic padding - unique per generation\n";
+        padding << "unsigned char random_padding_" << generateRandomName(8) << "[" << paddingSize << "] = {\n";
+        
+        for (int i = 0; i < paddingSize; i++) {
+            if (i % 16 == 0) padding << "    ";
+            padding << "0x" << std::hex << (generateRandomDWORD() % 256) << std::dec;
+            if (i < paddingSize - 1) padding << ",";
+            if (i % 16 == 15) padding << "\n";
+        }
+        
+        padding << "\n};\n\n";
+        return padding.str();
+    }
 };
 
 // Timestamp Engine
@@ -644,12 +688,25 @@ private:
         source << "#include <iostream>\n";
         source << "#include <vector>\n\n";
 
+        // POLYMORPHIC: Add unique junk code and padding for each generation
+        source << "// POLYMORPHIC SECTION - UNIQUE PER GENERATION\n";
+        source << randomEngine.generateJunkCode();
+        source << randomEngine.generateRandomPadding();
+        
         // Generate benign behavior with obfuscated strings (NO PE embedding)
         source << generateObfuscatedBenignBehavior();
 
-        // Main function - only benign behavior
+        // Main function - only benign behavior with polymorphic calls
         source << "int main() {\n";
         source << "    performBenignChecks();\n";
+        
+        // Add calls to some junk functions for polymorphism
+        std::string junkCall1 = randomEngine.generateRandomName(10) + "_junk0";
+        std::string junkCall2 = randomEngine.generateRandomName(10) + "_junk1";
+        source << "    // Polymorphic noise calls\n";
+        source << "    // " << junkCall1 << "(); // Commented out junk\n";
+        source << "    // " << junkCall2 << "(); // More junk comments\n";
+        
         source << "    return 0;\n";
         source << "}\n";
 
@@ -1077,8 +1134,11 @@ void populateCertificateCombo() {
 }
 
 void populateArchitectureCombo() {
-    char companyText[256];
-    GetWindowTextA(hCompanyCombo, companyText, sizeof(companyText));
+    char companyText[256] = {0};
+    int companyIdx = SendMessage(hCompanyCombo, CB_GETCURSEL, 0, 0);
+    if (companyIdx != CB_ERR) {
+        SendMessage(hCompanyCombo, CB_GETLBTEXT, companyIdx, (LPARAM)companyText);
+    }
     
     CertificateEngine certEngine;
     auto architectures = certEngine.getArchitectures(companyText);
