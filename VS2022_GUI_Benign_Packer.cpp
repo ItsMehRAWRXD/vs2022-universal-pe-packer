@@ -181,7 +181,22 @@ public:
             {"DigiCert Assured ID Root CA", "Adobe Systems Incorporated", "0C4D69724B94FA5C90B1A8F9D3789E1C", "sha256RSA"},
             {"GlobalSign Root CA", "Google LLC", "040000000001444D214700000100000144", "sha256RSA"},
             {"VeriSign Class 3 Public Primary CA", "Intel Corporation", "4CDD51A3D3FAEEA50000000000584F3E", "sha256RSA"},
-            {"Thawte Timestamping CA", "VMware, Inc.", "12345678901234567890123456789012", "sha256RSA"}
+            {"Thawte Timestamping CA", "VMware, Inc.", "12345678901234567890123456789012", "sha256RSA"},
+            {"Apple Root CA", "Apple Inc.", "2A1B2C3D4E5F6789ABCDEF0123456789ABCDEF01", "sha256RSA"},
+            {"GeoTrust Global CA", "Oracle Corporation", "A1B2C3D4E5F67890123456789ABCDEF01234567", "sha256RSA"},
+            {"Entrust Root CA", "IBM Corporation", "B2C3D4E5F67890123456789ABCDEF012345678A", "sha256RSA"},
+            {"Comodo RSA CA", "Symantec Corporation", "C3D4E5F67890123456789ABCDEF012345678AB", "sha256RSA"},
+            {"Baltimore CyberTrust Root", "McAfee, Inc.", "D4E5F67890123456789ABCDEF012345678ABC", "sha256RSA"},
+            {"Cisco Root CA 2048", "Cisco Systems, Inc.", "E5F67890123456789ABCDEF012345678ABCD", "sha256RSA"},
+            {"SecureTrust CA", "Dell Technologies", "F67890123456789ABCDEF012345678ABCDE", "sha256RSA"},
+            {"HP Enterprise Root CA", "HP Inc.", "7890123456789ABCDEF012345678ABCDEF", "sha256RSA"},
+            {"Lenovo Certificate Authority", "Lenovo Group Limited", "890123456789ABCDEF012345678ABCDEF0", "sha256RSA"},
+            {"Sony Root CA", "Sony Corporation", "90123456789ABCDEF012345678ABCDEF01", "sha256RSA"},
+            {"Samsung Knox Root CA", "Samsung Electronics", "0123456789ABCDEF012345678ABCDEF012", "sha256RSA"},
+            {"Realtek Root Certificate", "Realtek Semiconductor", "123456789ABCDEF012345678ABCDEF0123", "sha256RSA"},
+            {"Broadcom Root CA", "Broadcom Inc.", "23456789ABCDEF012345678ABCDEF01234", "sha256RSA"},
+            {"Qualcomm Root Authority", "Qualcomm Technologies", "3456789ABCDEF012345678ABCDEF012345", "sha256RSA"},
+            {"GoDaddy Root Certificate Authority", "GoDaddy.com, Inc.", "4567890ABCDEF123456789ABCDEF1234567", "sha256RSA"}
         };
     }
     
@@ -580,7 +595,22 @@ public:
         {"Adobe Systems Incorporated", "Creative software solutions", "Creative Assistant", "2023.1.0"},
         {"Google LLC", "Internet services and products", "Chrome Helper", "108.0.5359.124"},
         {"Intel Corporation", "Semiconductor and computing infrastructure", "Driver Manager", "27.20.100.9664"},
-        {"NVIDIA Corporation", "Graphics and computing technology", "Display Driver", "516.94.0.0"}
+        {"NVIDIA Corporation", "Graphics and computing technology", "Display Driver", "516.94.0.0"},
+        {"Apple Inc.", "Consumer electronics and software", "System Service", "14.2.1"},
+        {"Oracle Corporation", "Enterprise software solutions", "Database Helper", "21.3.0.0"},
+        {"IBM Corporation", "Business technology solutions", "Enterprise Tool", "9.7.0.11"},
+        {"VMware, Inc.", "Virtualization technology", "VMware Tools", "12.1.5.20735"},
+        {"Symantec Corporation", "Cybersecurity solutions", "Security Agent", "14.3.558.0000"},
+        {"McAfee, Inc.", "Internet security software", "Security Scanner", "16.0.15.312"},
+        {"Cisco Systems, Inc.", "Networking technology", "Network Assistant", "15.2.7E3"},
+        {"Dell Technologies", "Computer technology solutions", "System Manager", "2.8.1.0"},
+        {"HP Inc.", "Technology solutions provider", "Device Manager", "4.5.16.1"},
+        {"Lenovo Group Limited", "Technology solutions", "System Optimizer", "3.2.40.0"},
+        {"Sony Corporation", "Consumer electronics", "Media Player", "12.7.209.0"},
+        {"Samsung Electronics", "Technology solutions", "Device Monitor", "2.15.1.0"},
+        {"Realtek Semiconductor", "IC design company", "Audio Driver", "6.0.9088.1"},
+        {"Broadcom Inc.", "Semiconductor solutions", "Network Adapter", "22.80.3.12"},
+        {"Qualcomm Technologies", "Wireless technology", "Connectivity Manager", "1.0.3491.0"}
     };
     
     std::vector<CertificateEngine::CertificateInfo> certificateChains;
