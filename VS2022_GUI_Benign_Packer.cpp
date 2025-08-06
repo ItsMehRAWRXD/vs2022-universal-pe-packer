@@ -1892,12 +1892,13 @@ public:
                 compileCmd += "set PATH=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.29.30133\\bin\\Hostx64\\x64;%PATH% && ";
             }
             
-            // Add the actual compilation command
-            compileCmd += "cl.exe /nologo /O2 /EHsc /DNDEBUG /MD ";
-            compileCmd += "/Fe\\\"" + outputPath + "\\\" ";
-            compileCmd += "\\\"" + sourceFilename + "\\\" ";
-            compileCmd += "/link " + archFlags + " /OPT:REF /OPT:ICF ";
-            compileCmd += "user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib";
+            // Use working two-step compilation method
+            compileCmd += "cl.exe /nologo /O2 /EHsc /DNDEBUG /MD /c ";
+            compileCmd += "\\\"" + sourceFilename + "\\\" && ";
+            compileCmd += "link /nologo \\\"" + sourceFilename.substr(0, sourceFilename.find_last_of('.')) + ".obj\\\" ";
+            compileCmd += "user32.lib kernel32.lib advapi32.lib shell32.lib ole32.lib ";
+            compileCmd += archFlags + " /OPT:REF /OPT:ICF ";
+            compileCmd += "/OUT:\\\"" + outputPath + "\\\"";
             compileCmd += "\"";
             
             // DEBUG: Log compilation details
