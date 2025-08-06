@@ -2612,9 +2612,12 @@ static void createFUDExecutable() {
 static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
         case WM_CREATE: {
+            // Enable drag and drop for the main window
+            DragAcceptFiles(hwnd, TRUE);
+            
             // Input file controls
-            CreateWindowW(L"STATIC", L"Input File:", WS_VISIBLE | WS_CHILD,
-                         10, 15, 80, 20, hwnd, NULL, NULL, NULL);
+            CreateWindowW(L"STATIC", L"Input File (or drag & drop):", WS_VISIBLE | WS_CHILD,
+                         10, 15, 150, 20, hwnd, NULL, NULL, NULL);
             
             g_hInputPath = CreateWindowW(L"EDIT", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_AUTOHSCROLL,
                                        100, 12, 300, 25, hwnd, (HMENU)(UINT_PTR)ID_INPUT_PATH, NULL, NULL);
