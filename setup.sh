@@ -11,15 +11,7 @@ echo "Installing dependencies..."
 sudo apt-get install -y \
     build-essential \
     cmake \
-    libcurl4-openssl-dev \
-    libssl-dev \
     pkg-config
-
-# Check if CURL is installed
-if ! pkg-config --exists libcurl; then
-    echo "Error: CURL library not found. Please install libcurl4-openssl-dev"
-    exit 1
-fi
 
 echo "Dependencies installed successfully!"
 echo ""

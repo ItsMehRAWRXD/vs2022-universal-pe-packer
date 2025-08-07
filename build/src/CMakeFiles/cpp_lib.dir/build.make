@@ -142,13 +142,28 @@ src/CMakeFiles/cpp_lib.dir/assembler.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/cpp_lib.dir/assembler.cpp.s"
 	cd /workspace/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /workspace/src/assembler.cpp -o CMakeFiles/cpp_lib.dir/assembler.cpp.s
 
+src/CMakeFiles/cpp_lib.dir/chatgpt.cpp.o: src/CMakeFiles/cpp_lib.dir/flags.make
+src/CMakeFiles/cpp_lib.dir/chatgpt.cpp.o: /workspace/src/chatgpt.cpp
+src/CMakeFiles/cpp_lib.dir/chatgpt.cpp.o: src/CMakeFiles/cpp_lib.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspace/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object src/CMakeFiles/cpp_lib.dir/chatgpt.cpp.o"
+	cd /workspace/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/cpp_lib.dir/chatgpt.cpp.o -MF CMakeFiles/cpp_lib.dir/chatgpt.cpp.o.d -o CMakeFiles/cpp_lib.dir/chatgpt.cpp.o -c /workspace/src/chatgpt.cpp
+
+src/CMakeFiles/cpp_lib.dir/chatgpt.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/cpp_lib.dir/chatgpt.cpp.i"
+	cd /workspace/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /workspace/src/chatgpt.cpp > CMakeFiles/cpp_lib.dir/chatgpt.cpp.i
+
+src/CMakeFiles/cpp_lib.dir/chatgpt.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/cpp_lib.dir/chatgpt.cpp.s"
+	cd /workspace/build/src && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /workspace/src/chatgpt.cpp -o CMakeFiles/cpp_lib.dir/chatgpt.cpp.s
+
 # Object files for target cpp_lib
 cpp_lib_OBJECTS = \
 "CMakeFiles/cpp_lib.dir/main.cpp.o" \
 "CMakeFiles/cpp_lib.dir/utils.cpp.o" \
 "CMakeFiles/cpp_lib.dir/calculator.cpp.o" \
 "CMakeFiles/cpp_lib.dir/game.cpp.o" \
-"CMakeFiles/cpp_lib.dir/assembler.cpp.o"
+"CMakeFiles/cpp_lib.dir/assembler.cpp.o" \
+"CMakeFiles/cpp_lib.dir/chatgpt.cpp.o"
 
 # External object files for target cpp_lib
 cpp_lib_EXTERNAL_OBJECTS =
@@ -158,9 +173,10 @@ src/libcpp_lib.a: src/CMakeFiles/cpp_lib.dir/utils.cpp.o
 src/libcpp_lib.a: src/CMakeFiles/cpp_lib.dir/calculator.cpp.o
 src/libcpp_lib.a: src/CMakeFiles/cpp_lib.dir/game.cpp.o
 src/libcpp_lib.a: src/CMakeFiles/cpp_lib.dir/assembler.cpp.o
+src/libcpp_lib.a: src/CMakeFiles/cpp_lib.dir/chatgpt.cpp.o
 src/libcpp_lib.a: src/CMakeFiles/cpp_lib.dir/build.make
 src/libcpp_lib.a: src/CMakeFiles/cpp_lib.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/workspace/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX static library libcpp_lib.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/workspace/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX static library libcpp_lib.a"
 	cd /workspace/build/src && $(CMAKE_COMMAND) -P CMakeFiles/cpp_lib.dir/cmake_clean_target.cmake
 	cd /workspace/build/src && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/cpp_lib.dir/link.txt --verbose=$(VERBOSE)
 

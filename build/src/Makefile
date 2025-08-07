@@ -178,6 +178,30 @@ calculator.cpp.s:
 	cd /workspace/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/cpp_lib.dir/build.make src/CMakeFiles/cpp_lib.dir/calculator.cpp.s
 .PHONY : calculator.cpp.s
 
+chatgpt.o: chatgpt.cpp.o
+.PHONY : chatgpt.o
+
+# target to build an object file
+chatgpt.cpp.o:
+	cd /workspace/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/cpp_lib.dir/build.make src/CMakeFiles/cpp_lib.dir/chatgpt.cpp.o
+.PHONY : chatgpt.cpp.o
+
+chatgpt.i: chatgpt.cpp.i
+.PHONY : chatgpt.i
+
+# target to preprocess a source file
+chatgpt.cpp.i:
+	cd /workspace/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/cpp_lib.dir/build.make src/CMakeFiles/cpp_lib.dir/chatgpt.cpp.i
+.PHONY : chatgpt.cpp.i
+
+chatgpt.s: chatgpt.cpp.s
+.PHONY : chatgpt.s
+
+# target to generate assembly for a file
+chatgpt.cpp.s:
+	cd /workspace/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/cpp_lib.dir/build.make src/CMakeFiles/cpp_lib.dir/chatgpt.cpp.s
+.PHONY : chatgpt.cpp.s
+
 game.o: game.cpp.o
 .PHONY : game.o
 
@@ -265,6 +289,9 @@ help:
 	@echo "... calculator.o"
 	@echo "... calculator.i"
 	@echo "... calculator.s"
+	@echo "... chatgpt.o"
+	@echo "... chatgpt.i"
+	@echo "... chatgpt.s"
 	@echo "... game.o"
 	@echo "... game.i"
 	@echo "... game.s"

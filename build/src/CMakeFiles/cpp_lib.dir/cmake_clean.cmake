@@ -3,6 +3,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/cpp_lib.dir/assembler.cpp.o.d"
   "CMakeFiles/cpp_lib.dir/calculator.cpp.o"
   "CMakeFiles/cpp_lib.dir/calculator.cpp.o.d"
+  "CMakeFiles/cpp_lib.dir/chatgpt.cpp.o"
+  "CMakeFiles/cpp_lib.dir/chatgpt.cpp.o.d"
   "CMakeFiles/cpp_lib.dir/game.cpp.o"
   "CMakeFiles/cpp_lib.dir/game.cpp.o.d"
   "CMakeFiles/cpp_lib.dir/main.cpp.o"

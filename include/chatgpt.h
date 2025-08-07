@@ -2,7 +2,34 @@
 #include "utils.h"
 #include <string>
 #include <vector>
-#include <curl/curl.h>
+#include <sstream>
+
+// Custom HTTP client using only standard C++
+class CustomHttpClient {
+private:
+    std::string lastError;
+    
+    // Socket operations (platform-specific)
+    bool createSocket();
+    bool connectToServer(const std::string& host, int port);
+    bool sendData(const std::string& data);
+    std::string receiveData();
+    void closeSocket();
+    
+    // Platform-specific socket handle
+    #ifdef _WIN32
+        int sockfd;
+    #else
+        int sockfd;
+    #endif
+    
+public:
+    CustomHttpClient();
+    ~CustomHttpClient();
+    
+    std::string post(const std::string& url, const std::string& data, const std::vector<std::string>& headers);
+    std::string getLastError() const { return lastError; }
+};
 
 // ChatGPT API client class
 class ChatGPTClient {
@@ -10,20 +37,16 @@ private:
     std::string apiKey;
     std::string apiUrl;
     std::vector<std::pair<std::string, std::string>> conversationHistory;
-    
-    // CURL callback function
-    static size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::string* userp);
-    
-    // HTTP request helper
-    std::string makeHttpRequest(const std::string& url, const std::string& data, const std::string& contentType);
+    CustomHttpClient httpClient;
     
     // JSON parsing helpers
     std::string extractResponseFromJson(const std::string& json);
     std::string createJsonPayload(const std::string& message);
+    std::string escapeJsonString(const std::string& str);
     
 public:
     ChatGPTClient();
-    ~ChatGPTClient();
+    ~ChatGPTClient() = default;
     
     // Configuration
     bool setApiKey(const std::string& key);

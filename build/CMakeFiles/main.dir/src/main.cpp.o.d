@@ -254,4 +254,6 @@ CMakeFiles/main.dir/src/main.cpp.o: /workspace/src/main.cpp \
   /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/numeric \
   /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/stl_numeric.h \
   /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/pstl/glue_numeric_defs.h \
-  /workspace/include/assembler.h
+  /workspace/include/assembler.h /workspace/include/chatgpt.h \
+  /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/sstream \
+  /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/sstream.tcc

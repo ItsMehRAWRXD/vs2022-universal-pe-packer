@@ -15,9 +15,6 @@ else()
     add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# Find CURL package
-find_package(CURL REQUIRED)
-
 # Add subdirectories for different modules
 add_subdirectory(src)
 add_subdirectory(tests)
@@ -25,4 +22,4 @@ add_subdirectory(examples)
 
 # Create main executable
 add_executable(main src/main.cpp)
-target_link_libraries(main cpp_lib CURL::libcurl)
+target_link_libraries(main cpp_lib)

@@ -5,19 +5,173 @@
 #include <algorithm>
 #include <cstring>
 
-// CURL callback function
-size_t ChatGPTClient::WriteCallback(void* contents, size_t size, size_t nmemb, std::string* userp) {
-    userp->append((char*)contents, size * nmemb);
-    return size * nmemb;
+#ifdef _WIN32
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
+    #pragma comment(lib, "ws2_32.lib")
+#else
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+    #include <arpa/inet.h>
+    #include <netdb.h>
+    #include <unistd.h>
+#endif
+
+// Custom HTTP Client Implementation
+CustomHttpClient::CustomHttpClient() : sockfd(-1) {
+    #ifdef _WIN32
+        WSADATA wsaData;
+        WSAStartup(MAKEWORD(2, 2), &wsaData);
+    #endif
 }
 
+CustomHttpClient::~CustomHttpClient() {
+    closeSocket();
+    #ifdef _WIN32
+        WSACleanup();
+    #endif
+}
+
+bool CustomHttpClient::createSocket() {
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0) {
+        lastError = "Failed to create socket";
+        return false;
+    }
+    return true;
+}
+
+bool CustomHttpClient::connectToServer(const std::string& host, int port) {
+    struct sockaddr_in serverAddr;
+    struct hostent* server;
+    
+    server = gethostbyname(host.c_str());
+    if (server == NULL) {
+        lastError = "No such host";
+        return false;
+    }
+    
+    memset(&serverAddr, 0, sizeof(serverAddr));
+    serverAddr.sin_family = AF_INET;
+    memcpy(&serverAddr.sin_addr.s_addr, server->h_addr, server->h_length);
+    serverAddr.sin_port = htons(port);
+    
+    if (connect(sockfd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
+        lastError = "Connection failed";
+        return false;
+    }
+    
+    return true;
+}
+
+bool CustomHttpClient::sendData(const std::string& data) {
+    int bytesSent = send(sockfd, data.c_str(), data.length(), 0);
+    if (bytesSent < 0) {
+        lastError = "Failed to send data";
+        return false;
+    }
+    return true;
+}
+
+std::string CustomHttpClient::receiveData() {
+    std::string response;
+    char buffer[4096];
+    
+    while (true) {
+        int bytesReceived = recv(sockfd, buffer, sizeof(buffer) - 1, 0);
+        if (bytesReceived <= 0) {
+            break;
+        }
+        buffer[bytesReceived] = '\0';
+        response += buffer;
+    }
+    
+    return response;
+}
+
+void CustomHttpClient::closeSocket() {
+    if (sockfd >= 0) {
+        #ifdef _WIN32
+            closesocket(sockfd);
+        #else
+            close(sockfd);
+        #endif
+        sockfd = -1;
+    }
+}
+
+std::string CustomHttpClient::post(const std::string& url, const std::string& data, const std::vector<std::string>& headers) {
+    // Parse URL
+    std::string protocol, host, path;
+    size_t protocolEnd = url.find("://");
+    if (protocolEnd != std::string::npos) {
+        protocol = url.substr(0, protocolEnd);
+        size_t hostStart = protocolEnd + 3;
+        size_t hostEnd = url.find("/", hostStart);
+        if (hostEnd != std::string::npos) {
+            host = url.substr(hostStart, hostEnd - hostStart);
+            path = url.substr(hostEnd);
+        } else {
+            host = url.substr(hostStart);
+            path = "/";
+        }
+    } else {
+        lastError = "Invalid URL format";
+        return "";
+    }
+    
+    // Default to HTTPS port
+    int port = 443;
+    if (protocol == "http") {
+        port = 80;
+    }
+    
+    // Create socket and connect
+    if (!createSocket()) {
+        return "Error: " + lastError;
+    }
+    
+    if (!connectToServer(host, port)) {
+        closeSocket();
+        return "Error: " + lastError;
+    }
+    
+    // Build HTTP request
+    std::stringstream request;
+    request << "POST " << path << " HTTP/1.1\r\n";
+    request << "Host: " << host << "\r\n";
+    request << "Content-Type: application/json\r\n";
+    request << "Content-Length: " << data.length() << "\r\n";
+    
+    // Add custom headers
+    for (const auto& header : headers) {
+        request << header << "\r\n";
+    }
+    
+    request << "\r\n";
+    request << data;
+    
+    // Send request
+    if (!sendData(request.str())) {
+        closeSocket();
+        return "Error: " + lastError;
+    }
+    
+    // Receive response
+    std::string response = receiveData();
+    closeSocket();
+    
+    // Extract body from HTTP response
+    size_t bodyStart = response.find("\r\n\r\n");
+    if (bodyStart != std::string::npos) {
+        return response.substr(bodyStart + 4);
+    }
+    
+    return response;
+}
+
+// ChatGPT Client Implementation
 ChatGPTClient::ChatGPTClient() : apiUrl("https://api.openai.com/v1/chat/completions") {
-    // Initialize CURL
-    curl_global_init(CURL_GLOBAL_DEFAULT);
-}
-
-ChatGPTClient::~ChatGPTClient() {
-    curl_global_cleanup();
 }
 
 bool ChatGPTClient::setApiKey(const std::string& key) {
@@ -60,39 +214,19 @@ bool ChatGPTClient::saveApiKeyToFile(const std::string& filename) {
     return true;
 }
 
-std::string ChatGPTClient::makeHttpRequest(const std::string& url, const std::string& data, const std::string& contentType) {
-    CURL* curl = curl_easy_init();
-    if (!curl) {
-        return "Error: Could not initialize CURL";
+std::string ChatGPTClient::escapeJsonString(const std::string& str) {
+    std::string result;
+    for (char c : str) {
+        switch (c) {
+            case '"': result += "\\\""; break;
+            case '\\': result += "\\\\"; break;
+            case '\n': result += "\\n"; break;
+            case '\r': result += "\\r"; break;
+            case '\t': result += "\\t"; break;
+            default: result += c; break;
+        }
     }
-    
-    std::string response;
-    
-    // Set up headers
-    struct curl_slist* headers = NULL;
-    headers = curl_slist_append(headers, ("Content-Type: " + contentType).c_str());
-    headers = curl_slist_append(headers, ("Authorization: Bearer " + apiKey).c_str());
-    
-    // Set up CURL options
-    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data.c_str());
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
-    
-    // Perform request
-    CURLcode res = curl_easy_perform(curl);
-    
-    // Clean up
-    curl_slist_free_all(headers);
-    curl_easy_cleanup(curl);
-    
-    if (res != CURLE_OK) {
-        return "Error: " + std::string(curl_easy_strerror(res));
-    }
-    
-    return response;
+    return result;
 }
 
 std::string ChatGPTClient::createJsonPayload(const std::string& message) {
@@ -100,7 +234,7 @@ std::string ChatGPTClient::createJsonPayload(const std::string& message) {
     ss << "{";
     ss << "\"model\": \"gpt-3.5-turbo\",";
     ss << "\"messages\": [";
-    ss << "{\"role\": \"user\", \"content\": \"" << message << "\"}";
+    ss << "{\"role\": \"user\", \"content\": \"" << escapeJsonString(message) << "\"}";
     ss << "],";
     ss << "\"max_tokens\": 1000,";
     ss << "\"temperature\": 0.7";
@@ -152,7 +286,11 @@ std::string ChatGPTClient::sendMessage(const std::string& message) {
     }
     
     std::string payload = createJsonPayload(message);
-    std::string response = makeHttpRequest(apiUrl, payload, "application/json");
+    std::vector<std::string> headers = {
+        "Authorization: Bearer " + apiKey
+    };
+    
+    std::string response = httpClient.post(apiUrl, payload, headers);
     
     if (response.find("Error:") == 0) {
         return response;
@@ -195,7 +333,7 @@ bool ChatGPTClient::isConfigured() const {
 }
 
 std::string ChatGPTClient::getLastError() const {
-    return "No error information available";
+    return httpClient.getLastError();
 }
 
 // ChatGPT Tool Implementation
