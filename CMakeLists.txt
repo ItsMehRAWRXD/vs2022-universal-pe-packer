@@ -15,11 +15,17 @@ else()
     add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+# Set include directories globally
+include_directories(${CMAKE_SOURCE_DIR}/include)
+
 # Add subdirectories for different modules
 add_subdirectory(src)
 add_subdirectory(tests)
 add_subdirectory(examples)
 
 # Create main executable
-add_executable(main src/main.cpp)
-target_link_libraries(main cpp_lib)
+add_executable(CppAIDevelopmentEnviroment src/main.cpp)
+target_link_libraries(CppAIDevelopmentEnviroment cpp_lib)
+
+# Set include directories for the main executable
+target_include_directories(CppAIDevelopmentEnviroment PRIVATE ${CMAKE_SOURCE_DIR}/include)

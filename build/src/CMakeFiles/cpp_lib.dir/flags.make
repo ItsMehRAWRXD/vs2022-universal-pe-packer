@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/workspace/include
+CXX_INCLUDES = -I/workspace/include -I/workspace/src
 
 CXX_FLAGS = -g -std=gnu++17 -Wall -Wextra -Wpedantic
 

@@ -1,4 +1,5 @@
-CMakeFiles/main.dir/src/main.cpp.o: /workspace/src/main.cpp \
+CMakeFiles/CppAIDevelopmentEnviroment.dir/src/main.cpp.o: \
+  /workspace/src/main.cpp \
   /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/iostream \
   /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/requires_hosted.h \
   /usr/lib/gcc/x86_64-linux-gnu/14/../../../../include/x86_64-linux-gnu/c++/14/bits/c++config.h \

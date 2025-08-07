@@ -1,0 +1,1 @@
+/usr/bin/c++ -g -Xlinker --dependency-file=CMakeFiles/CppAIDevelopmentEnviroment.dir/link.d CMakeFiles/CppAIDevelopmentEnviroment.dir/src/main.cpp.o -o CppAIDevelopmentEnviroment  src/libcpp_lib.a

@@ -1,8 +1,8 @@
-main: \
+CppAIDevelopmentEnviroment: \
   /lib/x86_64-linux-gnu/Scrt1.o \
   /lib/x86_64-linux-gnu/crti.o \
   /usr/lib/gcc/x86_64-linux-gnu/14/crtbeginS.o \
-  CMakeFiles/main.dir/src/main.cpp.o \
+  CMakeFiles/CppAIDevelopmentEnviroment.dir/src/main.cpp.o \
   src/libcpp_lib.a \
   /usr/lib/gcc/x86_64-linux-gnu/14/libstdc++.so \
   /lib/x86_64-linux-gnu/libm.so \
@@ -38,7 +38,7 @@ main: \
 
 /usr/lib/gcc/x86_64-linux-gnu/14/crtbeginS.o:
 
-CMakeFiles/main.dir/src/main.cpp.o:
+CMakeFiles/CppAIDevelopmentEnviroment.dir/src/main.cpp.o:
 
 src/libcpp_lib.a:
 
