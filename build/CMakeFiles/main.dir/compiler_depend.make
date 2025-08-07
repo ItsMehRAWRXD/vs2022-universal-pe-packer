@@ -271,6 +271,7 @@ CMakeFiles/main.dir/src/main.cpp.o: /workspace/src/main.cpp \
   /usr/lib/llvm-20/lib/clang/20/include/stdarg.h \
   /usr/lib/llvm-20/lib/clang/20/include/stddef.h \
   /usr/lib/llvm-20/lib/clang/20/include/stdint.h \
+  /workspace/include/assembler.h \
   /workspace/include/calculator.h \
   /workspace/include/game.h \
   /workspace/include/utils.h
@@ -578,6 +579,8 @@ src/libcpp_lib.a:
 /usr/include/sched.h:
 
 /usr/include/pthread.h:
+
+/workspace/include/assembler.h:
 
 /usr/include/c++/14/bits/functexcept.h:
 
