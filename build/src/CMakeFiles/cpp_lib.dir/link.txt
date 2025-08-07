@@ -1,0 +1,2 @@
+/usr/bin/ar qc libcpp_lib.a CMakeFiles/cpp_lib.dir/main.cpp.o CMakeFiles/cpp_lib.dir/utils.cpp.o CMakeFiles/cpp_lib.dir/calculator.cpp.o CMakeFiles/cpp_lib.dir/game.cpp.o
+/usr/bin/ranlib libcpp_lib.a
