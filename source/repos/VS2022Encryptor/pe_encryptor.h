@@ -1,6 +1,6 @@
 #pragma once
 #include "encryptor.h"
-#include <windows.h>
+#include <cstdint>
 
 class PEEncryptor : public Encryptor {
 public:
@@ -13,7 +13,7 @@ public:
     bool packPE(const std::string& inputFile, const std::string& outputFile, const std::string& key);
     bool unpackPE(const std::string& inputFile, const std::string& outputFile, const std::string& key);
     
-private:
+protected:
     bool isValidPE(const std::vector<unsigned char>& data);
     std::vector<unsigned char> loadFile(const std::string& filename);
     bool saveFile(const std::string& filename, const std::vector<unsigned char>& data);
