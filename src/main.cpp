@@ -5,6 +5,7 @@
 #include "utils.h"
 #include "calculator.h"
 #include "game.h"
+#include "assembler.h"
 
 class AIEnvironment {
 private:
@@ -15,6 +16,7 @@ public:
         // Initialize tools
         tools.push_back(std::make_unique<Calculator>());
         tools.push_back(std::make_unique<Game>());
+        tools.push_back(std::make_unique<MASMAssembler>());
     }
     
     void showMenu() {

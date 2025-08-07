@@ -4,6 +4,7 @@ set(SOURCES
     utils.cpp
     calculator.cpp
     game.cpp
+    assembler.cpp
 )
 
 # Create library from source files
