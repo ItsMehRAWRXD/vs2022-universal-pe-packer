@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <cstdint>
 #include "tiny_loader.h"
 
 // Simplified version of the EmbeddedCompiler just for testing
