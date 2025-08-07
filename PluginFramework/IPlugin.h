@@ -13,6 +13,7 @@
 #include <map>
 #include <memory>
 #include <chrono>
+#include <cstdint>
 
 namespace BenignPacker {
 namespace PluginFramework {
@@ -44,6 +45,8 @@ enum class PluginCapabilities : uint32_t {
     UAC_BYPASS = 0x00000200,
     PERSISTENCE = 0x00000400,
     NETWORK_EXPLOITS = 0x00000800,
+    ASSEMBLY_GENERATION = 0x00001000,
+    MASM_SUPPORT = 0x00002000,
     ALL = 0xFFFFFFFF
 };
 
