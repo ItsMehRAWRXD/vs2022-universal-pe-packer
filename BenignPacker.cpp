@@ -10,17 +10,23 @@ FEATURES:
 ========================================================================================
 */
 
-#include "IStubGenerator.h"
-#include "UniqueStub71Plugin.h"
 #include <iostream>
 #include <fstream>
-#include <vector>
-#include <string>
+#include <filesystem>
 #include <map>
 #include <memory>
-#include <filesystem>
+#include <string>
+#include <vector>
+#include <chrono>
 
-using namespace BenignPacker;
+// Include the plugin framework
+#include "PluginFramework/IPlugin.h"
+
+// Include plugin implementations
+#include "UniqueStub71Plugin.h"
+#include "MASMAssemblerPlugin.cpp"
+
+using namespace BenignPacker::PluginFramework;
 
 class BenignPackerApp {
 private:
@@ -34,73 +40,102 @@ public:
     }
 
     ~BenignPackerApp() {
-        // Cleanup
+        for (auto& [name, plugin] : plugins) {
+            if (plugin) {
+                plugin->OnUnload();
+            }
+        }
     }
 
     void InitializePlugins() {
         // Initialize UniqueStub71Plugin
-        auto uniqueStubPlugin = CreateUniqueStub71Plugin();
-        if (uniqueStubPlugin) {
+        auto uniqueStubPlugin = std::make_unique<BenignPacker::UniqueStub71Plugin>();
+        if (uniqueStubPlugin->OnLoad()) {
             plugins["UniqueStub71"] = std::move(uniqueStubPlugin);
             std::cout << "Loaded UniqueStub71Plugin" << std::endl;
         }
 
         // Initialize MASMAssemblerPlugin
-        // auto masmPlugin = CreateMASMAssemblerPlugin();
-        // if (masmPlugin) {
-        //     plugins["MASMAssembler"] = std::move(masmPlugin);
-        //     std::cout << "Loaded MASMAssemblerPlugin" << std::endl;
-        // }
+        auto masmPlugin = std::make_unique<BenignPacker::MASMAssemblerPlugin>();
+        if (masmPlugin->OnLoad()) {
+            plugins["MASMAssembler"] = std::move(masmPlugin);
+            std::cout << "Loaded MASMAssemblerPlugin" << std::endl;
+        }
     }
 
     void LoadDefaultSettings() {
-        settings["company_profile"] = "Microsoft";
-        settings["mutex_system"] = "Advanced";
-        settings["exploit_method"] = "fodhelper";
-        settings["anti_analysis"] = "true";
-        settings["polymorphic"] = "true";
         settings["output_format"] = "exe";
+        settings["optimization_level"] = "2";
+        settings["enable_encryption"] = "true";
+        settings["enable_polymorphic"] = "true";
+        settings["enable_anti_analysis"] = "true";
     }
 
     bool ProcessFile(const std::string& inputFile, const std::string& outputFile, const std::string& method = "advanced") {
-        if (plugins.empty()) {
-            std::cerr << "No plugins loaded!" << std::endl;
+        // Read input file
+        std::ifstream file(inputFile, std::ios::binary);
+        if (!file.is_open()) {
+            std::cerr << "Error: Cannot open input file '" << inputFile << "'" << std::endl;
             return false;
         }
 
-        // Use the first available plugin (UniqueStub71Plugin)
-        auto& plugin = plugins.begin()->second;
-        
-        // Initialize plugin with settings
-        if (!plugin->Initialize(settings)) {
-            std::cerr << "Failed to initialize plugin" << std::endl;
-            return false;
-        }
+        std::vector<uint8_t> payloadData((std::istreambuf_iterator<char>(file)),
+                                        std::istreambuf_iterator<char>());
+        file.close();
 
         // Create execution context
         ExecutionContext context;
-        context.inputFile = inputFile;
-        context.outputFile = outputFile;
-        context.method = method;
-        context.verbose = true;
-        context.debug = false;
+        context.input_file = inputFile;
+        context.output_file = outputFile;
+        context.payload_data = payloadData;
+        context.parameters = settings;
+        context.parameters["method"] = method;
+        context.verbose_mode = true;
+        context.debug_mode = false;
 
-        // Execute plugin
-        PluginResult result = plugin->Execute(context);
+        // Try to process with each plugin
+        for (auto& [name, plugin] : plugins) {
+            if (!plugin) continue;
 
-        if (result.success) {
-            std::cout << "Success: " << result.message << std::endl;
-            std::cout << "Input size: " << result.metadata["input_size"] << " bytes" << std::endl;
-            std::cout << "Output size: " << result.metadata["output_size"] << " bytes" << std::endl;
-            std::cout << "Method used: " << result.metadata["method"] << std::endl;
-            return true;
-        } else {
-            std::cerr << "Error: " << result.message << std::endl;
-            if (!result.errorDetails.empty()) {
-                std::cerr << "Details: " << result.errorDetails << std::endl;
+            std::cout << "Trying plugin: " << name << std::endl;
+
+            // Initialize plugin with settings
+            if (!plugin->Initialize(settings)) {
+                std::cerr << "Failed to initialize plugin: " << name << std::endl;
+                continue;
             }
-            return false;
+
+            // Execute plugin
+            PluginResult result = plugin->Execute(context);
+
+            if (result.success) {
+                // Write output file
+                std::ofstream outFile(outputFile, std::ios::binary);
+                if (outFile.is_open()) {
+                    outFile.write(reinterpret_cast<const char*>(result.output_data.data()), 
+                                 result.output_data.size());
+                    outFile.close();
+
+                    std::cout << "Success: " << result.message << std::endl;
+                    std::cout << "Input size: " << payloadData.size() << " bytes" << std::endl;
+                    std::cout << "Output size: " << result.output_data.size() << " bytes" << std::endl;
+                    std::cout << "Method used: " << method << std::endl;
+                    std::cout << "Plugin used: " << name << std::endl;
+                    return true;
+                } else {
+                    std::cerr << "Error: Cannot write output file '" << outputFile << "'" << std::endl;
+                    return false;
+                }
+            } else {
+                std::cerr << "Plugin " << name << " failed: " << result.message << std::endl;
+                if (!result.error_details.empty()) {
+                    std::cerr << "Details: " << result.error_details << std::endl;
+                }
+            }
         }
+
+        std::cerr << "All plugins failed to process the file" << std::endl;
+        return false;
     }
 
     void ShowHelp() {
@@ -127,20 +162,24 @@ public:
         std::cout << "===============" << std::endl;
         
         for (const auto& [name, plugin] : plugins) {
+            if (!plugin) continue;
+            
             PluginConfig config = plugin->GetConfig();
             std::cout << "Name: " << config.name << std::endl;
             std::cout << "Version: " << config.version << std::endl;
             std::cout << "Description: " << config.description << std::endl;
             std::cout << "Author: " << config.author << std::endl;
             std::cout << "Supported formats: ";
-            for (const auto& format : config.supportedFormats) {
+            for (const auto& format : config.supported_formats) {
                 std::cout << format << " ";
             }
             std::cout << std::endl;
-            std::cout << "Capabilities:" << std::endl;
-            for (const auto& [key, value] : config.capabilities) {
-                std::cout << "  " << key << ": " << value << std::endl;
+            std::cout << "Supported methods: ";
+            for (const auto& method : config.supported_methods) {
+                std::cout << method << " ";
             }
+            std::cout << std::endl;
+            std::cout << "Capabilities: " << static_cast<uint32_t>(config.capabilities) << std::endl;
             std::cout << std::endl;
         }
     }
