@@ -24,7 +24,7 @@ void printUsage() {
     cout << "  ./encryptor pack original.exe packed.exe mykey123" << endl;
     cout << "  ./encryptor stealth original.exe stealth.exe secretkey" << endl;
     cout << endl;
-    cout << "\"Built with curiosity, tested with courage!\" 🚀" << endl;
+    cout << "\"Built with curiosity, tested with courage!\"" << endl;
 }
 
 int main(int argc, char* argv[]) {
