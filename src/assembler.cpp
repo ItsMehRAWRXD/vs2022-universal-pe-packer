@@ -3,6 +3,7 @@
 #include <sstream>
 #include <iostream>
 #include <cstdlib>
+#include <algorithm>
 
 MASMAssembler::MASMAssembler() {
     // Try to find MASM and LINK in common locations
@@ -100,16 +101,16 @@ void MASMAssembler::createBasicProgram() {
     if (file.is_open()) {
         file << templateCode;
         file.close();
-        std::cout << "✅ Created " << sourceFile << std::endl;
+        std::cout << "Created " << sourceFile << std::endl;
         
         // Try to assemble
         if (assemble(sourceFile, outputFile)) {
-            std::cout << "✅ Successfully assembled to " << outputFile << std::endl;
+            std::cout << "Successfully assembled to " << outputFile << std::endl;
         } else {
-            std::cout << "⚠️  Assembly failed, but source file was created" << std::endl;
+            std::cout << "Assembly failed, but source file was created" << std::endl;
         }
     } else {
-        std::cout << "❌ Could not create file!" << std::endl;
+        std::cout << "Could not create file!" << std::endl;
     }
 }
 
@@ -160,16 +161,16 @@ void MASMAssembler::createAdvancedProgram() {
     if (file.is_open()) {
         file << templateCode;
         file.close();
-        std::cout << "✅ Created " << sourceFile << std::endl;
+        std::cout << "Created " << sourceFile << std::endl;
         
         // Try to assemble
         if (assemble(sourceFile, outputFile)) {
-            std::cout << "✅ Successfully assembled to " << outputFile << std::endl;
+            std::cout << "Successfully assembled to " << outputFile << std::endl;
         } else {
-            std::cout << "⚠️  Assembly failed, but source file was created" << std::endl;
+            std::cout << "Assembly failed, but source file was created" << std::endl;
         }
     } else {
-        std::cout << "❌ Could not create file!" << std::endl;
+        std::cout << "Could not create file!" << std::endl;
     }
 }
 
@@ -194,9 +195,9 @@ void MASMAssembler::assembleFile() {
     std::string outputFile = sourceFile.substr(0, sourceFile.find(".asm")) + ".exe";
     
     if (assemble(sourceFile, outputFile)) {
-        std::cout << "✅ Successfully assembled to " << outputFile << std::endl;
+        std::cout << "Successfully assembled to " << outputFile << std::endl;
     } else {
-        std::cout << "❌ Assembly failed!" << std::endl;
+        std::cout << "Assembly failed!" << std::endl;
     }
 }
 
@@ -313,7 +314,7 @@ void MASMAssembler::showAssemblyUtils() {
 }
 
 bool MASMAssembler::assemble(const std::string& source, const std::string& output) {
-    std::cout << "🔨 Assembling " << source << "..." << std::endl;
+    std::cout << "Assembling " << source << "..." << std::endl;
     
     #ifdef _WIN32
         // Use MASM on Windows
@@ -330,7 +331,7 @@ bool MASMAssembler::assemble(const std::string& source, const std::string& outpu
 }
 
 bool MASMAssembler::link(const std::string& objectFile, const std::string& output) {
-    std::cout << "🔗 Linking " << objectFile << "..." << std::endl;
+    std::cout << "Linking " << objectFile << "..." << std::endl;
     
     std::string command = linkPath + " " + objectFile + " /out:" + output;
     int result = system(command.c_str());

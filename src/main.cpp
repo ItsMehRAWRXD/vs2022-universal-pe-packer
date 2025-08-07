@@ -24,7 +24,8 @@ public:
         std::cout << "1. Calculator" << std::endl;
         std::cout << "2. Number Guessing Game" << std::endl;
         std::cout << "3. String Utilities" << std::endl;
-        std::cout << "4. Exit" << std::endl;
+        std::cout << "4. MASM Assembly Development" << std::endl;
+        std::cout << "5. Exit" << std::endl;
         std::cout << "Choose an option: ";
     }
     
@@ -45,6 +46,9 @@ public:
                     runStringUtils();
                     break;
                 case 4:
+                    tools[2]->run();
+                    break;
+                case 5:
                     std::cout << "Goodbye!" << std::endl;
                     return;
                 default:
@@ -69,7 +73,7 @@ public:
 };
 
 int main() {
-    std::cout << "🚀 Starting C++ AI Development Environment..." << std::endl;
+    std::cout << "Starting C++ AI Development Environment..." << std::endl;
     
     AIEnvironment env;
     env.run();

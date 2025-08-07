@@ -130,6 +130,30 @@ cpp_lib/fast:
 	cd /workspace/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/cpp_lib.dir/build.make src/CMakeFiles/cpp_lib.dir/build
 .PHONY : cpp_lib/fast
 
+assembler.o: assembler.cpp.o
+.PHONY : assembler.o
+
+# target to build an object file
+assembler.cpp.o:
+	cd /workspace/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/cpp_lib.dir/build.make src/CMakeFiles/cpp_lib.dir/assembler.cpp.o
+.PHONY : assembler.cpp.o
+
+assembler.i: assembler.cpp.i
+.PHONY : assembler.i
+
+# target to preprocess a source file
+assembler.cpp.i:
+	cd /workspace/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/cpp_lib.dir/build.make src/CMakeFiles/cpp_lib.dir/assembler.cpp.i
+.PHONY : assembler.cpp.i
+
+assembler.s: assembler.cpp.s
+.PHONY : assembler.s
+
+# target to generate assembly for a file
+assembler.cpp.s:
+	cd /workspace/build && $(MAKE) $(MAKESILENT) -f src/CMakeFiles/cpp_lib.dir/build.make src/CMakeFiles/cpp_lib.dir/assembler.cpp.s
+.PHONY : assembler.cpp.s
+
 calculator.o: calculator.cpp.o
 .PHONY : calculator.o
 
@@ -235,6 +259,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... cpp_lib"
+	@echo "... assembler.o"
+	@echo "... assembler.i"
+	@echo "... assembler.s"
 	@echo "... calculator.o"
 	@echo "... calculator.i"
 	@echo "... calculator.s"

@@ -28,6 +28,7 @@ private:
     void assembleFile();
     void runAssembly();
     void showExamples();
+    void showAssemblyUtils();
     
 public:
     MASMAssembler();
