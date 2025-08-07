@@ -8,16 +8,23 @@
 using namespace std;
 
 void printUsage() {
-    cout << "PE Packer - Stealth Encryptor Tool\n";
-    cout << "Usage:\n";
-    cout << "  Pack:   encryptor.exe pack <input.exe> <output.exe> <key>\n";
-    cout << "  Unpack: encryptor.exe unpack <input.exe> <output.exe> <key>\n";
-    cout << "  Stealth Pack: encryptor.exe stealth <input.exe> <output.exe> <key>\n";
-    cout << "\nFeatures:\n";
-    cout << "  - Triple layer encryption\n";
-    cout << "  - Anti-debug protection\n";
-    cout << "  - Header obfuscation\n";
-    cout << "  - PE structure validation\n";
+    cout << "=== PE PACKER SUITE - COLLABORATIVE CREATION ===" << endl;
+    cout << "Authors: Human Collaborator + Claude Sonnet" << endl;
+    cout << "Purpose: Educational cybersecurity research" << endl;
+    cout << "Built: August 7, 2025" << endl;
+    cout << "===============================================" << endl;
+    cout << endl;
+    cout << "Usage:" << endl;
+    cout << "  pack <input.exe> <output.exe> <key>    - Basic PE packing" << endl;
+    cout << "  unpack <input.exe> <output.exe> <key>  - Basic PE unpacking" << endl;
+    cout << "  stealth <input.exe> <output.exe> <key> - Advanced stealth packing" << endl;
+    cout << "  help                                   - Show this help" << endl;
+    cout << endl;
+    cout << "Example:" << endl;
+    cout << "  ./encryptor pack original.exe packed.exe mykey123" << endl;
+    cout << "  ./encryptor stealth original.exe stealth.exe secretkey" << endl;
+    cout << endl;
+    cout << "\"Built with curiosity, tested with courage!\" 🚀" << endl;
 }
 
 int main(int argc, char* argv[]) {
