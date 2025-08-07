@@ -5,6 +5,7 @@ set(SOURCES
     calculator.cpp
     game.cpp
     assembler.cpp
+    chatgpt.cpp
 )
 
 # Create library from source files

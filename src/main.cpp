@@ -6,6 +6,7 @@
 #include "calculator.h"
 #include "game.h"
 #include "assembler.h"
+#include "chatgpt.h"
 
 class AIEnvironment {
 private:
@@ -17,6 +18,7 @@ public:
         tools.push_back(std::make_unique<Calculator>());
         tools.push_back(std::make_unique<Game>());
         tools.push_back(std::make_unique<MASMAssembler>());
+        tools.push_back(std::make_unique<ChatGPTTool>());
     }
     
     void showMenu() {
@@ -25,7 +27,8 @@ public:
         std::cout << "2. Number Guessing Game" << std::endl;
         std::cout << "3. String Utilities" << std::endl;
         std::cout << "4. MASM Assembly Development" << std::endl;
-        std::cout << "5. Exit" << std::endl;
+        std::cout << "5. ChatGPT Integration" << std::endl;
+        std::cout << "6. Exit" << std::endl;
         std::cout << "Choose an option: ";
     }
     
@@ -49,6 +52,9 @@ public:
                     tools[2]->run();
                     break;
                 case 5:
+                    tools[3]->run();
+                    break;
+                case 6:
                     std::cout << "Goodbye!" << std::endl;
                     return;
                 default:
