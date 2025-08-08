@@ -31,12 +31,12 @@
     "local_path": "source/repos/pe-file-packer",
     "cloned": false
   },
-  "unique-stub-71-masm": {
-    "url": "https://github.com/local/unique-stub-71-plugin",
-    "description": "UNIQUE STUB 71 PLUGIN - Advanced MASM packer with 40+ mutex systems, company spoofing, UAC bypass, and polymorphic code generation",
+  "masm-2035": {
+    "url": "https://github.com/local/masm-2035-project",
+    "description": "MASM 2035 - Advanced assembly packer with 40+ mutex systems, company spoofing, and 18 exploit methods. Built for next-generation security research (2024-2035)",
     "project_type": "security",
     "framework": "masm",
-    "local_path": "source/repos/unique-stub-71-masm",
+    "local_path": "source/repos/masm-2035",
     "cloned": false,
     "features": [
       "40+ Advanced Mutex Systems",
@@ -47,6 +47,9 @@
       "Polymorphic Code Generation",
       "Plugin Architecture for BenignPacker Integration",
       "Visual Studio 2022 Native Compilation"
-    ]
+    ],
+    "project_name": "MASM 2035",
+    "timeline": "2024-2035 (11-year relevance)",
+    "status": "source_needed"
   }
 }
