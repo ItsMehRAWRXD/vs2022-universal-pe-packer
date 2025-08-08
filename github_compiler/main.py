@@ -11,6 +11,8 @@ Dependencies: PyQt5, GitPython
 import sys
 import subprocess
 from pathlib import Path
+import shutil
+from datetime import datetime
 
 from PyQt5.QtWidgets import (
     QApplication,
@@ -59,7 +61,8 @@ class MainWindow(QWidget):
         self.pull_btn = QPushButton("Pull")
         self.push_btn = QPushButton("Push")
         self.compile_btn = QPushButton("Compile")
-        for btn in (self.clone_btn, self.pull_btn, self.push_btn, self.compile_btn):
+        self.upload_btn = QPushButton("Upload Artifacts")
+        for btn in (self.clone_btn, self.pull_btn, self.push_btn, self.compile_btn, self.upload_btn):
             btn_layout.addWidget(btn)
         main_layout.addLayout(btn_layout)
 
@@ -70,6 +73,7 @@ class MainWindow(QWidget):
         self.pull_btn.clicked.connect(self._pull_repository)
         self.push_btn.clicked.connect(self._push_repository)
         self.compile_btn.clicked.connect(self._compile_repository)
+        self.upload_btn.clicked.connect(self._upload_artifacts)
 
     # --------------------------- CORE LOGIC --------------------------- #
 
@@ -155,6 +159,51 @@ class MainWindow(QWidget):
                 self._run_external_command([cmd] + args, repo_path)
                 return
         QMessageBox.information(self, "Compile", "No known build system detected for this repository.")
+
+    def _upload_artifacts(self):
+        """Copy a chosen artifacts folder into the repo, commit, and push it."""
+        if Repo is None:
+            QMessageBox.critical(self, "Dependency Missing", "GitPython is not installed. Please run:\n  pip install GitPython")
+            return
+
+        repo_path = self._selected_repo_path()
+        if not repo_path:
+            return
+
+        src_dir_str, ok = QInputDialog.getText(
+            self,
+            "Artifact Directory",
+            "Enter path to artifact folder (relative to repo or absolute):",
+        )
+        if not ok or not src_dir_str:
+            return
+
+        src_dir = Path(src_dir_str)
+        if not src_dir.is_absolute():
+            src_dir = repo_path / src_dir
+
+        if not src_dir.exists():
+            QMessageBox.warning(self, "Path Not Found", f"{src_dir} does not exist.")
+            return
+
+        timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        dest_dir = repo_path / "artifacts" / timestamp
+
+        try:
+            shutil.copytree(src_dir, dest_dir, dirs_exist_ok=True)
+
+            repo = Repo(repo_path)
+            repo.index.add([str(dest_dir.relative_to(repo_path))])
+            repo.index.commit(f"Add compiled artifacts ({timestamp})")
+            repo.remotes.origin.push()
+
+            QMessageBox.information(
+                self,
+                "Upload Successful",
+                f"Artifacts copied to {dest_dir} and pushed to remote.",
+            )
+        except Exception as e:
+            QMessageBox.critical(self, "Upload Failed", str(e))
 
     # --------------------------- UTILITIES --------------------------- #
 
