@@ -1,0 +1,51 @@
+# Sample Repository List for VS2022 Menu Encryptor
+# Format: name,url,branch,description
+# Lines starting with # are comments
+
+# Security Tools
+metasploit-framework,https://github.com/rapid7/metasploit-framework.git,master,Penetration testing framework
+thc-hydra,https://github.com/vanhauser-thc/thc-hydra.git,master,Network login cracker
+sqlmap,https://github.com/sqlmapproject/sqlmap.git,master,SQL injection tool
+nmap,https://github.com/nmap/nmap.git,master,Network discovery and security auditing
+
+# Encryption Libraries
+openssl,https://github.com/openssl/openssl.git,master,Cryptography and SSL/TLS toolkit
+libsodium,https://github.com/jedisct1/libsodium.git,stable,Modern cryptographic library
+cryptopp,https://github.com/weidai11/cryptopp.git,master,C++ cryptographic library
+mbedtls,https://github.com/Mbed-TLS/mbedtls.git,development,Portable cryptographic library
+
+# Compression Tools
+zlib,https://github.com/madler/zlib.git,master,Compression library
+lz4,https://github.com/lz4/lz4.git,dev,Fast compression algorithm
+zstd,https://github.com/facebook/zstd.git,dev,Fast compression algorithm
+xz,https://github.com/xz-mirror/xz.git,master,XZ compression utilities
+
+# PE/Binary Tools
+pe-bear,https://github.com/hasherezade/pe-bear.git,main,PE file analyzer
+pestudio,https://github.com/pestudio/pestudio.git,master,PE malware assessment tool
+upx,https://github.com/upx/upx.git,master,Ultimate packer for executables
+x64dbg,https://github.com/x64dbg/x64dbg.git,development,x64/x32 debugger
+
+# Development Tools
+cmake,https://github.com/Kitware/CMake.git,master,Cross-platform build system
+ninja,https://github.com/ninja-build/ninja.git,master,Small build system
+vcpkg,https://github.com/microsoft/vcpkg.git,master,C++ package manager
+conan,https://github.com/conan-io/conan.git,develop,C/C++ package manager
+
+# Windows Development
+windows-rs,https://github.com/microsoft/windows-rs.git,master,Rust for Windows
+WinObjC,https://github.com/microsoft/WinObjC.git,master,Objective-C for Windows
+mingw-w64,https://github.com/mingw-w64/mingw-w64.git,master,Windows port of GCC
+reactos,https://github.com/reactos/reactos.git,master,Windows-compatible OS
+
+# Reverse Engineering
+radare2,https://github.com/radareorg/radare2.git,master,Reverse engineering framework
+ghidra,https://github.com/NationalSecurityAgency/ghidra.git,master,Software reverse engineering
+capstone,https://github.com/capstone-engine/capstone.git,master,Disassembly framework
+unicorn,https://github.com/unicorn-engine/unicorn.git,master,CPU emulator framework
+
+# Anti-Virus Evasion
+al-khaser,https://github.com/LordNoteworthy/al-khaser.git,master,AV/VM/Sandbox evasion
+pafish,https://github.com/a0rtega/pafish.git,master,Sandbox detection tool
+vmprotect,https://github.com/gmh5225/awesome-vmprotect.git,main,VMProtect resources
+themida,https://github.com/gmh5225/awesome-themida.git,main,Themida resources

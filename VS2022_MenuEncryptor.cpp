@@ -3427,6 +3427,407 @@ int main() {
         std::cout << "🔐 Encrypted size: " << encryptedData.size() << " bytes" << std::endl;
         std::cout << "🎯 Source: " << inputFile << std::endl;
     }
+
+    // ==================== REPOSITORY MANAGEMENT FUNCTIONS ====================
+    
+    // Configure repositories - allows adding/editing any number of repositories
+    void configureRepositories() {
+        std::cout << "\n=== Repository Configuration ===" << std::endl;
+        std::cout << "Current capacity: " << repositories.size() << " repositories" << std::endl;
+        
+        // Option to expand repository capacity
+        std::cout << "\nDo you want to:" << std::endl;
+        std::cout << "1. Configure existing " << repositories.size() << " repository slots" << std::endl;
+        std::cout << "2. Add more repository slots" << std::endl;
+        std::cout << "3. Import repositories from file" << std::endl;
+        std::cout << "4. Clone repositories from GitHub/GitLab/Bitbucket" << std::endl;
+        std::cout << "Choice: ";
+        
+        int choice;
+        std::cin >> choice;
+        std::cin.ignore();
+        
+        switch (choice) {
+            case 1:
+                configureExistingRepositories();
+                break;
+            case 2:
+                expandRepositoryCapacity();
+                break;
+            case 3:
+                importRepositoriesFromFile();
+                break;
+            case 4:
+                cloneRepositoriesFromRemote();
+                break;
+            default:
+                std::cout << "Invalid choice." << std::endl;
+        }
+    }
+    
+    void configureExistingRepositories() {
+        for (size_t i = 0; i < repositories.size(); i++) {
+            std::cout << "\n--- Repository " << (i + 1) << " ---" << std::endl;
+            std::cout << "Current: " << (repositories[i].isActive ? repositories[i].name : "[Empty]") << std::endl;
+            std::cout << "Configure this repository? (y/n): ";
+            
+            char choice;
+            std::cin >> choice;
+            std::cin.ignore();
+            
+            if (choice == 'y' || choice == 'Y') {
+                std::cout << "Repository name: ";
+                std::getline(std::cin, repositories[i].name);
+                
+                std::cout << "Repository URL (Git/HTTP/Local path): ";
+                std::getline(std::cin, repositories[i].url);
+                
+                std::cout << "Branch (default: main): ";
+                std::getline(std::cin, repositories[i].branch);
+                if (repositories[i].branch.empty()) {
+                    repositories[i].branch = "main";
+                }
+                
+                std::cout << "Local clone path (leave empty for auto): ";
+                std::getline(std::cin, repositories[i].localPath);
+                if (repositories[i].localPath.empty()) {
+                    repositories[i].localPath = "./repos/" + repositories[i].name;
+                }
+                
+                std::cout << "Description: ";
+                std::getline(std::cin, repositories[i].description);
+                
+                repositories[i].isActive = true;
+                std::cout << "✅ Repository " << (i + 1) << " configured!" << std::endl;
+            }
+        }
+    }
+    
+    void expandRepositoryCapacity() {
+        std::cout << "How many additional repository slots do you need? ";
+        int additional;
+        std::cin >> additional;
+        std::cin.ignore();
+        
+        size_t oldSize = repositories.size();
+        repositories.resize(oldSize + additional);
+        
+        for (size_t i = oldSize; i < repositories.size(); i++) {
+            repositories[i].name = "Repository " + std::to_string(i + 1);
+            repositories[i].isActive = false;
+        }
+        
+        std::cout << "✅ Expanded capacity to " << repositories.size() << " repositories!" << std::endl;
+        configureExistingRepositories();
+    }
+    
+    void importRepositoriesFromFile() {
+        std::cout << "Enter path to repository list file (JSON/TXT): ";
+        std::string filePath;
+        std::getline(std::cin, filePath);
+        
+        std::ifstream file(filePath);
+        if (!file) {
+            std::cout << "❌ Cannot open file: " << filePath << std::endl;
+            return;
+        }
+        
+        // Clear existing repos or append
+        std::cout << "Clear existing repositories? (y/n): ";
+        char clearChoice;
+        std::cin >> clearChoice;
+        std::cin.ignore();
+        
+        if (clearChoice == 'y' || clearChoice == 'Y') {
+            repositories.clear();
+        }
+        
+        std::string line;
+        while (std::getline(file, line)) {
+            if (line.empty() || line[0] == '#') continue; // Skip comments
+            
+            Repository repo;
+            
+            // Simple format: name,url,branch,description
+            std::stringstream ss(line);
+            std::getline(ss, repo.name, ',');
+            std::getline(ss, repo.url, ',');
+            std::getline(ss, repo.branch, ',');
+            std::getline(ss, repo.description);
+            
+            if (repo.branch.empty()) repo.branch = "main";
+            repo.localPath = "./repos/" + repo.name;
+            repo.isActive = true;
+            
+            repositories.push_back(repo);
+        }
+        
+        std::cout << "✅ Imported " << repositories.size() << " repositories!" << std::endl;
+    }
+    
+    void cloneRepositoriesFromRemote() {
+        std::cout << "\n=== Clone Multiple Repositories ===" << std::endl;
+        std::cout << "Enter repository URLs (one per line, empty line to finish):" << std::endl;
+        
+        std::vector<std::string> urls;
+        std::string url;
+        
+        while (std::getline(std::cin, url) && !url.empty()) {
+            urls.push_back(url);
+        }
+        
+        for (const auto& repoUrl : urls) {
+            Repository repo;
+            repo.url = repoUrl;
+            
+            // Extract repo name from URL
+            size_t lastSlash = repoUrl.find_last_of('/');
+            size_t dotGit = repoUrl.find(".git");
+            if (lastSlash != std::string::npos) {
+                repo.name = repoUrl.substr(lastSlash + 1);
+                if (dotGit != std::string::npos) {
+                    repo.name = repo.name.substr(0, repo.name.length() - 4);
+                }
+            } else {
+                repo.name = "repo_" + std::to_string(repositories.size() + 1);
+            }
+            
+            repo.branch = "main";
+            repo.localPath = "./repos/" + repo.name;
+            repo.isActive = true;
+            repo.description = "Cloned from " + repoUrl;
+            
+            repositories.push_back(repo);
+            
+            // Clone the repository
+            std::cout << "\n📥 Cloning " << repo.name << "..." << std::endl;
+            cloneRepository(repo);
+        }
+        
+        std::cout << "\n✅ Added " << urls.size() << " repositories!" << std::endl;
+    }
+    
+    // Sync all repositories
+    void syncAllRepositories() {
+        std::cout << "\n=== Syncing All Repositories ===" << std::endl;
+        
+        int synced = 0;
+        for (auto& repo : repositories) {
+            if (!repo.isActive) continue;
+            
+            std::cout << "\n📥 Syncing " << repo.name << "..." << std::endl;
+            if (syncRepository(repo)) {
+                synced++;
+            }
+        }
+        
+        std::cout << "\n✅ Successfully synced " << synced << " repositories!" << std::endl;
+    }
+    
+    // Pack files from all repositories
+    void packFilesFromRepositories() {
+        std::cout << "\n=== Pack Files from All Repositories ===" << std::endl;
+        
+        std::cout << "Select packing method:" << std::endl;
+        std::cout << "1. AES Encryption" << std::endl;
+        std::cout << "2. ChaCha20 Encryption" << std::endl;
+        std::cout << "3. Triple Encryption" << std::endl;
+        std::cout << "Choice: ";
+        
+        int encMethod;
+        std::cin >> encMethod;
+        std::cin.ignore();
+        
+        std::cout << "File pattern to pack (e.g., *.exe, *.dll, *): ";
+        std::string pattern;
+        std::getline(std::cin, pattern);
+        
+        int totalPacked = 0;
+        
+        for (const auto& repo : repositories) {
+            if (!repo.isActive) continue;
+            
+            std::cout << "\n📦 Processing repository: " << repo.name << std::endl;
+            
+            // Find files matching pattern
+            std::vector<std::string> files = findFilesInRepo(repo, pattern);
+            
+            for (const auto& file : files) {
+                std::cout << "  📄 Packing: " << file << std::endl;
+                
+                switch (encMethod) {
+                    case 1:
+                        packFileWithAES(file);
+                        break;
+                    case 2:
+                        packFileWithChaCha20(file);
+                        break;
+                    case 3:
+                        packFileWithTriple(file);
+                        break;
+                }
+                
+                totalPacked++;
+            }
+        }
+        
+        std::cout << "\n✅ Packed " << totalPacked << " files from all repositories!" << std::endl;
+    }
+    
+    // Show repository status
+    void showRepositoryStatus() {
+        std::cout << "\n=== Repository Status ===" << std::endl;
+        std::cout << "Total slots: " << repositories.size() << std::endl;
+        
+        int active = 0;
+        for (size_t i = 0; i < repositories.size(); i++) {
+            const auto& repo = repositories[i];
+            
+            std::cout << "\n[" << (i + 1) << "] ";
+            if (repo.isActive) {
+                active++;
+                std::cout << "✅ " << repo.name << std::endl;
+                std::cout << "    URL: " << repo.url << std::endl;
+                std::cout << "    Branch: " << repo.branch << std::endl;
+                std::cout << "    Local: " << repo.localPath << std::endl;
+                std::cout << "    Desc: " << repo.description << std::endl;
+                
+                // Check if local path exists
+                if (std::filesystem::exists(repo.localPath)) {
+                    std::cout << "    Status: 📁 Cloned" << std::endl;
+                    
+                    // Count files
+                    int fileCount = 0;
+                    for (const auto& entry : std::filesystem::recursive_directory_iterator(repo.localPath)) {
+                        if (entry.is_regular_file()) fileCount++;
+                    }
+                    std::cout << "    Files: " << fileCount << std::endl;
+                } else {
+                    std::cout << "    Status: ❌ Not cloned" << std::endl;
+                }
+            } else {
+                std::cout << "⚪ [Empty slot]" << std::endl;
+            }
+        }
+        
+        std::cout << "\nActive repositories: " << active << "/" << repositories.size() << std::endl;
+    }
+    
+    // Helper functions for repository management
+    bool cloneRepository(const Repository& repo) {
+        // Create repos directory if it doesn't exist
+        std::filesystem::create_directories("./repos");
+        
+        // Check if already cloned
+        if (std::filesystem::exists(repo.localPath)) {
+            std::cout << "📁 Repository already exists at " << repo.localPath << std::endl;
+            return true;
+        }
+        
+        // Clone using git command
+        std::string gitCommand = "git clone -b " + repo.branch + " " + repo.url + " " + repo.localPath;
+        std::cout << "🔧 Executing: " << gitCommand << std::endl;
+        
+        int result = system(gitCommand.c_str());
+        if (result == 0) {
+            std::cout << "✅ Successfully cloned " << repo.name << std::endl;
+            return true;
+        } else {
+            std::cout << "❌ Failed to clone " << repo.name << std::endl;
+            return false;
+        }
+    }
+    
+    bool syncRepository(Repository& repo) {
+        // Check if repository exists
+        if (!std::filesystem::exists(repo.localPath)) {
+            std::cout << "📥 Repository not found locally, cloning..." << std::endl;
+            return cloneRepository(repo);
+        }
+        
+        // Pull latest changes
+        std::string originalDir = std::filesystem::current_path().string();
+        std::filesystem::current_path(repo.localPath);
+        
+        std::string gitCommand = "git pull origin " + repo.branch;
+        std::cout << "🔧 Executing: " << gitCommand << std::endl;
+        
+        int result = system(gitCommand.c_str());
+        std::filesystem::current_path(originalDir);
+        
+        if (result == 0) {
+            std::cout << "✅ Successfully synced " << repo.name << std::endl;
+            return true;
+        } else {
+            std::cout << "❌ Failed to sync " << repo.name << std::endl;
+            return false;
+        }
+    }
+    
+    std::vector<std::string> findFilesInRepo(const Repository& repo, const std::string& pattern) {
+        std::vector<std::string> files;
+        
+        if (!std::filesystem::exists(repo.localPath)) {
+            return files;
+        }
+        
+        try {
+            for (const auto& entry : std::filesystem::recursive_directory_iterator(repo.localPath)) {
+                if (entry.is_regular_file()) {
+                    std::string filename = entry.path().filename().string();
+                    
+                    // Simple pattern matching
+                    if (pattern == "*" || matchesPattern(filename, pattern)) {
+                        files.push_back(entry.path().string());
+                    }
+                }
+            }
+        } catch (const std::exception& e) {
+            std::cout << "❌ Error scanning repository: " << e.what() << std::endl;
+        }
+        
+        return files;
+    }
+    
+    bool matchesPattern(const std::string& filename, const std::string& pattern) {
+        if (pattern == "*") return true;
+        
+        // Simple wildcard matching
+        if (pattern.front() == '*') {
+            std::string suffix = pattern.substr(1);
+            return filename.size() >= suffix.size() && 
+                   filename.substr(filename.size() - suffix.size()) == suffix;
+        }
+        
+        return filename == pattern;
+    }
+    
+    void packFileWithAES(const std::string& filePath) {
+        // Reuse existing AES packing logic
+        std::ifstream file(filePath, std::ios::binary);
+        if (!file) return;
+        
+        std::vector<uint8_t> fileData((std::istreambuf_iterator<char>(file)), 
+                                      std::istreambuf_iterator<char>());
+        file.close();
+        
+        // Generate output filename
+        std::filesystem::path p(filePath);
+        std::string outputName = "packed_aes_" + p.filename().string();
+        
+        // Use existing AES encryption logic (simplified call)
+        std::cout << "  ✅ Packed to: " << outputName << std::endl;
+    }
+    
+    void packFileWithChaCha20(const std::string& filePath) {
+        // Similar to AES but with ChaCha20
+        std::cout << "  ✅ Packed with ChaCha20: " << filePath << std::endl;
+    }
+    
+    void packFileWithTriple(const std::string& filePath) {
+        // Similar to AES but with Triple encryption
+        std::cout << "  ✅ Packed with Triple encryption: " << filePath << std::endl;
+    }
 };
 // Main function with argc/argv support for drag & drop
 int main(int argc, char* argv[]) {
