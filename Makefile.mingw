@@ -1,0 +1,195 @@
+# BlackMagii Suite - MinGW-w64 Makefile
+# 🎩✨ Build without Visual Studio!
+# For Windows 64-bit using MinGW-w64
+
+# Compiler settings
+CXX = g++
+CC = gcc
+WINDRES = windres
+CXXFLAGS = -std=c++17 -O2 -Wall -Wextra -DWIN32 -D_WIN32 -DWINVER=0x0601 -D_WIN32_WINNT=0x0601
+CFLAGS = -O2 -Wall -DWIN32 -D_WIN32
+LDFLAGS = -static -static-libgcc -static-libstdc++
+
+# Windows libraries
+WINLIBS = -lws2_32 -lwininet -lcrypt32 -lshlwapi -lshell32 -lcomctl32 -lole32 -luuid -lpsapi -lwinmm
+
+# Additional libraries
+LIBS = -lpthread -lz
+
+# Output directory
+OUTDIR = bin
+OBJDIR = obj
+
+# Create directories
+$(shell mkdir -p $(OUTDIR) $(OBJDIR))
+
+# Main targets
+TARGETS = $(OUTDIR)/BlackMagii.exe \
+          $(OUTDIR)/BlackMagii_Enhanced.exe \
+          $(OUTDIR)/BlackMamba.exe \
+          $(OUTDIR)/MobileCompiler.exe \
+          $(OUTDIR)/VS2022_MenuEncryptor.exe
+
+# Default target
+all: info $(TARGETS)
+	@echo "✅ All BlackMagii tools built successfully!"
+	@echo "📁 Check the bin/ directory for executables"
+
+info:
+	@echo "🎩✨ Building BlackMagii Suite with MinGW-w64"
+	@echo "═══════════════════════════════════════════"
+	@echo "Compiler: $(CXX)"
+	@echo "Platform: Windows 64-bit"
+	@echo "═══════════════════════════════════════════"
+
+# BlackMagii main compiler
+$(OUTDIR)/BlackMagii.exe: $(OBJDIR)/BlackMagii.o $(OBJDIR)/BlackMagii.res
+	@echo "🔨 Linking BlackMagii..."
+	$(CXX) $(LDFLAGS) -o $@ $^ $(WINLIBS) $(LIBS)
+	@echo "✅ BlackMagii.exe created!"
+
+$(OBJDIR)/BlackMagii.o: BlackMagii_Compiler.cpp
+	@echo "📝 Compiling BlackMagii..."
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+# BlackMagii Enhanced with tinyRAWR
+$(OUTDIR)/BlackMagii_Enhanced.exe: $(OBJDIR)/BlackMagii_Enhanced.o $(OBJDIR)/tinyRAWR.o $(OBJDIR)/BlackMagii.res
+	@echo "🔨 Linking BlackMagii Enhanced..."
+	$(CXX) $(LDFLAGS) -o $@ $^ $(WINLIBS) $(LIBS)
+	@echo "✅ BlackMagii_Enhanced.exe created!"
+
+$(OBJDIR)/BlackMagii_Enhanced.o: BlackMagii_Enhanced.cpp
+	@echo "📝 Compiling BlackMagii Enhanced..."
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+$(OBJDIR)/tinyRAWR.o: tinyRAWR.cpp
+	@echo "🦖 Compiling tinyRAWR compression..."
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+# BlackMamba IRC Bot
+$(OUTDIR)/BlackMamba.exe: $(OBJDIR)/BlackMamba.o
+	@echo "🐍 Linking BlackMamba IRC Bot..."
+	$(CXX) $(LDFLAGS) -o $@ $< $(WINLIBS) $(LIBS) -lcurl
+	@echo "✅ BlackMamba.exe created!"
+
+$(OBJDIR)/BlackMamba.o: BlackMamba_IRC_Bot.cpp
+	@echo "📝 Compiling BlackMamba..."
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+# Mobile Compiler Service
+$(OUTDIR)/MobileCompiler.exe: $(OBJDIR)/MobileCompiler.o
+	@echo "📱 Linking Mobile Compiler Service..."
+	$(CXX) $(LDFLAGS) -o $@ $< $(WINLIBS) $(LIBS) -lcurl
+	@echo "✅ MobileCompiler.exe created!"
+
+$(OBJDIR)/MobileCompiler.o: MobileCompilerService.cpp
+	@echo "📝 Compiling Mobile Compiler Service..."
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+# VS2022 Menu Encryptor
+$(OUTDIR)/VS2022_MenuEncryptor.exe: $(OBJDIR)/VS2022_MenuEncryptor.o
+	@echo "🔐 Linking VS2022 Menu Encryptor..."
+	$(CXX) $(LDFLAGS) -o $@ $< $(WINLIBS) $(LIBS)
+	@echo "✅ VS2022_MenuEncryptor.exe created!"
+
+$(OBJDIR)/VS2022_MenuEncryptor.o: VS2022_MenuEncryptor.cpp
+	@echo "📝 Compiling VS2022 Menu Encryptor..."
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+# Windows Resource file
+$(OBJDIR)/BlackMagii.res: BlackMagii.rc
+	@echo "🎨 Compiling resources..."
+	$(WINDRES) -O coff -o $@ $<
+
+# Create resource file if it doesn't exist
+BlackMagii.rc:
+	@echo "Creating default resource file..."
+	@echo "1 ICON \"BlackMagii.ico\"" > $@
+	@echo "1 VERSIONINFO" >> $@
+	@echo "FILEVERSION 1,0,0,0" >> $@
+	@echo "PRODUCTVERSION 1,0,0,0" >> $@
+	@echo "BEGIN" >> $@
+	@echo "  BLOCK \"StringFileInfo\"" >> $@
+	@echo "  BEGIN" >> $@
+	@echo "    BLOCK \"040904E4\"" >> $@
+	@echo "    BEGIN" >> $@
+	@echo "      VALUE \"CompanyName\", \"ItsMehRAWRXD\"" >> $@
+	@echo "      VALUE \"FileDescription\", \"BlackMagii Compiler Suite\"" >> $@
+	@echo "      VALUE \"FileVersion\", \"1.0.0.0\"" >> $@
+	@echo "      VALUE \"InternalName\", \"BlackMagii\"" >> $@
+	@echo "      VALUE \"ProductName\", \"BlackMagii Compiler Suite\"" >> $@
+	@echo "      VALUE \"ProductVersion\", \"1.0.0.0\"" >> $@
+	@echo "    END" >> $@
+	@echo "  END" >> $@
+	@echo "END" >> $@
+
+# Clean build
+clean:
+	@echo "🧹 Cleaning build files..."
+	rm -rf $(OBJDIR)/*.o $(OBJDIR)/*.res $(OUTDIR)/*.exe
+	@echo "✅ Clean complete!"
+
+# Install dependencies with MSYS2/MinGW
+deps:
+	@echo "📦 Installing dependencies..."
+	@echo "Make sure you have MSYS2 installed!"
+	@echo "Run these commands in MSYS2 MinGW64 terminal:"
+	@echo ""
+	@echo "pacman -S mingw-w64-x86_64-gcc"
+	@echo "pacman -S mingw-w64-x86_64-zlib"
+	@echo "pacman -S mingw-w64-x86_64-curl"
+	@echo "pacman -S mingw-w64-x86_64-libsodium"
+	@echo "pacman -S mingw-w64-x86_64-nlohmann-json"
+
+# Test build
+test: all
+	@echo "🧪 Running basic tests..."
+	$(OUTDIR)/BlackMagii.exe --version
+	@echo "✅ Tests passed!"
+
+# Package for distribution
+package: all
+	@echo "📦 Creating distribution package..."
+	mkdir -p BlackMagii_Win64
+	cp $(OUTDIR)/*.exe BlackMagii_Win64/
+	cp *.md BlackMagii_Win64/ 2>/dev/null || true
+	cp *.txt BlackMagii_Win64/ 2>/dev/null || true
+	@echo "Creating ZIP archive..."
+	zip -r BlackMagii_Win64_MinGW.zip BlackMagii_Win64
+	@echo "✅ Package created: BlackMagii_Win64_MinGW.zip"
+
+# Individual tool builds
+blackmagii: $(OUTDIR)/BlackMagii.exe
+
+enhanced: $(OUTDIR)/BlackMagii_Enhanced.exe
+
+blackmamba: $(OUTDIR)/BlackMamba.exe
+
+mobile: $(OUTDIR)/MobileCompiler.exe
+
+encryptor: $(OUTDIR)/VS2022_MenuEncryptor.exe
+
+# Help
+help:
+	@echo "🎩 BlackMagii Suite - MinGW Build System"
+	@echo "══════════════════════════════════════"
+	@echo "Available targets:"
+	@echo "  make all       - Build all tools"
+	@echo "  make clean     - Clean build files"
+	@echo "  make deps      - Show dependency installation"
+	@echo "  make test      - Run basic tests"
+	@echo "  make package   - Create distribution package"
+	@echo ""
+	@echo "Individual targets:"
+	@echo "  make blackmagii  - Build main compiler only"
+	@echo "  make enhanced    - Build enhanced version"
+	@echo "  make blackmamba  - Build IRC bot"
+	@echo "  make mobile      - Build mobile service"
+	@echo "  make encryptor   - Build VS2022 encryptor"
+	@echo ""
+	@echo "Requirements:"
+	@echo "  - MinGW-w64 (via MSYS2)"
+	@echo "  - zlib, curl libraries"
+	@echo "  - Windows 7 or later"
+
+.PHONY: all clean deps test package help info blackmagii enhanced blackmamba mobile encryptor
