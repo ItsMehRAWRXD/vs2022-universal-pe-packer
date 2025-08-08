@@ -377,6 +377,11 @@ public:
         std::cout << " 25. Download from Streaming URL" << std::endl;
         std::cout << " 26. Batch Download Playlist/Channel" << std::endl;
         std::cout << " 27. Rip Live Stream" << std::endl;
+        std::cout << "\n--- Code Scraper & Search ---" << std::endl;
+        std::cout << " 28. Setup Code Scraper (GitHub/Pastebin)" << std::endl;
+        std::cout << " 29. Search GitHub for Code Examples" << std::endl;
+        std::cout << " 30. Search Pastebin for Code Snippets" << std::endl;
+        std::cout << " 31. Find Similar Code Implementations" << std::endl;
         std::cout << "  0. Exit" << std::endl;
         std::cout << "\nEnter your choice: ";
     }
@@ -454,6 +459,30 @@ public:
                 break;
             case 23:
                 scanAllForMASMProjects();
+                break;
+            case 24:
+                quickAddStreamingSources();
+                break;
+            case 25:
+                downloadFromStreamingURL();
+                break;
+            case 26:
+                batchDownloadFromPlatform();
+                break;
+            case 27:
+                ripLiveStream();
+                break;
+            case 28:
+                setupCodeScraper();
+                break;
+            case 29:
+                searchGitHubForCode();
+                break;
+            case 30:
+                searchPastebinForCode();
+                break;
+            case 31:
+                findSimilarCode();
                 break;
             case 0:
                 std::cout << "Goodbye!" << std::endl;
