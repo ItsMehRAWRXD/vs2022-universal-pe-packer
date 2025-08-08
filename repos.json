@@ -30,5 +30,23 @@
     "framework": "csharp",
     "local_path": "source/repos/pe-file-packer",
     "cloned": false
+  },
+  "unique-stub-71-masm": {
+    "url": "https://github.com/local/unique-stub-71-plugin",
+    "description": "UNIQUE STUB 71 PLUGIN - Advanced MASM packer with 40+ mutex systems, company spoofing, UAC bypass, and polymorphic code generation",
+    "project_type": "security",
+    "framework": "masm",
+    "local_path": "source/repos/unique-stub-71-masm",
+    "cloned": false,
+    "features": [
+      "40+ Advanced Mutex Systems",
+      "Company Profile Spoofing (Microsoft, Adobe, Google, NVIDIA, Intel)",
+      "Certificate Chain Management", 
+      "18 Exploit Methods (UAC bypass, privilege escalation, process injection)",
+      "Anti-Analysis Evasion (debugger, VM, sandbox detection)",
+      "Polymorphic Code Generation",
+      "Plugin Architecture for BenignPacker Integration",
+      "Visual Studio 2022 Native Compilation"
+    ]
   }
 }
