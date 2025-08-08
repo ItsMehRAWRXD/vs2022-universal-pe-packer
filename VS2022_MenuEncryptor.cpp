@@ -42,6 +42,8 @@ private:
         std::string localPath;
         bool isActive;
         std::string description;
+        std::vector<std::string> allBranches;  // Store all available branches
+        bool processAllBranches;               // Flag to process all branches
     };
 
     // Repository storage (supports 4 repositories)
