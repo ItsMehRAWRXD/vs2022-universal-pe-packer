@@ -31,25 +31,44 @@
     "local_path": "source/repos/pe-file-packer",
     "cloned": false
   },
+  "benign-packer-burp": {
+    "url": "https://github.com/ItsMehRAWRXD/Burp",
+    "description": "BenignPacker framework with UniqueStub71Plugin - Advanced packer with plugin architecture and company profile spoofing (August 2025)",
+    "project_type": "security",
+    "framework": "cpp",
+    "local_path": "source/repos/benign-packer-burp",
+    "cloned": false,
+    "branch": "cursor/analyze-c-compilation-errors-5f5d",
+    "commit": "2d5123195d979f48bf87718dc61ce3b00bacd9d0",
+    "features": [
+      "Plugin Architecture (IPlugin interface)",
+      "UniqueStub71Plugin integration",
+      "BenignPacker framework",
+      "MASM_SUPPORT capability",
+      "ASSEMBLY_GENERATION capability"
+    ]
+  },
   "masm-2035": {
     "url": "https://github.com/local/masm-2035-project",
-    "description": "MASM 2035 - Advanced assembly packer with 40+ mutex systems, company spoofing, and 18 exploit methods. Built for next-generation security research (2024-2035)",
+    "description": "MASM 2035 - Advanced assembly packer built PRIOR to BenignPacker integration. Original source for 40+ mutex systems and company spoofing (pre-August 2025)",
     "project_type": "security",
     "framework": "masm",
     "local_path": "source/repos/masm-2035",
     "cloned": false,
     "features": [
-      "40+ Advanced Mutex Systems",
+      "40+ Advanced Mutex Systems (original implementation)",
       "Company Profile Spoofing (Microsoft, Adobe, Google, NVIDIA, Intel)",
       "Certificate Chain Management", 
       "18 Exploit Methods (UAC bypass, privilege escalation, process injection)",
       "Anti-Analysis Evasion (debugger, VM, sandbox detection)",
       "Polymorphic Code Generation",
-      "Plugin Architecture for BenignPacker Integration",
-      "Visual Studio 2022 Native Compilation"
+      "Visual Studio 2022 Native Compilation",
+      "Pure MASM implementation"
     ],
     "project_name": "MASM 2035",
     "timeline": "2024-2035 (11-year relevance)",
-    "status": "source_needed"
+    "status": "source_needed",
+    "relationship": "predecessor_to_benignpacker",
+    "historical_note": "Built prior to BenignPacker/Burp integration (August 2025)"
   }
 }
