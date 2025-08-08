@@ -186,15 +186,30 @@ class MainWindow(QWidget):
             QMessageBox.warning(self, "Path Not Found", f"{src_dir} does not exist.")
             return
 
-        timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
-        dest_dir = repo_path / "artifacts" / timestamp
+        # Ask for version label to organize artifacts per release
+        version_label, ok = QInputDialog.getText(
+            self,
+            "Artifact Version",
+            "Enter version label (e.g., v1.2.0). Leave blank to use timestamp:",
+        )
+        if not ok:
+            return
+
+        version_label = version_label.strip() or datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+
+        dest_dir = repo_path / "artifacts" / version_label
+
+        # Ensure uniqueness if the folder already exists
+        if dest_dir.exists():
+            suffix = datetime.utcnow().strftime("_%H%M%S")
+            dest_dir = dest_dir.with_name(dest_dir.name + suffix)
 
         try:
             shutil.copytree(src_dir, dest_dir, dirs_exist_ok=True)
 
             repo = Repo(repo_path)
             repo.index.add([str(dest_dir.relative_to(repo_path))])
-            repo.index.commit(f"Add compiled artifacts ({timestamp})")
+            repo.index.commit(f"Add compiled artifacts ({version_label})")
             repo.remotes.origin.push()
 
             QMessageBox.information(
