@@ -49,6 +49,18 @@ private:
 
     // Repository storage (supports 4 repositories)
     std::vector<Repository> repositories;
+    
+    // Stream platform structure
+    struct StreamPlatform {
+        std::string name;
+        std::string baseUrl;
+        std::string downloadCmd;
+        bool requiresAuth;
+        bool isAdult;
+        std::string filePattern;
+    };
+    
+    std::vector<StreamPlatform> streamPlatforms;
 
     // HTTP download functionality
 #ifdef _WIN32
@@ -360,6 +372,11 @@ public:
         std::cout << " 21. Pack Files from ALL Branches" << std::endl;
         std::cout << " 22. Archive Complete Repositories (All Branches)" << std::endl;
         std::cout << " 23. Scan for MASM Projects" << std::endl;
+        std::cout << "\n--- Streaming Platform Features ---" << std::endl;
+        std::cout << " 24. Quick Setup: All Streaming Platforms" << std::endl;
+        std::cout << " 25. Download from Streaming URL" << std::endl;
+        std::cout << " 26. Batch Download Playlist/Channel" << std::endl;
+        std::cout << " 27. Rip Live Stream" << std::endl;
         std::cout << "  0. Exit" << std::endl;
         std::cout << "\nEnter your choice: ";
     }
