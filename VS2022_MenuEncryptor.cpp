@@ -34,6 +34,19 @@ private:
         uint32_t encryption_order;
     };
 
+    // Repository Management Structure
+    struct Repository {
+        std::string name;
+        std::string url;
+        std::string branch;
+        std::string localPath;
+        bool isActive;
+        std::string description;
+    };
+
+    // Repository storage (supports 4 repositories)
+    std::vector<Repository> repositories;
+
     // HTTP download functionality
 #ifdef _WIN32
     bool downloadFile(const std::string& url, std::vector<uint8_t>& fileData) {
@@ -306,7 +319,14 @@ private:
     }
 
 public:
-    VS2022MenuEncryptor() : rng(std::chrono::high_resolution_clock::now().time_since_epoch().count()) {}
+    VS2022MenuEncryptor() : rng(std::chrono::high_resolution_clock::now().time_since_epoch().count()) {
+        // Initialize 4 repository slots
+        repositories.resize(4);
+        for (int i = 0; i < 4; i++) {
+            repositories[i].name = "Repository " + std::to_string(i + 1);
+            repositories[i].isActive = false;
+        }
+    }
 
     void showMenu() {
         std::cout << "\n=== Visual Studio 2022 Universal Encryptor ===" << std::endl;
@@ -328,6 +348,11 @@ public:
         std::cout << " 13. Local Crypto Service (AES) - Pack Local File" << std::endl;
         std::cout << " 14. Local Crypto Service (ChaCha20) - Pack Local File" << std::endl;
         std::cout << " 15. Local Crypto Service (Triple) - Pack Local File" << std::endl;
+        std::cout << "\n--- Repository Management ---" << std::endl;
+        std::cout << " 16. Configure Repositories (Add/Edit 4 Repos)" << std::endl;
+        std::cout << " 17. Sync All Repositories" << std::endl;
+        std::cout << " 18. Pack Files from All Repositories" << std::endl;
+        std::cout << " 19. Repository Status" << std::endl;
         std::cout << "  0. Exit" << std::endl;
         std::cout << "\nEnter your choice: ";
     }
@@ -381,6 +406,18 @@ public:
                 break;
             case 15:
                 localCryptoServiceTriple();
+                break;
+            case 16:
+                configureRepositories();
+                break;
+            case 17:
+                syncAllRepositories();
+                break;
+            case 18:
+                packFilesFromRepositories();
+                break;
+            case 19:
+                showRepositoryStatus();
                 break;
             case 0:
                 std::cout << "Goodbye!" << std::endl;
