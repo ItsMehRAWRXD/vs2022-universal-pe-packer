@@ -1,34 +1,34 @@
 {
-  "vs2022-encryptor": {
+  "vs2022-pe-packer": {
     "url": "https://github.com/ItsMehRAWRXD/vs2022-universal-pe-packer",
-    "description": "Visual Studio 2022 Universal PE Packer and Encryptor for security applications",
+    "description": "Visual Studio 2022 Universal PE Packer and Encryptor for security applications and malware research",
     "project_type": "security",
     "framework": "cpp",
-    "local_path": "source/repos/vs2022-encryptor",
+    "local_path": "source/repos/vs2022-pe-packer",
     "cloned": false
   },
-  "ai-assistant-tools": {
-    "url": "https://github.com/microsoft/AI-For-Beginners",
-    "description": "AI and machine learning tools and examples for educational purposes",
-    "project_type": "ai",
-    "framework": "python",
-    "local_path": "source/repos/ai-assistant-tools",
+  "hm-pe-packer": {
+    "url": "https://github.com/TheAenema/hm-pe-packer",
+    "description": "A x64 PE Packer/Protector developed in C++ and Visual Studio with compression and encryption",
+    "project_type": "security",
+    "framework": "cpp",
+    "local_path": "source/repos/hm-pe-packer",
     "cloned": false
   },
-  "web-development-kit": {
-    "url": "https://github.com/microsoft/Web-Dev-For-Beginners",
-    "description": "Modern web development framework and tools for building web applications",
-    "project_type": "web",
-    "framework": "javascript",
-    "local_path": "source/repos/web-development-kit",
+  "evader-crypter": {
+    "url": "https://github.com/KooroshRZ/Evader",
+    "description": "Packer/crypter for antivirus evasion implemented for Windows PE files with bruteforce decryption",
+    "project_type": "security",
+    "framework": "cpp",
+    "local_path": "source/repos/evader-crypter",
     "cloned": false
   },
-  "data-science-toolkit": {
-    "url": "https://github.com/microsoft/Data-Science-For-Beginners",
-    "description": "Comprehensive data science toolkit with analysis and visualization tools",
-    "project_type": "data",
-    "framework": "python",
-    "local_path": "source/repos/data-science-toolkit",
+  "pe-file-packer": {
+    "url": "https://github.com/Chronoss3/PE-File-Packer",
+    "description": "Simple PE file packer implementation for Windows executables with assembly integration",
+    "project_type": "security",
+    "framework": "csharp",
+    "local_path": "source/repos/pe-file-packer",
     "cloned": false
   }
 }
