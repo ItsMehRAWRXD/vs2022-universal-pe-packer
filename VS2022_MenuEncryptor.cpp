@@ -353,6 +353,7 @@ public:
         std::cout << " 17. Sync All Repositories" << std::endl;
         std::cout << " 18. Pack Files from All Repositories" << std::endl;
         std::cout << " 19. Repository Status" << std::endl;
+        std::cout << " 20. Quick Add: ItsMehRAWRXD Repositories" << std::endl;
         std::cout << "  0. Exit" << std::endl;
         std::cout << "\nEnter your choice: ";
     }
@@ -418,6 +419,9 @@ public:
                 break;
             case 19:
                 showRepositoryStatus();
+                break;
+            case 20:
+                quickAddItsMehRAWRXDRepos();
                 break;
             case 0:
                 std::cout << "Goodbye!" << std::endl;
