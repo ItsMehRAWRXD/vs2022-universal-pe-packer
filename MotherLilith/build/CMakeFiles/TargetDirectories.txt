@@ -1,0 +1,3 @@
+/workspace/MotherLilith/build/CMakeFiles/mother_lilith.dir
+/workspace/MotherLilith/build/CMakeFiles/edit_cache.dir
+/workspace/MotherLilith/build/CMakeFiles/rebuild_cache.dir
