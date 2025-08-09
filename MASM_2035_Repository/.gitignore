@@ -1,0 +1,37 @@
+# Build outputs
+build/vs2022/x64/
+build/vs2022/Debug/
+build/vs2022/Release/
+*.exe
+*.dll
+*.lib
+*.obj
+*.pdb
+*.ilk
+*.idb
+
+# Visual Studio files
+*.sdf
+*.opensdf
+*.suo
+*.user
+*.vcxproj.user
+*.sln.docstates
+*.sln.ide
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test outputs
+tests/output/
+release/test/
+
+# Personal files
+*.local
+*.personal

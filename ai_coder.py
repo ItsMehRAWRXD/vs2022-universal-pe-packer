@@ -2,6 +2,7 @@
 """
 AI Code Generator - Local AI Coding Assistant
 This tool can create files, generate code, and help you build projects from your ideas.
+Enhanced with repository management capabilities.
 """
 
 import os
@@ -9,14 +10,241 @@ import sys
 import json
 import subprocess
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import requests
 
 class AICodeGenerator:
     def __init__(self):
         self.project_dir = Path.cwd()
         self.api_key = os.getenv('OPENAI_API_KEY') or os.getenv('ANTHROPIC_API_KEY')
+        self.repositories = self.load_repositories()
         
+    def load_repositories(self) -> Dict[str, Dict[str, Any]]:
+        """Load repository configuration from repos.json"""
+        repos_file = self.project_dir / "repos.json"
+        if repos_file.exists():
+            with open(repos_file, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        return {}
+    
+    def save_repositories(self):
+        """Save repository configuration to repos.json"""
+        repos_file = self.project_dir / "repos.json"
+        with open(repos_file, 'w', encoding='utf-8') as f:
+            json.dump(self.repositories, f, indent=2)
+    
+    def add_repository(self, name: str, url: str, description: str = "", 
+                      project_type: str = "general", framework: str = ""):
+        """Add a repository to the collection"""
+        self.repositories[name] = {
+            "url": url,
+            "description": description,
+            "project_type": project_type,
+            "framework": framework,
+            "local_path": f"source/repos/{name}",
+            "cloned": False
+        }
+        self.save_repositories()
+        print(f"✅ Added repository: {name}")
+    
+    def list_repositories(self):
+        """List all configured repositories"""
+        if not self.repositories:
+            print("No repositories configured.")
+            return
+        
+        print("\n📚 Configured Repositories:")
+        print("=" * 50)
+        for name, repo in self.repositories.items():
+            status = "✅ Cloned" if repo.get("cloned", False) else "⏳ Not cloned"
+            print(f"Name: {name}")
+            print(f"URL: {repo['url']}")
+            print(f"Type: {repo.get('project_type', 'general')}")
+            print(f"Status: {status}")
+            print(f"Description: {repo.get('description', 'No description')}")
+            print("-" * 30)
+    
+    def clone_repository(self, name: str):
+        """Clone a repository locally"""
+        if name not in self.repositories:
+            print(f"❌ Repository '{name}' not found in configuration.")
+            return False
+        
+        repo = self.repositories[name]
+        local_path = Path(repo["local_path"])
+        local_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        try:
+            cmd = ["git", "clone", repo["url"], str(local_path)]
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            
+            self.repositories[name]["cloned"] = True
+            self.save_repositories()
+            print(f"✅ Successfully cloned {name} to {local_path}")
+            return True
+            
+        except subprocess.CalledProcessError as e:
+            print(f"❌ Failed to clone {name}: {e.stderr}")
+            return False
+        except FileNotFoundError:
+            print("❌ Git not found. Please install Git to clone repositories.")
+            return False
+    
+    def clone_all_repositories(self):
+        """Clone all configured repositories"""
+        for name in self.repositories:
+            if not self.repositories[name].get("cloned", False):
+                print(f"\n🔄 Cloning {name}...")
+                self.clone_repository(name)
+    
+    def create_project_from_repository(self, repo_name: str, project_name: str, 
+                                     idea: str = ""):
+        """Create a new project based on a repository template"""
+        if repo_name not in self.repositories:
+            print(f"❌ Repository '{repo_name}' not found.")
+            return None
+        
+        repo = self.repositories[repo_name]
+        
+        # Ensure repository is cloned
+        if not repo.get("cloned", False):
+            print(f"🔄 Cloning {repo_name} first...")
+            if not self.clone_repository(repo_name):
+                return None
+        
+        # Create project directory
+        project_path = self.project_dir / project_name
+        project_path.mkdir(exist_ok=True)
+        
+        # Copy repository structure
+        source_path = Path(repo["local_path"])
+        if source_path.exists():
+            self.copy_template(source_path, project_path, project_name, idea)
+            print(f"✅ Created project '{project_name}' from {repo_name}")
+            return project_path
+        else:
+            print(f"❌ Repository source path not found: {source_path}")
+            return None
+    
+    def copy_template(self, source: Path, target: Path, project_name: str, idea: str):
+        """Copy template files and customize them"""
+        import shutil
+        
+        # Copy files, excluding git directories
+        for item in source.rglob("*"):
+            if ".git" in item.parts:
+                continue
+                
+            relative_path = item.relative_to(source)
+            target_path = target / relative_path
+            
+            if item.is_dir():
+                target_path.mkdir(exist_ok=True)
+            else:
+                target_path.parent.mkdir(parents=True, exist_ok=True)
+                
+                # Copy and optionally customize text files
+                if item.suffix in ['.cpp', '.h', '.py', '.js', '.html', '.md', '.txt']:
+                    try:
+                        with open(item, 'r', encoding='utf-8') as f:
+                            content = f.read()
+                        
+                        # Simple template replacement
+                        content = content.replace("{{PROJECT_NAME}}", project_name)
+                        content = content.replace("{{IDEA}}", idea)
+                        
+                        with open(target_path, 'w', encoding='utf-8') as f:
+                            f.write(content)
+                            
+                    except UnicodeDecodeError:
+                        # For binary files, just copy
+                        shutil.copy2(item, target_path)
+                else:
+                    shutil.copy2(item, target_path)
+    
+    def analyze_repository_patterns(self, repo_name: str):
+        """Analyze patterns in a repository to understand its structure"""
+        if repo_name not in self.repositories:
+            print(f"❌ Repository '{repo_name}' not found.")
+            return None
+        
+        repo = self.repositories[repo_name]
+        source_path = Path(repo["local_path"])
+        
+        if not source_path.exists():
+            print(f"❌ Repository not cloned. Run clone first.")
+            return None
+        
+        patterns = {
+            "file_types": {},
+            "directories": [],
+            "build_files": [],
+            "config_files": [],
+            "main_files": []
+        }
+        
+        for item in source_path.rglob("*"):
+            if ".git" in item.parts:
+                continue
+                
+            if item.is_file():
+                suffix = item.suffix.lower()
+                patterns["file_types"][suffix] = patterns["file_types"].get(suffix, 0) + 1
+                
+                # Identify important files
+                if item.name.lower() in ['main.cpp', 'main.py', 'index.html', 'app.py']:
+                    patterns["main_files"].append(str(item.relative_to(source_path)))
+                elif item.name.lower() in ['makefile', 'cmake', 'package.json', 'requirements.txt']:
+                    patterns["build_files"].append(str(item.relative_to(source_path)))
+                elif item.suffix.lower() in ['.vcxproj', '.sln', '.json', '.yml', '.yaml']:
+                    patterns["config_files"].append(str(item.relative_to(source_path)))
+            
+            elif item.is_dir():
+                patterns["directories"].append(str(item.relative_to(source_path)))
+        
+        return patterns
+    
+    def setup_default_repositories(self):
+        """Set up default repositories for common project types"""
+        default_repos = {
+            "vs2022-encryptor": {
+                "url": "https://github.com/ItsMehRAWRXD/vs2022-universal-pe-packer",
+                "description": "Visual Studio 2022 Universal PE Packer and Encryptor",
+                "project_type": "security",
+                "framework": "cpp"
+            },
+            "ai-coder-tools": {
+                "url": "https://github.com/example/ai-coding-tools",
+                "description": "AI-powered coding assistant tools",
+                "project_type": "ai",
+                "framework": "python"
+            },
+            "web-framework": {
+                "url": "https://github.com/example/web-framework",
+                "description": "Modern web application framework",
+                "project_type": "web",
+                "framework": "javascript"
+            },
+            "data-science": {
+                "url": "https://github.com/example/data-science-template",
+                "description": "Data science project template",
+                "project_type": "data",
+                "framework": "python"
+            }
+        }
+        
+        for name, repo_info in default_repos.items():
+            if name not in self.repositories:
+                self.add_repository(
+                    name, 
+                    repo_info["url"], 
+                    repo_info["description"],
+                    repo_info["project_type"],
+                    repo_info["framework"]
+                )
+        
+        print("✅ Default repositories configured!")
+    
     def create_file(self, filepath: str, content: str):
         """Create a file with the given content"""
         full_path = self.project_dir / filepath
@@ -796,9 +1024,10 @@ def main():
     """Main function to run the AI Code Generator"""
     generator = AICodeGenerator()
     
-    print("🤖 AI Code Generator - Local AI Coding Assistant")
-    print("=" * 50)
+    print("🤖 AI Code Generator - Enhanced with Repository Management")
+    print("=" * 60)
     print("This tool can create files, generate code, and help you build projects!")
+    print("Now includes repository management for template-based project creation.")
     print()
     
     while True:
@@ -806,16 +1035,37 @@ def main():
         print("1. Create a new project from an idea")
         print("2. Generate code for a specific task")
         print("3. Create a single file")
-        print("4. Exit")
+        print("4. 📚 Repository Management")
+        print("5. 🔧 Setup default repositories")
+        print("6. Exit")
         
-        choice = input("\nEnter your choice (1-4): ").strip()
+        choice = input("\nEnter your choice (1-6): ").strip()
         
         if choice == "1":
-            idea = input("Describe your project idea: ").strip()
-            if idea:
-                project_path = generator.create_project_from_idea(idea)
-                print(f"\n🎉 Project created successfully at: {project_path}")
-                print("You can now start coding!")
+            print("\nProject Creation Options:")
+            print("a. Create from idea (AI generated)")
+            print("b. Create from repository template")
+            
+            sub_choice = input("Choose option (a/b): ").strip().lower()
+            
+            if sub_choice == "a":
+                idea = input("Describe your project idea: ").strip()
+                if idea:
+                    project_path = generator.create_project_from_idea(idea)
+                    print(f"\n🎉 Project created successfully at: {project_path}")
+                    print("You can now start coding!")
+            
+            elif sub_choice == "b":
+                generator.list_repositories()
+                repo_name = input("\nEnter repository name: ").strip()
+                project_name = input("Enter new project name: ").strip()
+                idea = input("Describe your specific needs (optional): ").strip()
+                
+                if repo_name and project_name:
+                    project_path = generator.create_project_from_repository(repo_name, project_name, idea)
+                    if project_path:
+                        print(f"\n🎉 Project created successfully at: {project_path}")
+                        print("You can now start coding!")
         
         elif choice == "2":
             task = input("Describe the code you want to generate: ").strip()
@@ -838,6 +1088,61 @@ def main():
                 generator.create_file(filename, content)
         
         elif choice == "4":
+            # Repository Management Menu
+            while True:
+                print("\n📚 Repository Management:")
+                print("a. List repositories")
+                print("b. Add repository")
+                print("c. Clone repository")
+                print("d. Clone all repositories")
+                print("e. Analyze repository patterns")
+                print("f. Back to main menu")
+                
+                repo_choice = input("\nChoose option (a-f): ").strip().lower()
+                
+                if repo_choice == "a":
+                    generator.list_repositories()
+                
+                elif repo_choice == "b":
+                    name = input("Repository name: ").strip()
+                    url = input("Repository URL: ").strip()
+                    description = input("Description (optional): ").strip()
+                    project_type = input("Project type (web/security/ai/data/general): ").strip() or "general"
+                    framework = input("Framework (python/javascript/cpp/etc): ").strip()
+                    
+                    if name and url:
+                        generator.add_repository(name, url, description, project_type, framework)
+                
+                elif repo_choice == "c":
+                    generator.list_repositories()
+                    name = input("\nRepository name to clone: ").strip()
+                    if name:
+                        generator.clone_repository(name)
+                
+                elif repo_choice == "d":
+                    generator.clone_all_repositories()
+                
+                elif repo_choice == "e":
+                    generator.list_repositories()
+                    name = input("\nRepository name to analyze: ").strip()
+                    if name:
+                        patterns = generator.analyze_repository_patterns(name)
+                        if patterns:
+                            print(f"\n📊 Analysis of {name}:")
+                            print(f"File types: {patterns['file_types']}")
+                            print(f"Main files: {patterns['main_files']}")
+                            print(f"Build files: {patterns['build_files']}")
+                
+                elif repo_choice == "f":
+                    break
+                
+                else:
+                    print("Invalid choice. Please try again.")
+        
+        elif choice == "5":
+            generator.setup_default_repositories()
+        
+        elif choice == "6":
             print("Goodbye! 👋")
             break
         

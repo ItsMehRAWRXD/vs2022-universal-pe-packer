@@ -1,0 +1,68 @@
+{
+  "vs2022-pe-packer": {
+    "url": "https://github.com/ItsMehRAWRXD/vs2022-universal-pe-packer",
+    "description": "Visual Studio 2022 Universal PE Packer and Encryptor for security applications and malware research",
+    "project_type": "security",
+    "framework": "cpp",
+    "local_path": "source/repos/vs2022-pe-packer",
+    "cloned": false
+  },
+  "hm-pe-packer": {
+    "url": "https://github.com/TheAenema/hm-pe-packer",
+    "description": "A x64 PE Packer/Protector developed in C++ and Visual Studio with compression and encryption",
+    "project_type": "security",
+    "framework": "cpp",
+    "local_path": "source/repos/hm-pe-packer",
+    "cloned": false
+  },
+  "evader-crypter": {
+    "url": "https://github.com/KooroshRZ/Evader",
+    "description": "Packer with Antivirus evasion capabilities and bruteforce decryption protection",
+    "project_type": "security",
+    "framework": "cpp",
+    "local_path": "source/repos/evader-crypter",
+    "cloned": false
+  },
+  "pe-file-packer": {
+    "url": "https://github.com/NullArray/PE-Packer",
+    "description": "Simple PE packer with C# and assembly integration for executable protection",
+    "project_type": "security",
+    "framework": "csharp",
+    "local_path": "source/repos/pe-file-packer",
+    "cloned": false
+  },
+  "burp-benignpacker": {
+    "url": "https://github.com/ItsMehRAWRXD/Burp",
+    "description": "BenignPacker framework containing the MASM 2035 source (recovered from commit 84c317b)",
+    "project_type": "security",
+    "framework": "cpp_masm",
+    "local_path": "source/repos/burp-benignpacker",
+    "cloned": true,
+    "recovered_masm_2035": true,
+    "recovery_timestamp": "August 7th, 2025 - commit 84c317b",
+    "original_lines": 308,
+    "features": [
+      "40+ Advanced Mutex Systems",
+      "Company Profile Spoofing (Microsoft, Adobe, Google, NVIDIA, Intel)",
+      "Certificate Chain Management", 
+      "18 Exploit Methods (UAC bypass, privilege escalation, process injection)",
+      "Anti-Analysis Evasion (debugger, VM, sandbox detection)",
+      "Polymorphic Code Generation",
+      "Plugin Architecture for BenignPacker Integration",
+      "Visual Studio 2022 Native Compilation"
+    ]
+  },
+  "masm-2035-recovered": {
+    "url": "local://RECOVERED_MASM_2035_UniqueStub71Plugin.h",
+    "description": "RECOVERED MASM 2035 - Original 308-line UniqueStub71Plugin with full MASM integration for Visual Studio",
+    "project_type": "security",
+    "framework": "masm_cpp",
+    "local_path": "/workspace/RECOVERED_MASM_2035_UniqueStub71Plugin.h",
+    "cloned": true,
+    "status": "FULLY RECOVERED",
+    "timeline": "Built prior to August 8th, 2025 - intended for next 11 years (2024-2035)",
+    "destruction_date": "August 8th, 2025 - commit 2d51231",
+    "recovery_date": "Today",
+    "original_size": "308 lines of advanced MASM/C++ integration"
+  }
+}
