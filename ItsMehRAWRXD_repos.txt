@@ -1,0 +1,8 @@
+# ItsMehRAWRXD Repository Collection
+# Custom repository list for VS2022 Menu Encryptor
+
+# Core Repositories
+Star,https://github.com/ItsMehRAWRXD/Star.git,main,Star project repository
+Burp,https://github.com/ItsMehRAWRXD/Burp.git,main,Burp suite related tools
+RawrXD,https://github.com/ItsMehRAWRXD/RawrXD.git,main,RawrXD main repository
+vs2022-universal-pe-packer,https://github.com/ItsMehRAWRXD/vs2022-universal-pe-packer.git,main,Universal PE packer for VS2022
