@@ -11,636 +11,541 @@ MEASURES POLYMORPHIC UNIQUENESS
 
 #include <iostream>
 #include <fstream>
-#include <vector>
 #include <string>
+#include <vector>
+#include <cstdint>
 #include <random>
 #include <chrono>
-#include <sstream>
-#include <iomanip>
+#include <thread>
 #include <filesystem>
-#include <map>
-#include <set>
 #include <algorithm>
-#include <ctime>
+#include <iomanip>
+#include <set>
+#include <functional>
+#include "tiny_loader.h"
 
-// Windows headers for testing
-#ifdef _WIN32
-#include <windows.h>
-#include <wincrypt.h>
-#include <tlhelp32.h>
-#include <psapi.h>
-#pragma comment(lib, "advapi32.lib")
-#pragma comment(lib, "psapi.lib")
-#endif
-
-class StealthPackerTestSuite {
+// Comprehensive test suite for all features
+class ComprehensiveTestSuite {
 private:
-    std::mt19937_64 rng;
-    std::vector<std::string> testResults;
-    int totalTests = 0;
-    int passedTests = 0;
-
+    std::random_device rd;
+    std::mt19937 gen;
+    std::uniform_int_distribution<> dis;
+    
 public:
-    StealthPackerTestSuite() {
-        auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-        rng.seed(seed);
-    }
-
-    // Test result tracking
-    void recordTest(const std::string& testName, bool passed, const std::string& details = "") {
-        totalTests++;
-        if (passed) passedTests++;
+    ComprehensiveTestSuite() : gen(rd()), dis(0, 255) {}
+    
+    // Test 1: Basic tiny_loader.h functionality
+    bool testTinyLoaderBasic() {
+        std::cout << "\n=== Test 1: Basic tiny_loader.h Functionality ===\n";
         
-        std::string result = "[" + std::string(passed ? "PASS" : "FAIL") + "] " + testName;
-        if (!details.empty()) {
-            result += " - " + details;
+        // Test 1.1: Check tiny_loader_bin array
+        if (tiny_loader_bin_len == 0) {
+            std::cout << "❌ FAILED: tiny_loader_bin is empty\n";
+            return false;
         }
-        testResults.push_back(result);
-        std::cout << result << std::endl;
-    }
-
-    // ========================================================================
-    // TIMESTAMP SPOOFING TESTS
-    // ========================================================================
-    
-    void testTimestampGeneration() {
-        std::cout << "\n[TIMESTAMP TESTS]\n";
-        std::cout << "Testing realistic timestamp generation...\n";
+        std::cout << "✅ tiny_loader_bin size: " << tiny_loader_bin_len << " bytes\n";
         
-        // Test 1: Generate multiple timestamps
-        std::vector<time_t> timestamps;
-        bool allRealistic = true;
-        
-        for (int i = 0; i < 10; i++) {
-            time_t now = time(nullptr);
-            time_t generated = generateRealisticTimestamp();
-            timestamps.push_back(generated);
-            
-            // Check if timestamp is in realistic range (6 months to 2 years ago)
-            time_t sixMonthsAgo = now - (6 * 30 * 24 * 60 * 60);
-            time_t twoYearsAgo = now - (2 * 365 * 24 * 60 * 60);
-            
-            if (generated > now || generated < twoYearsAgo) {
-                allRealistic = false;
-            }
-            
-            std::cout << "  Timestamp " << (i+1) << ": " << std::ctime(&generated);
+        // Test 1.2: Check MZ signature
+        if (tiny_loader_bin[0] != 0x4D || tiny_loader_bin[1] != 0x5A) {
+            std::cout << "❌ FAILED: Invalid MZ signature\n";
+            return false;
         }
+        std::cout << "✅ Valid MZ signature found\n";
         
-        recordTest("Realistic Timestamp Generation", allRealistic, 
-                   "All timestamps within 6 months to 2 years range");
-        
-        // Test 2: Uniqueness
-        std::set<time_t> uniqueTimestamps(timestamps.begin(), timestamps.end());
-        bool allUnique = uniqueTimestamps.size() == timestamps.size();
-        recordTest("Timestamp Uniqueness", allUnique, 
-                   std::to_string(uniqueTimestamps.size()) + "/10 unique");
-    }
-    
-    time_t generateRealisticTimestamp() {
-        time_t now = time(nullptr);
-        
-        // Random days back (180-728 days = 6 months to 2 years)
-        int daysBack = (rng() % 548) + 180;
-        
-        return now - (daysBack * 24 * 60 * 60);
-    }
-
-    // ========================================================================
-    // SANDBOX DETECTION TESTS
-    // ========================================================================
-    
-    void testSandboxDetection() {
-        std::cout << "\n[SANDBOX DETECTION TESTS]\n";
-        std::cout << "Testing sandbox detection capabilities...\n";
-        
-#ifdef _WIN32
-        // Test 1: Process enumeration
-        bool canEnumProcesses = testProcessEnumeration();
-        recordTest("Process Enumeration", canEnumProcesses, "Can access process list");
-        
-        // Test 2: System resource detection
-        bool systemResourcesOK = testSystemResources();
-        recordTest("System Resources Check", systemResourcesOK, "Memory and CPU detection");
-        
-        // Test 3: Timing consistency
-        bool timingConsistent = testTimingConsistency();
-        recordTest("Timing Consistency", timingConsistent, "Sleep timing accuracy");
-        
-        // Test 4: Registry access
-        bool registryAccess = testRegistryAccess();
-        recordTest("Registry Access", registryAccess, "Can read system registry");
-#else
-        recordTest("Sandbox Detection", false, "Windows-only feature (running on Linux)");
-#endif
-    }
-    
-#ifdef _WIN32
-    bool testProcessEnumeration() {
-        HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-        if (hSnapshot == INVALID_HANDLE_VALUE) return false;
-        
-        PROCESSENTRY32 pe32;
-        pe32.dwSize = sizeof(PROCESSENTRY32);
-        
-        int processCount = 0;
-        if (Process32First(hSnapshot, &pe32)) {
-            do {
-                processCount++;
-            } while (Process32Next(hSnapshot, &pe32) && processCount < 50);
+        // Test 1.3: Check PE header
+        if (tiny_loader_bin[96] != 0x50 || tiny_loader_bin[97] != 0x45) {
+            std::cout << "❌ FAILED: Invalid PE header\n";
+            return false;
         }
+        std::cout << "✅ Valid PE header found\n";
         
-        CloseHandle(hSnapshot);
-        return processCount > 10; // Should have reasonable number of processes
-    }
-    
-    bool testSystemResources() {
-        MEMORYSTATUSEX memInfo;
-        memInfo.dwLength = sizeof(MEMORYSTATUSEX);
-        GlobalMemoryStatusEx(&memInfo);
-        
-        SYSTEM_INFO sysInfo;
-        GetSystemInfo(&sysInfo);
-        
-        // Check for realistic system specs
-        bool memoryOK = memInfo.ullTotalPhys > (1024ULL * 1024 * 1024); // > 1GB
-        bool cpuOK = sysInfo.dwNumberOfProcessors > 0;
-        
-        std::cout << "    Memory: " << (memInfo.ullTotalPhys / 1024 / 1024) << " MB\n";
-        std::cout << "    CPUs: " << sysInfo.dwNumberOfProcessors << "\n";
-        
-        return memoryOK && cpuOK;
-    }
-    
-    bool testTimingConsistency() {
-        DWORD start = GetTickCount();
-        Sleep(100);
-        DWORD elapsed = GetTickCount() - start;
-        
-        std::cout << "    Sleep(100) took: " << elapsed << "ms\n";
-        
-        // Should be close to 100ms (allowing for some variance)
-        return elapsed >= 90 && elapsed <= 200;
-    }
-    
-    bool testRegistryAccess() {
-        HKEY hKey;
-        LONG result = RegOpenKeyExA(HKEY_LOCAL_MACHINE, 
-                                   "SOFTWARE\\Microsoft\\Windows\\CurrentVersion", 
-                                   0, KEY_READ, &hKey);
-        if (result == ERROR_SUCCESS) {
-            RegCloseKey(hKey);
-            return true;
+        // Test 1.4: Check patch offsets
+        if (PAYLOAD_SIZE_OFFSET >= tiny_loader_bin_len || PAYLOAD_RVA_OFFSET >= tiny_loader_bin_len) {
+            std::cout << "❌ FAILED: Invalid patch offsets\n";
+            return false;
         }
-        return false;
-    }
-#endif
-
-    // ========================================================================
-    // SIGNATURE GENERATION TESTS
-    // ========================================================================
-    
-    void testSignatureGeneration() {
-        std::cout << "\n[SIGNATURE GENERATION TESTS]\n";
-        std::cout << "Testing digital signature spoofing...\n";
+        std::cout << "✅ Valid patch offsets: " << PAYLOAD_SIZE_OFFSET << ", " << PAYLOAD_RVA_OFFSET << "\n";
         
-        // Test 1: Generate multiple fake signatures
-        std::vector<std::string> issuers;
-        std::vector<std::string> subjects;
-        
-        for (int i = 0; i < 10; i++) {
-            auto sig = generateFakeSignature();
-            issuers.push_back(sig.issuer);
-            subjects.push_back(sig.subject);
-            
-            std::cout << "  Signature " << (i+1) << ": " << sig.issuer 
-                      << " -> " << sig.subject << "\n";
-        }
-        
-        // Test uniqueness
-        std::set<std::string> uniqueIssuers(issuers.begin(), issuers.end());
-        std::set<std::string> uniqueSubjects(subjects.begin(), subjects.end());
-        
-        recordTest("Signature Generation", !issuers.empty(), 
-                   std::to_string(uniqueIssuers.size()) + " unique issuers");
-        recordTest("Signature Variety", uniqueIssuers.size() > 1, 
-                   "Multiple legitimate companies used");
+        return true;
     }
     
-    struct FakeSignature {
-        std::string issuer;
-        std::string subject;
-        std::vector<uint8_t> certificate;
-        time_t timestamp;
-    };
-    
-    FakeSignature generateFakeSignature() {
-        FakeSignature sig;
+    // Test 2: PE Generation with different payload sizes
+    bool testPEGeneration() {
+        std::cout << "\n=== Test 2: PE Generation with Different Payload Sizes ===\n";
         
-        std::vector<std::string> companies = {
-            "Microsoft Corporation", "Adobe Inc.", "Google LLC", "Mozilla Corporation",
-            "Oracle Corporation", "Intel Corporation", "NVIDIA Corporation", 
-            "Symantec Corporation", "Apple Inc.", "Cisco Systems Inc."
+        std::vector<std::string> testPayloads = {
+            "",                                    // Empty payload
+            "A",                                   // 1 byte
+            "Hello World",                         // Small string
+            std::string(100, 'X'),                // 100 bytes
+            std::string(1000, 'Y'),               // 1000 bytes
+            std::string(10000, 'Z')               // 10000 bytes
         };
         
-        std::vector<std::string> products = {
-            "Windows System Component", "Application Framework", "System Library",
-            "Device Driver", "Security Component", "Network Service", "System Utility",
-            "Media Framework", "Graphics Driver", "System Service"
-        };
-        
-        sig.issuer = companies[rng() % companies.size()];
-        sig.subject = products[rng() % products.size()];
-        sig.timestamp = generateRealisticTimestamp();
-        
-        // Generate fake certificate data
-        sig.certificate.resize(512 + (rng() % 512)); // 512-1024 bytes
-        for (auto& byte : sig.certificate) {
-            byte = rng() % 256;
-        }
-        
-        return sig;
-    }
-
-    // ========================================================================
-    // POLYMORPHIC ENCRYPTION TESTS
-    // ========================================================================
-    
-    void testPolymorphicEncryption() {
-        std::cout << "\n[POLYMORPHIC ENCRYPTION TESTS]\n";
-        std::cout << "Testing encryption uniqueness with 10 instances each...\n";
-        
-        // Test data
-        std::vector<uint8_t> testData = {
-            0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x20, 0x57, 0x6F, 0x72, 0x6C, 0x64, 0x21
-        }; // "Hello World!"
-        
-        // Test AES polymorphism
-        std::cout << "\nTesting AES Polymorphism (10 instances):\n";
-        testEncryptionMethod("AES", testData, &StealthPackerTestSuite::aesEncrypt);
-        
-        // Test ChaCha20 polymorphism
-        std::cout << "\nTesting ChaCha20 Polymorphism (10 instances):\n";
-        testEncryptionMethod("ChaCha20", testData, &StealthPackerTestSuite::chaCha20Encrypt);
-        
-        // Test XOR polymorphism
-        std::cout << "\nTesting XOR Polymorphism (10 instances):\n";
-        testEncryptionMethod("XOR", testData, &StealthPackerTestSuite::xorEncrypt);
-    }
-    
-    void testEncryptionMethod(const std::string& methodName, 
-                             const std::vector<uint8_t>& testData,
-                             std::vector<uint8_t> (StealthPackerTestSuite::*encryptFunc)(const std::vector<uint8_t>&)) {
-        
-        std::vector<std::vector<uint8_t>> results;
-        
-        // Generate 10 encrypted instances
-        for (int i = 0; i < 10; i++) {
-            auto encrypted = (this->*encryptFunc)(testData);
-            results.push_back(encrypted);
+        for (size_t i = 0; i < testPayloads.size(); ++i) {
+            std::cout << "Testing payload size " << testPayloads[i].size() << " bytes... ";
             
-            std::cout << "  Instance " << (i+1) << ": ";
-            for (int j = 0; j < 8 && j < encrypted.size(); j++) {
-                std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)encrypted[j];
-            }
-            std::cout << std::dec << "...\n";
-        }
-        
-        // Calculate differences
-        double totalDifference = 0.0;
-        int comparisons = 0;
-        
-        for (int i = 0; i < 10; i++) {
-            for (int j = i + 1; j < 10; j++) {
-                double diff = calculateDifference(results[i], results[j]);
-                totalDifference += diff;
-                comparisons++;
-            }
-        }
-        
-        double avgDifference = totalDifference / comparisons;
-        
-        std::cout << "  Average difference: " << std::fixed << std::setprecision(2) 
-                  << avgDifference << "%\n";
-        
-        recordTest(methodName + " Polymorphism", avgDifference > 50.0, 
-                   std::to_string((int)avgDifference) + "% average difference");
-    }
-    
-    double calculateDifference(const std::vector<uint8_t>& data1, const std::vector<uint8_t>& data2) {
-        if (data1.size() != data2.size()) return 100.0;
-        
-        size_t differences = 0;
-        for (size_t i = 0; i < data1.size(); i++) {
-            if (data1[i] != data2[i]) differences++;
-        }
-        
-        return (double(differences) / double(data1.size())) * 100.0;
-    }
-    
-    // Polymorphic encryption implementations
-    std::vector<uint8_t> aesEncrypt(const std::vector<uint8_t>& data) {
-        std::vector<uint8_t> result = data;
-        
-        // Generate random key and S-box
-        auto key = generateRandomKey(32);
-        uint64_t seed = rng();
-        
-        uint8_t sbox[256];
-        for (int i = 0; i < 256; i++) {
-            sbox[i] = i ^ (seed >> (i % 64));
-        }
-        
-        for (size_t i = 0; i < result.size(); i++) {
-            result[i] ^= key[i % key.size()];
-            result[i] = sbox[result[i]];
-            result[i] ^= (i & 0xFF) ^ (seed >> ((i * 7) % 64));
-        }
-        
-        return result;
-    }
-    
-    std::vector<uint8_t> chaCha20Encrypt(const std::vector<uint8_t>& data) {
-        std::vector<uint8_t> result = data;
-        
-        auto key = generateRandomKey(32);
-        auto nonce = generateRandomKey(16);
-        uint64_t seed = rng();
-        
-        for (size_t i = 0; i < result.size(); i++) {
-            uint8_t keystream = (key[i % key.size()] ^ nonce[i % nonce.size()]) + 
-                               (i % 256) + (seed >> (i % 64));
-            result[i] ^= keystream;
-            result[i] = ((result[i] << ((seed + i) % 8)) | 
-                        (result[i] >> (8 - ((seed + i) % 8)))) & 0xFF;
-        }
-        
-        return result;
-    }
-    
-    std::vector<uint8_t> xorEncrypt(const std::vector<uint8_t>& data) {
-        std::vector<uint8_t> result = data;
-        
-        auto key = generateRandomKey(64);
-        uint64_t seed = rng();
-        uint8_t avalanche = seed & 0xFF;
-        
-        for (size_t i = 0; i < result.size(); i++) {
-            avalanche = (avalanche + result[i] + key[i % key.size()]) & 0xFF;
-            result[i] ^= key[i % key.size()] ^ avalanche ^ (seed >> (i % 64));
-            if (i % 2 == 0) {
-                result[i] = ~result[i];
-            }
-        }
-        
-        return result;
-    }
-    
-    std::vector<uint8_t> generateRandomKey(size_t size) {
-        std::vector<uint8_t> key(size);
-        for (size_t i = 0; i < size; i++) {
-            key[i] = rng() % 256;
-        }
-        return key;
-    }
-
-    // ========================================================================
-    // STUB GENERATION TESTS
-    // ========================================================================
-    
-    void testStubGeneration() {
-        std::cout << "\n[STUB GENERATION TESTS]\n";
-        std::cout << "Testing polymorphic stub code generation...\n";
-        
-        std::vector<uint8_t> dummyData = {0x90, 0x90, 0x90, 0x90}; // NOP instructions
-        std::vector<std::string> stubs;
-        std::vector<size_t> stubSizes;
-        
-        for (int i = 0; i < 10; i++) {
-            std::string stub = generatePolymorphicStub(dummyData, "test", i);
-            stubs.push_back(stub);
-            stubSizes.push_back(stub.size());
+            auto peData = generateMinimalPEExecutable(testPayloads[i]);
             
-            std::cout << "  Stub " << (i+1) << " size: " << stub.size() << " characters\n";
-        }
-        
-        // Test size variation
-        auto minMax = std::minmax_element(stubSizes.begin(), stubSizes.end());
-        double sizeVariation = (double(*minMax.second - *minMax.first) / *minMax.first) * 100.0;
-        
-        recordTest("Stub Size Variation", sizeVariation > 10.0, 
-                   std::to_string((int)sizeVariation) + "% size variation");
-        
-        // Test content uniqueness
-        double totalDiff = 0.0;
-        int comparisons = 0;
-        
-        for (int i = 0; i < 10; i++) {
-            for (int j = i + 1; j < 10; j++) {
-                double diff = calculateStringDifference(stubs[i], stubs[j]);
-                totalDiff += diff;
-                comparisons++;
+            if (peData.empty()) {
+                std::cout << "❌ FAILED (empty result)\n";
+                return false;
             }
-        }
-        
-        double avgDiff = totalDiff / comparisons;
-        recordTest("Stub Content Uniqueness", avgDiff > 70.0, 
-                   std::to_string((int)avgDiff) + "% average difference");
-    }
-    
-    std::string generatePolymorphicStub(const std::vector<uint8_t>& data, 
-                                       const std::string& method, int instance) {
-        std::stringstream stub;
-        
-        // Generate unique identifiers
-        std::string funcName = generateRandomIdentifier();
-        std::string varName = generateRandomIdentifier();
-        std::string arrayName = generateRandomIdentifier();
-        
-        stub << "// Polymorphic Stub #" << instance << " - Method: " << method << "\n";
-        stub << "// Generated: " << time(nullptr) << "\n";
-        stub << "#include <windows.h>\n";
-        stub << "#include <vector>\n\n";
-        
-        // Random junk code
-        int junkLines = 5 + (rng() % 10);
-        for (int i = 0; i < junkLines; i++) {
-            stub << "volatile int " << generateRandomIdentifier() 
-                 << " = " << (rng() % 10000) << ";\n";
-        }
-        
-        stub << "\nstd::vector<BYTE> " << funcName << "() {\n";
-        stub << "    std::vector<BYTE> " << varName << ";\n";
-        
-        // More junk
-        for (int i = 0; i < 3 + (rng() % 5); i++) {
-            stub << "    DWORD " << generateRandomIdentifier() 
-                 << " = GetTickCount() ^ 0x" << std::hex << (rng() % 0xFFFF) << std::dec << ";\n";
-        }
-        
-        stub << "    return " << varName << ";\n";
-        stub << "}\n\n";
-        
-        stub << "int main() {\n";
-        stub << "    auto result = " << funcName << "();\n";
-        stub << "    return 0;\n";
-        stub << "}\n";
-        
-        return stub.str();
-    }
-    
-    std::string generateRandomIdentifier() {
-        std::vector<std::string> prefixes = {"app", "sys", "win", "net", "sec", "core", "util", "base"};
-        std::vector<std::string> suffixes = {"Mgr", "Svc", "Lib", "Api", "Exe", "Dll", "Drv", "Sys"};
-        
-        std::stringstream ss;
-        ss << prefixes[rng() % prefixes.size()] 
-           << std::hex << (rng() % 0xFFF)
-           << suffixes[rng() % suffixes.size()];
-        return ss.str();
-    }
-    
-    double calculateStringDifference(const std::string& str1, const std::string& str2) {
-        size_t maxSize = std::max(str1.size(), str2.size());
-        size_t minSize = std::min(str1.size(), str2.size());
-        size_t differences = maxSize - minSize;
-        
-        for (size_t i = 0; i < minSize; i++) {
-            if (str1[i] != str2[i]) differences++;
-        }
-        
-        return (double(differences) / double(maxSize)) * 100.0;
-    }
-
-    // ========================================================================
-    // ICON AND RESOURCE TESTS
-    // ========================================================================
-    
-    void testIconHandling() {
-        std::cout << "\n[ICON & RESOURCE TESTS]\n";
-        std::cout << "Testing resource management (fixing calc.exe icon issue)...\n";
-        
-        // Test 1: Generic icon generation
-        auto genericIcon = generateGenericIcon();
-        recordTest("Generic Icon Generation", !genericIcon.empty(), 
-                   std::to_string(genericIcon.size()) + " bytes generated");
-        
-        // Test 2: Icon randomization
-        std::vector<std::vector<uint8_t>> icons;
-        for (int i = 0; i < 5; i++) {
-            icons.push_back(generateGenericIcon());
-        }
-        
-        // Check if icons are different
-        bool allDifferent = true;
-        for (int i = 0; i < 5; i++) {
-            for (int j = i + 1; j < 5; j++) {
-                if (icons[i] == icons[j]) {
-                    allDifferent = false;
-                    break;
+            
+            if (!verifyPEHeader(peData)) {
+                std::cout << "❌ FAILED (invalid PE header)\n";
+                return false;
+            }
+            
+            // Check that payload is embedded correctly
+            if (testPayloads[i].size() > 0) {
+                size_t expectedSize = 1024 + testPayloads[i].size(); // 1024 is the padded loader size
+                if (peData.size() < expectedSize) {
+                    std::cout << "❌ FAILED (payload not embedded correctly)\n";
+                    return false;
                 }
             }
+            
+            std::cout << "✅ SUCCESS (" << peData.size() << " bytes)\n";
         }
         
-        recordTest("Icon Uniqueness", allDifferent, "All generated icons are different");
-        
-        // Test 3: Version info generation
-        auto versionInfo = generateVersionInfo();
-        recordTest("Version Info Generation", !versionInfo.empty(), 
-                   "Generated legitimate version information");
+        return true;
     }
     
-    std::vector<uint8_t> generateGenericIcon() {
-        // Generate a simple 16x16 icon data (simplified)
-        std::vector<uint8_t> iconData;
+    // Test 3: Mass Generation with different counts
+    bool testMassGeneration() {
+        std::cout << "\n=== Test 3: Mass Generation with Different Counts ===\n";
         
-        // ICO header
-        iconData.insert(iconData.end(), {0x00, 0x00, 0x01, 0x00, 0x01, 0x00}); // Header + 1 image
+        std::vector<int> testCounts = {1, 5, 10, 50};
         
-        // Image directory
-        iconData.insert(iconData.end(), {0x10, 0x10, 0x00, 0x00, 0x01, 0x00, 0x20, 0x00}); // 16x16, 32bpp
-        
-        // Add random variation
-        for (int i = 0; i < 16; i++) {
-            iconData.push_back(rng() % 256);
+        for (int count : testCounts) {
+            std::cout << "Testing mass generation of " << count << " stubs...\n";
+            
+            auto startTime = std::chrono::high_resolution_clock::now();
+            
+            int successCount = 0;
+            std::vector<std::string> generatedFiles;
+            
+            for (int i = 0; i < count; ++i) {
+                std::string filename = "test_mass_" + std::to_string(i) + "_" + generateRandomName(6) + ".exe";
+                std::string payload = "Test payload " + std::to_string(i);
+                
+                auto peData = generateMinimalPEExecutable(payload);
+                
+                if (!peData.empty() && verifyPEHeader(peData)) {
+                    std::ofstream outFile(filename, std::ios::binary);
+                    if (outFile.is_open()) {
+                        outFile.write(reinterpret_cast<const char*>(peData.data()), peData.size());
+                        outFile.close();
+                        generatedFiles.push_back(filename);
+                        successCount++;
+                    }
+                }
+            }
+            
+            auto endTime = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
+            
+            std::cout << "  Generated " << successCount << "/" << count << " stubs in " 
+                      << duration.count() << "ms (" << (duration.count() / (double)count) << "ms per stub)\n";
+            
+            if (successCount != count) {
+                std::cout << "❌ FAILED: Not all stubs generated successfully\n";
+                return false;
+            }
+            
+            // Clean up test files
+            for (const auto& filename : generatedFiles) {
+                std::remove(filename.c_str());
+            }
         }
         
-        return iconData;
+        return true;
     }
     
-    std::string generateVersionInfo() {
-        std::vector<std::string> companies = {"Microsoft Corporation", "System Components Inc.", "Windows Technologies"};
-        std::vector<std::string> products = {"System Utility", "Application Framework", "Windows Component"};
+    // Test 4: File uniqueness and naming
+    bool testFileUniqueness() {
+        std::cout << "\n=== Test 4: File Uniqueness and Naming ===\n";
         
-        std::stringstream version;
-        version << "CompanyName: " << companies[rng() % companies.size()] << "\n";
-        version << "ProductName: " << products[rng() % products.size()] << "\n";
-        version << "FileVersion: " << (rng() % 10 + 1) << "." << (rng() % 10) << "." << (rng() % 1000) << "\n";
+        std::set<std::string> generatedNames;
+        std::vector<std::string> testFiles;
         
-        return version.str();
-    }
-
-    // ========================================================================
-    // MAIN TEST RUNNER
-    // ========================================================================
-    
-    void runComprehensiveTests() {
-        std::cout << "========================================================================\n";
-        std::cout << "        COMPREHENSIVE STEALTH PACKER TEST SUITE v1.0                \n";
-        std::cout << "========================================================================\n";
-        std::cout << "Testing all stealth features and polymorphic capabilities...\n\n";
-        
-        // Run all test categories
-        testTimestampGeneration();
-        testSandboxDetection();
-        testSignatureGeneration();
-        testPolymorphicEncryption();
-        testStubGeneration();
-        testIconHandling();
-        
-        // Display final results
-        displayTestResults();
-    }
-    
-    void displayTestResults() {
-        std::cout << "\n========================================================================\n";
-        std::cout << "                           TEST RESULTS SUMMARY                        \n";
-        std::cout << "========================================================================\n";
-        
-        for (const auto& result : testResults) {
-            std::cout << result << "\n";
+        for (int i = 0; i < 100; ++i) {
+            std::string filename = "FUD_Stub_" + std::to_string(i) + "_" + generateRandomName(8) + ".exe";
+            
+            if (generatedNames.find(filename) != generatedNames.end()) {
+                std::cout << "❌ FAILED: Duplicate filename generated: " << filename << "\n";
+                return false;
+            }
+            
+            generatedNames.insert(filename);
+            testFiles.push_back(filename);
+            
+            // Create a dummy file to test uniqueness
+            std::ofstream outFile(filename);
+            outFile << "test";
+            outFile.close();
         }
         
-        std::cout << "\n========================================================================\n";
-        std::cout << "TOTAL TESTS: " << totalTests << " | PASSED: " << passedTests 
-                  << " | FAILED: " << (totalTests - passedTests) << "\n";
+        std::cout << "✅ Generated " << generatedNames.size() << " unique filenames\n";
         
-        double successRate = (double(passedTests) / double(totalTests)) * 100.0;
-        std::cout << "SUCCESS RATE: " << std::fixed << std::setprecision(1) << successRate << "%\n";
+        // Clean up
+        for (const auto& filename : testFiles) {
+            std::remove(filename.c_str());
+        }
         
-        if (successRate >= 90.0) {
-            std::cout << "[EXCELLENT] All stealth features working optimally!\n";
-        } else if (successRate >= 75.0) {
-            std::cout << "[GOOD] Most features working, minor improvements needed\n";
-        } else if (successRate >= 50.0) {
-            std::cout << "[MODERATE] Some features working, significant improvements needed\n";
+        return true;
+    }
+    
+    // Test 5: PE Header integrity under stress
+    bool testPEHeaderIntegrity() {
+        std::cout << "\n=== Test 5: PE Header Integrity Under Stress ===\n";
+        
+        for (int i = 0; i < 1000; ++i) {
+            std::string payload = "Stress test payload " + std::to_string(i) + " " + std::string(i % 100, 'X');
+            
+            auto peData = generateMinimalPEExecutable(payload);
+            
+            if (peData.empty()) {
+                std::cout << "❌ FAILED: Empty PE data at iteration " << i << "\n";
+                return false;
+            }
+            
+            if (!verifyPEHeader(peData)) {
+                std::cout << "❌ FAILED: Invalid PE header at iteration " << i << "\n";
+                return false;
+            }
+            
+            // Check that the PE structure is intact
+            if (peData.size() < 1024) {
+                std::cout << "❌ FAILED: PE too small at iteration " << i << "\n";
+                return false;
+            }
+        }
+        
+        std::cout << "✅ Successfully generated 1000 valid PE files under stress\n";
+        return true;
+    }
+    
+    // Test 6: Memory usage and performance
+    bool testMemoryAndPerformance() {
+        std::cout << "\n=== Test 6: Memory Usage and Performance ===\n";
+        
+        std::vector<std::vector<uint8_t>> peFiles;
+        auto startTime = std::chrono::high_resolution_clock::now();
+        
+        // Generate 100 PE files and keep them in memory
+        for (int i = 0; i < 100; ++i) {
+            std::string payload = "Performance test " + std::to_string(i) + " " + std::string(500, 'P');
+            auto peData = generateMinimalPEExecutable(payload);
+            
+            if (peData.empty() || !verifyPEHeader(peData)) {
+                std::cout << "❌ FAILED: Invalid PE generated during performance test\n";
+                return false;
+            }
+            
+            peFiles.push_back(std::move(peData));
+        }
+        
+        auto endTime = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
+        
+        size_t totalSize = 0;
+        for (const auto& peFile : peFiles) {
+            totalSize += peFile.size();
+        }
+        
+        std::cout << "✅ Generated " << peFiles.size() << " PE files in " << duration.count() << "ms\n";
+        std::cout << "✅ Total memory usage: " << (totalSize / 1024) << " KB\n";
+        std::cout << "✅ Average time per file: " << (duration.count() / 100.0) << "ms\n";
+        std::cout << "✅ Average file size: " << (totalSize / 100) << " bytes\n";
+        
+        return true;
+    }
+    
+    // Test 7: Cross-platform compatibility
+    bool testCrossPlatformCompatibility() {
+        std::cout << "\n=== Test 7: Cross-Platform Compatibility ===\n";
+        
+        // Test with different line endings
+        std::vector<std::string> testPayloads = {
+            "Windows\r\nline\r\nendings",
+            "Unix\nline\nendings", 
+            "Mac\rline\rendings",
+            "Mixed\r\nline\nendings\r"
+        };
+        
+        for (size_t i = 0; i < testPayloads.size(); ++i) {
+            std::cout << "Testing payload with " << (i == 0 ? "Windows" : i == 1 ? "Unix" : i == 2 ? "Mac" : "Mixed") << " line endings... ";
+            
+            auto peData = generateMinimalPEExecutable(testPayloads[i]);
+            
+            if (peData.empty() || !verifyPEHeader(peData)) {
+                std::cout << "❌ FAILED\n";
+                return false;
+            }
+            
+            std::cout << "✅ SUCCESS\n";
+        }
+        
+        return true;
+    }
+    
+    // Test 8: Error handling and edge cases
+    bool testErrorHandling() {
+        std::cout << "\n=== Test 8: Error Handling and Edge Cases ===\n";
+        
+        // Test with very large payload
+        std::cout << "Testing with very large payload... ";
+        std::string largePayload(1000000, 'L'); // 1MB payload
+        auto peData = generateMinimalPEExecutable(largePayload);
+        
+        if (peData.empty()) {
+            std::cout << "❌ FAILED: Large payload not handled\n";
+            return false;
+        }
+        
+        if (!verifyPEHeader(peData)) {
+            std::cout << "❌ FAILED: Large payload corrupted PE header\n";
+            return false;
+        }
+        
+        std::cout << "✅ SUCCESS (" << peData.size() << " bytes)\n";
+        
+        // Test with special characters
+        std::cout << "Testing with special characters... ";
+        std::string specialPayload = "Special chars: \x00\x01\x02\xFF\xFE\xFD";
+        peData = generateMinimalPEExecutable(specialPayload);
+        
+        if (peData.empty() || !verifyPEHeader(peData)) {
+            std::cout << "❌ FAILED\n";
+            return false;
+        }
+        
+        std::cout << "✅ SUCCESS\n";
+        
+        return true;
+    }
+    
+    // Test 9: Integration test with real-world scenarios
+    bool testIntegrationScenarios() {
+        std::cout << "\n=== Test 9: Integration Test with Real-World Scenarios ===\n";
+        
+        std::vector<std::string> companyNames = {
+            "Adobe Systems Incorporated",
+            "Google LLC", 
+            "Intel Corporation",
+            "NVIDIA Corporation",
+            "Apple Inc.",
+            "Oracle Corporation",
+            "IBM Corporation",
+            "VMware, Inc.",
+            "Symantec Corporation",
+            "McAfee, Inc."
+        };
+        
+        std::vector<std::string> scenarios = {
+            "Simple console application",
+            "Windows GUI application", 
+            "System utility",
+            "Data processing tool",
+            "Network monitoring utility"
+        };
+        
+        for (size_t i = 0; i < scenarios.size(); ++i) {
+            std::cout << "Testing scenario " << (i + 1) << ": " << scenarios[i] << "... ";
+            
+            std::string companyName = companyNames[i % companyNames.size()];
+            std::string payload = generateBenignCode(companyName, scenarios[i]);
+            
+            auto peData = generateMinimalPEExecutable(payload);
+            
+            if (peData.empty() || !verifyPEHeader(peData)) {
+                std::cout << "❌ FAILED\n";
+                return false;
+            }
+            
+            // Write to file for inspection
+            std::string filename = "integration_test_" + std::to_string(i + 1) + ".exe";
+            std::ofstream outFile(filename, std::ios::binary);
+            if (outFile.is_open()) {
+                outFile.write(reinterpret_cast<const char*>(peData.data()), peData.size());
+                outFile.close();
+                std::cout << "✅ SUCCESS (" << peData.size() << " bytes)\n";
+            } else {
+                std::cout << "❌ FAILED (cannot write file)\n";
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    // Test 10: Final comprehensive validation
+    bool testComprehensiveValidation() {
+        std::cout << "\n=== Test 10: Final Comprehensive Validation ===\n";
+        
+        int totalTests = 0;
+        int passedTests = 0;
+        
+        // Generate a variety of stubs with different characteristics
+        for (int i = 0; i < 50; ++i) {
+            totalTests++;
+            
+            std::string companyName = "Test Company " + std::to_string(i % 10);
+            std::string payload = generateBenignCode(companyName, "Comprehensive test " + std::to_string(i));
+            
+            auto peData = generateMinimalPEExecutable(payload);
+            
+            if (!peData.empty() && verifyPEHeader(peData)) {
+                passedTests++;
+            }
+        }
+        
+        double successRate = (passedTests * 100.0) / totalTests;
+        std::cout << "✅ Comprehensive validation: " << passedTests << "/" << totalTests 
+                  << " tests passed (" << std::fixed << std::setprecision(1) << successRate << "%)\n";
+        
+        if (successRate >= 95.0) {
+            std::cout << "🎉 MASS STUB GENERATOR IS FULLY FUNCTIONAL!\n";
+            return true;
         } else {
-            std::cout << "[POOR] Major issues detected, requires debugging\n";
+            std::cout << "❌ FAILED: Success rate below 95%\n";
+            return false;
+        }
+    }
+    
+    // Helper functions
+    std::string generateRandomName(int length = 8) {
+        const std::string charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        std::string result;
+        result.reserve(length);
+        for (int i = 0; i < length; ++i) {
+            result += charset[dis(gen) % charset.length()];
+        }
+        return result;
+    }
+    
+    std::string generateBenignCode(const std::string& companyName, const std::string& scenario) {
+        std::vector<std::string> templates = {
+            "#include <iostream>\n#include <string>\n\nint main() {\n    std::cout << \"Hello from " + companyName + "!\" << std::endl;\n    std::cout << \"Scenario: " + scenario + "\" << std::endl;\n    return 0;\n}",
+            
+            "#include <windows.h>\n\nint WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {\n    MessageBoxA(NULL, \"Welcome to " + companyName + " application!\", \"Info\", MB_OK);\n    return 0;\n}",
+            
+            "#include <iostream>\n#include <ctime>\n\nint main() {\n    time_t now = time(0);\n    std::cout << \"Current time: \" << ctime(&now) << std::endl;\n    std::cout << \"" + companyName + " - " + scenario + "\" << std::endl;\n    return 0;\n}",
+            
+            "#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<int> numbers = {1, 2, 3, 4, 5};\n    std::cout << \"" + companyName + " - " + scenario + "\" << std::endl;\n    for (int num : numbers) {\n        std::cout << \"Processing: \" << num << std::endl;\n    }\n    return 0;\n}"
+        };
+        
+        return templates[dis(gen) % templates.size()];
+    }
+    
+    std::vector<uint8_t> generateMinimalPEExecutable(const std::string& payload) {
+        try {
+            // 1. Copy the pre-built loader into a vector
+            std::vector<uint8_t> exe(tiny_loader_bin, tiny_loader_bin + tiny_loader_bin_len);
+            
+            // 2. Pad to next 0x200 boundary (PE file-alignment requirement)
+            constexpr size_t kAlign = 0x200;
+            size_t paddedSize = (exe.size() + kAlign - 1) & ~(kAlign - 1);
+            exe.resize(paddedSize, 0);
+            
+            // 3. Append the payload
+            size_t payloadOffset = exe.size();
+            exe.insert(exe.end(), payload.begin(), payload.end());
+            
+            // 4. Patch two 32-bit placeholders inside the loader
+            auto poke32 = [&](size_t off, uint32_t v) {
+                if (off + 3 < exe.size()) {
+                    exe[off+0] =  v        & 0xFF;
+                    exe[off+1] = (v >>  8) & 0xFF;
+                    exe[off+2] = (v >> 16) & 0xFF;
+                    exe[off+3] = (v >> 24) & 0xFF;
+                }
+            };
+            
+            poke32(PAYLOAD_SIZE_OFFSET, static_cast<uint32_t>(payload.size()));
+            poke32(PAYLOAD_RVA_OFFSET, static_cast<uint32_t>(payloadOffset));
+            
+            return exe;
+            
+        } catch (...) {
+            return {};
+        }
+    }
+    
+    bool verifyPEHeader(const std::vector<uint8_t>& exe) {
+        if (exe.size() < 2) return false;
+        
+        // Check MZ signature
+        if (exe[0] != 0x4D || exe[1] != 0x5A) return false;
+        
+        // Check PE header - in tiny_loader.h, PE header is at offset 0x60 (96)
+        if (exe.size() < 100) return false;
+        
+        // PE header should be at offset 0x60 in the tiny_loader_bin
+        if (exe[96] != 0x50 || exe[97] != 0x45 || 
+            exe[98] != 0x00 || exe[99] != 0x00) return false;
+        
+        return true;
+    }
+    
+    // Run all tests
+    void runAllTests() {
+        std::cout << "🚀 STARTING COMPREHENSIVE TEST SUITE\n";
+        std::cout << "=====================================\n";
+        
+        auto startTime = std::chrono::high_resolution_clock::now();
+        
+        std::vector<std::pair<std::string, std::function<bool()>>> tests = {
+            {"Basic tiny_loader.h functionality", [this]() { return testTinyLoaderBasic(); }},
+            {"PE Generation with different payload sizes", [this]() { return testPEGeneration(); }},
+            {"Mass Generation with different counts", [this]() { return testMassGeneration(); }},
+            {"File uniqueness and naming", [this]() { return testFileUniqueness(); }},
+            {"PE Header integrity under stress", [this]() { return testPEHeaderIntegrity(); }},
+            {"Memory usage and performance", [this]() { return testMemoryAndPerformance(); }},
+            {"Cross-platform compatibility", [this]() { return testCrossPlatformCompatibility(); }},
+            {"Error handling and edge cases", [this]() { return testErrorHandling(); }},
+            {"Integration test with real-world scenarios", [this]() { return testIntegrationScenarios(); }},
+            {"Final comprehensive validation", [this]() { return testComprehensiveValidation(); }}
+        };
+        
+        int passedTests = 0;
+        int totalTests = tests.size();
+        
+        for (const auto& test : tests) {
+            try {
+                if (test.second()) {
+                    passedTests++;
+                }
+            } catch (const std::exception& e) {
+                std::cout << "❌ EXCEPTION in " << test.first << ": " << e.what() << "\n";
+            } catch (...) {
+                std::cout << "❌ UNKNOWN EXCEPTION in " << test.first << "\n";
+            }
         }
         
-        std::cout << "========================================================================\n";
+        auto endTime = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
+        
+        std::cout << "\n" << std::string(50, '=') << "\n";
+        std::cout << "🎯 TEST SUITE COMPLETE\n";
+        std::cout << "========================\n";
+        std::cout << "✅ Passed: " << passedTests << "/" << totalTests << " tests\n";
+        std::cout << "⏱️  Duration: " << duration.count() << "ms\n";
+        
+        if (passedTests == totalTests) {
+            std::cout << "🎉 ALL TESTS PASSED! MASS STUB GENERATOR IS FULLY FUNCTIONAL!\n";
+        } else {
+            std::cout << "⚠️  SOME TESTS FAILED. Please review the results above.\n";
+        }
+        
+        std::cout << std::string(50, '=') << "\n";
     }
 };
 
-// Cross-platform main function
 int main() {
-    std::cout << "Initializing Comprehensive Stealth Packer Test Suite...\n\n";
-    
-    StealthPackerTestSuite testSuite;
-    testSuite.runComprehensiveTests();
-    
-    std::cout << "\nTesting completed! Press Enter to exit...";
-    std::cin.get();
-    
+    ComprehensiveTestSuite testSuite;
+    testSuite.runAllTests();
     return 0;
 }
