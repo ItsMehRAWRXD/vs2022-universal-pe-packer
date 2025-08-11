@@ -1,0 +1,56 @@
+{
+  "results": [
+    {
+      "url": "https://www.virustotal.com/gui/file/ff9af2daf73e8b2ca8d0648f1f8650367b717dd76f7458777d151ce5cbd8eaae/behavior",
+      "file_hash": "ff9af2daf73e8b2ca8d0648f1f8650367b717dd76f7458777d151ce5cbd8eaae",
+      "url_type": "behavior",
+      "cache_disabled": false
+    },
+    {
+      "url": "https://www.virustotal.com/gui/file/a929d11f2653be0f5ea0abbf29a3d73ea4d9700a5cfce27de7c7c8aeb84e7cf9/details",
+      "file_hash": "a929d11f2653be0f5ea0abbf29a3d73ea4d9700a5cfce27de7c7c8aeb84e7cf9",
+      "url_type": "details",
+      "cache_disabled": false
+    },
+    {
+      "url": "https://www.virustotal.com/gui/file/46653119500aea47ec149afe0bcb9c76cad82b36fbfa1ed571bf1bbf452a9031/details",
+      "file_hash": "46653119500aea47ec149afe0bcb9c76cad82b36fbfa1ed571bf1bbf452a9031",
+      "url_type": "details",
+      "cache_disabled": false
+    },
+    {
+      "url": "https://www.virustotal.com/gui/file/dcfc2f15c0e010bc8ae1c3fb6709a7458defbc636a5afc8a73990b8a2d82cd22?nocache=1",
+      "file_hash": "dcfc2f15c0e010bc8ae1c3fb6709a7458defbc636a5afc8a73990b8a2d82cd22",
+      "url_type": "general",
+      "cache_disabled": true
+    },
+    {
+      "url": "https://www.virustotal.com/gui/file/3e671895062924ac704ff8df342a1fe2c27e3a4397d31bd982639e7daaceb746?nocache=1",
+      "file_hash": "3e671895062924ac704ff8df342a1fe2c27e3a4397d31bd982639e7daaceb746",
+      "url_type": "general",
+      "cache_disabled": true
+    },
+    {
+      "url": "https://www.virustotal.com/gui/file/dcbdc717d1b37ee9552b81f53a7b68ee62f2147fddd83c21e4efe5ff34fad896/detection",
+      "file_hash": "dcbdc717d1b37ee9552b81f53a7b68ee62f2147fddd83c21e4efe5ff34fad896",
+      "url_type": "detection",
+      "cache_disabled": false
+    }
+  ],
+  "summary": {
+    "total_files": 6,
+    "behavior_count": 1,
+    "details_count": 2,
+    "detection_count": 1,
+    "general_count": 2,
+    "nocache_count": 2,
+    "file_hashes": [
+      "ff9af2daf73e8b2ca8d0648f1f8650367b717dd76f7458777d151ce5cbd8eaae",
+      "a929d11f2653be0f5ea0abbf29a3d73ea4d9700a5cfce27de7c7c8aeb84e7cf9",
+      "46653119500aea47ec149afe0bcb9c76cad82b36fbfa1ed571bf1bbf452a9031",
+      "dcfc2f15c0e010bc8ae1c3fb6709a7458defbc636a5afc8a73990b8a2d82cd22",
+      "3e671895062924ac704ff8df342a1fe2c27e3a4397d31bd982639e7daaceb746",
+      "dcbdc717d1b37ee9552b81f53a7b68ee62f2147fddd83c21e4efe5ff34fad896"
+    ]
+  }
+}
